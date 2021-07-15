@@ -18,5 +18,5 @@ To run the project you will need to do the following steps.
         RUN_MIGRATIONS=true
 
 2. Go back to the vacation directory and open terminal.
-3. Type **./run** to run your application.
+3. Type **./run.sh** to run your application.
 4. In a moment, your application will be running and you will be able to access it at **http://localhost:3000/**
