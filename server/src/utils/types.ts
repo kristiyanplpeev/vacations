@@ -4,7 +4,7 @@ export type UserDetails = {
   id: string;
   googleId: string;
   email: string;
-  firsName: string;
+  firstName: string;
   lastName: string;
   picture: string;
 };

@@ -5,12 +5,23 @@ import { GoogleController } from './google.controller';
 import { User } from '../model/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SessionSerializer } from './utils/Serializer';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './jwt.strategy';
+import { config } from 'dotenv';
+
+config();
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [
+    TypeOrmModule.forFeature([User]),
+    JwtModule.register({
+      secret: process.env.SECRET_KEY,
+    }),
+  ],
   controllers: [GoogleController],
   providers: [
     GoogleStrategy,
+    JwtStrategy,
     SessionSerializer,
     {
       provide: 'AUTH_SERVICE',
@@ -18,5 +29,6 @@ import { SessionSerializer } from './utils/Serializer';
     },
     GoogleService,
   ],
+  exports: [GoogleService],
 })
 export class GoogleModule {}

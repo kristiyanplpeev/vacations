@@ -1,7 +1,10 @@
-import { Controller, Get, Redirect, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards, Redirect } from '@nestjs/common';
 import { GoogleService } from './google.service';
-import { AuthenticatedGuard, GoogleAuthGuard } from './guards';
+import { AuthenticatedGuard, GoogleAuthGuard, JwtAuthGuard } from './guards';
 import { Request } from 'express';
+import { UserDetails } from 'utils/types';
+import { CLIENT_URL } from '../common/constants';
+import { Token } from 'google/utils/types';
 
 @Controller('auth')
 export class GoogleController {
@@ -9,20 +12,26 @@ export class GoogleController {
 
   @Get('google')
   @UseGuards(GoogleAuthGuard)
-  async googleAuth(@Req() req: Request) {
+  async googleAuth() {
     return;
   }
 
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
-  @Redirect(`http://localhost:3000/home`)
-  googleAuthRedirect(@Req() req) {
-    return this.googleService.validateUser(req.user);
+  @Redirect(`${CLIENT_URL}redirecting`)
+  async googleAuthRedirect(@Req() req): Promise<UserDetails> {
+    return await this.googleService.validateUser(req.user);
   }
 
-  @Get('user')
+  @Get('users')
   @UseGuards(AuthenticatedGuard)
-  loggedUserInfo(@Req() req: Request) {
-    return req.user;
+  loggedUserInfo(@Req() req): Token {
+    return this.googleService.login(req.user);
   }
+
+  // @UseGuards(JwtAuthGuard)
+  // @Get('vanka')
+  // vankata(@Req() req: Request) {
+  //   return req;
+  // }
 }

@@ -18,3 +18,6 @@ export class AuthenticatedGuard implements CanActivate {
     return req.isAuthenticated();
   }
 }
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}
