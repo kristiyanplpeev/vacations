@@ -1,0 +1,18 @@
+.login-container {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  padding: 10px;
+}
+
+.login-avatar {
+  margin: auto;
+  background-color: rgb(220, 0, 78) !important;
+  margin-bottom: 10px;
+}
+
+.login-google-button {
+  margin: auto;
+  margin-top: 30px;
+}

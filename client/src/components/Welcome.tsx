@@ -1,65 +1,58 @@
-import React, { Component } from "react";
+import React, { Component, ReactNode } from "react";
 
-export interface AppProps { }
+import { RouteComponentProps } from "react-router-dom";
 
-export interface AppState {
+import { BASE_URL } from "common/constants";
+
+export interface WelcomeProps extends RouteComponentProps {}
+
+export interface WelcomeState {
   loading: boolean;
-  message: { id: string, name: string }[]
+  message: { id: string; name: string }[];
 }
 
-class Welcome extends Component<AppProps, AppState> {
-
-  // async componentDidMount() {
-  //   await this.ping();
-  // }
-
+class Welcome extends Component<WelcomeProps, WelcomeState> {
   state = {
-    message: [{ id: '', name: 'unknown' }],
-    loading: false
+    message: [{ id: "", name: "unknown" }],
+    loading: false,
   };
 
-  render() {
-
-    if(this.state.loading) {
-      return <div> Loading... </div>
+  render(): ReactNode {
+    if (this.state.loading) {
+      return <div> Loading... </div>;
     }
-    return <div>
-      <button onClick={async () => await this.ping()}>Check server status:</button>
-      
-      {this.state.message.map(el => <div> Service status at: {this.getCurrentTime()}: {el.name}<br></br></div>)}
-      </div>;
+    return (
+      <div>
+        <button onClick={async () => await this.ping()}>Check server status:</button>
+
+        {this.state.message.map((el, index) => (
+          <div key={index}>
+            {el.name}
+            <br></br>
+          </div>
+        ))}
+      </div>
+    );
   }
 
-  ping = async () => {
+  ping = async (): Promise<void> => {
     this.setState({
-      loading: true
-    })
+      loading: true,
+    });
     try {
-      const response = await fetch('http://localhost:5000/ping');
+      const response = await fetch(`${BASE_URL}ping`);
       const responseJSON = await response.json();
-      this.setState(prevState => ({
+      this.setState((prevState) => ({
         message: [...prevState.message, responseJSON[0]],
-        loading: false
-      }))
-    } catch(err) {
-      this.setState(prevState => ({
-        message: [...prevState.message, { id: '', name: 'not ok' }],
-        loading: false
-      }))
+        loading: false,
+      }));
+    } catch (err) {
+      this.setState((prevState) => ({
+        message: [...prevState.message, { id: "", name: "not ok" }],
+        loading: false,
+      }));
     }
-  }
-
-  getCurrentTime = () => {
-    const today = new Date();
-    const day = today.getDate();
-    const month = today.getMonth()+1;
-    const year = today.getFullYear();
-    const hours = today.getHours();
-    const minutes = today.getMinutes();
-    const seconds = today.getSeconds();
-
-    return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
-  }
-};
+  };
+}
 
 export default Welcome;
