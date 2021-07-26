@@ -3,7 +3,7 @@ import { Holiday } from '../model/holiday.entity';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HolidayPeriodDto } from './dto/holidays.dto';
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
+import { HolidayPeriod } from 'holidays/types';
 
 @Injectable()
 export class HolidaysService {
@@ -11,7 +11,7 @@ export class HolidaysService {
     @InjectRepository(Holiday) private userRepo: Repository<Holiday>,
   ) {}
 
-  getDatesBetweenDates = ({ startingDate, endingDate }: HolidayPeriodDto) => {
+  getDatesBetweenDates = ({ startingDate, endingDate }: HolidayPeriod) => {
     let dates = [];
 
     const theStartDate = new Date(startingDate);
@@ -29,7 +29,7 @@ export class HolidaysService {
   };
 
   getConstantHolidaysForTheCurrentYear = async (
-    holidayPeriod: HolidayPeriodDto,
+    holidayPeriod: HolidayPeriod,
   ): Promise<Holiday[]> => {
     const constantHolidays = await this.userRepo.find({
       where: { movable: false },
@@ -49,7 +49,7 @@ export class HolidaysService {
   };
 
   getMovableHolidaysForTheCurrentYear = async (
-    holidayPeriod: HolidayPeriodDto,
+    holidayPeriod: HolidayPeriod,
   ): Promise<Holiday[]> => {
     const movableHolidays = await this.userRepo.find({
       movable: true,
@@ -111,12 +111,17 @@ export class HolidaysService {
   };
 
   public async calculateDays(holidayPeriod: HolidayPeriodDto): Promise<any> {
-    const datesBetween = this.getDatesBetweenDates(holidayPeriod);
+    const holidayPeriodAsString = {
+      startingDate: holidayPeriod.startingDate.toString(),
+      endingDate: holidayPeriod.endingDate.toString(),
+    };
+    console.log(holidayPeriodAsString);
+    const datesBetween = this.getDatesBetweenDates(holidayPeriodAsString);
     const constantHolidays = await this.getConstantHolidaysForTheCurrentYear(
-      holidayPeriod,
+      holidayPeriodAsString,
     );
     const movableHolidays = await this.getMovableHolidaysForTheCurrentYear(
-      holidayPeriod,
+      holidayPeriodAsString,
     );
     const datesBetweenAsObj = datesBetween.map((el) => ({
       date: el,
