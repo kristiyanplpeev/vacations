@@ -7,6 +7,7 @@ import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 
 import Header from "components/Header/Header";
 import Homepage from "components/Homepage/Homepage";
+import NewPTO from "components/NewPTO/NewPTO";
 import PrivateRoute from "providers/PrivateRoute";
 import { ApplicationState, UserInfoReducerState } from "store/user/types";
 
@@ -29,6 +30,7 @@ class App extends Component<AppProps> {
             <Route path="/login" component={Login} />
             <Route path="/redirecting" component={Redirecting} />
             <PrivateRoute path="/home" exact isAuthenticated={this.props.userStatus} component={Homepage} />
+            <PrivateRoute path="/new" exact isAuthenticated={this.props.userStatus} component={NewPTO} />
           </Switch>
         </BrowserRouter>
       </div>
@@ -36,9 +38,9 @@ class App extends Component<AppProps> {
   }
 }
 
-const mapStateToProps = ({ userStatusReducer, userInfoReducer }: ApplicationState) => {
+const mapStateToProps = ({ isUserLoggedInReducer, userInfoReducer }: ApplicationState) => {
   return {
-    userStatus: userStatusReducer,
+    userStatus: isUserLoggedInReducer,
     userInfo: userInfoReducer,
   };
 };

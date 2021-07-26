@@ -1,0 +1,6 @@
+.AppError {
+    outline: 1px solid red;
+    border-left: 5px solid red;
+    padding: 10px;
+    background-color: #eeeeee;
+  }

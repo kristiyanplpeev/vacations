@@ -6,7 +6,6 @@ import "./Header.css";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { bindActionCreators } from "redux";
 import { ThunkDispatch } from "redux-thunk";
-
 import { startLogOutUser, startSetIsUserLoggedIn } from "store/user/action";
 import { ApplicationState, UserInfoReducerState, AppActions } from "store/user/types";
 
