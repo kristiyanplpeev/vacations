@@ -19,6 +19,7 @@ To run the project you will need to do the following steps.
         SECRET_KEY=secret_key
         GOOGLE_CLIENT_ID=57121685326-pegp31vlg3n02i5hl57qdpqagekcsfdb.apps.googleusercontent.com
         GOOGLE_SECRET=XAwXulsNk650Wvoz1e923YI-
+To get your own "GOOGLE_CLIENT_ID" and "GOOGLE_SECRET" you need to do Step 1 of the following [article](https://developers.google.com/identity/sign-in/web/server-side-flow).
 
 2. Go back to the vacation directory and open terminal.
 3. Type **./run.sh** to run your application.
