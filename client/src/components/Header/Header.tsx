@@ -4,29 +4,21 @@ import { AppBar, Avatar, IconButton, Toolbar, Typography, Button } from "@materi
 import { connect } from "react-redux";
 import "./Header.css";
 import { RouteComponentProps, withRouter } from "react-router-dom";
+import { bindActionCreators } from "redux";
+import { ThunkDispatch } from "redux-thunk";
 
-import { UserInfoType } from "common/types";
-import { logOutUser, setLoginStatus } from "store/user/action";
-import { ApplicationState, UserInfoReducerState } from "store/user/types";
+import { startLogOutUser, startSetIsUserLoggedIn } from "store/user/action";
+import { ApplicationState, UserInfoReducerState, AppActions } from "store/user/types";
 
-interface HeaderProps extends RouteComponentProps {
-  userStatus: boolean;
-  userInfo: UserInfoReducerState;
-}
+interface HeaderProps {}
 
-interface HeaderState {
-  isUserLogged: boolean;
-  userInfo: UserInfoType;
-}
+interface HeaderState {}
 
-class Header extends Component<HeaderProps, HeaderState> {
-  state = {
-    isUserLogged: false,
-    userInfo: { id: "", googleId: "", email: "", firstName: "", lastName: "", picture: "" },
-  };
+type Props = RouteComponentProps & LinkDispatchProps & LinkStateProps;
 
+class Header extends Component<Props> {
   render(): ReactNode {
-    this.setUserStatus();
+    console.log(this.props.isUserLoggedIn);
     if (location.pathname === "/login") return null;
     return (
       <div className="header-root">
@@ -37,35 +29,44 @@ class Header extends Component<HeaderProps, HeaderState> {
             </Button>
             <IconButton edge="start" className="header-menubutton" color="inherit" aria-label="menu"></IconButton>
             <Typography variant="h6" className="header-title">
-              {this.state.userInfo.firstName} {this.state.userInfo.lastName}
+              {this.props.userInfo.firstName} {this.props.userInfo.lastName}
             </Typography>
-            <Avatar alt="profile_pic" src={this.state.userInfo.picture} />
+            <Avatar alt="profile_pic" src={this.props.userInfo.picture} />
           </Toolbar>
         </AppBar>
       </div>
     );
   }
-  setUserStatus = (): void => {
-    if (this.props.userStatus !== this.state.isUserLogged) {
-      this.setState({
-        isUserLogged: this.props.userStatus,
-        userInfo: this.props.userInfo,
-      });
-    }
-  };
 
   logout = (): void => {
-    logOutUser();
-    setLoginStatus(false);
+    this.props.logOutUser();
+    this.props.setIsUserLoggedIn(false);
     localStorage.removeItem("token");
   };
 }
 
-const mapStateToProps = ({ userStatusReducer, userInfoReducer }: ApplicationState) => {
+interface LinkStateProps {
+  isUserLoggedIn: boolean;
+  userInfo: UserInfoReducerState;
+}
+interface LinkDispatchProps {
+  logOutUser: () => void;
+  setIsUserLoggedIn: (newState: boolean) => void;
+}
+
+const mapStateToProps = ({ isUserLoggedInReducer, userInfoReducer }: ApplicationState): LinkStateProps => {
   return {
-    userStatus: userStatusReducer,
+    isUserLoggedIn: isUserLoggedInReducer,
     userInfo: userInfoReducer,
   };
 };
 
-export default connect(mapStateToProps)(withRouter(Header));
+const mapDispatchToProps = (
+  dispatch: ThunkDispatch<any, any, AppActions>,
+  ownProps: HeaderProps,
+): LinkDispatchProps => ({
+  logOutUser: bindActionCreators(startLogOutUser, dispatch),
+  setIsUserLoggedIn: bindActionCreators(startSetIsUserLoggedIn, dispatch),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Header));

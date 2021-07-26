@@ -1,6 +1,6 @@
 import { extractUser, getToken } from "providers/tokenManagment";
 
-import { UserInfoActionTypes, UserInfoReducerState, UserInfoTypes, UserStatusActionTypes } from "./types";
+import { UserInfoActionTypes, UserInfoReducerState, UserInfoTypes, IsUserLoggedInActionTypes } from "./types";
 
 const initialUserInfoState = extractUser(getToken());
 
@@ -22,7 +22,10 @@ export const userInfoReducer = (
   }
 };
 
-export const userStatusReducer = (state: boolean = initualUserStatusState, action: UserStatusActionTypes): boolean => {
+export const isUserLoggedInReducer = (
+  state: boolean = initualUserStatusState,
+  action: IsUserLoggedInActionTypes,
+): boolean => {
   switch (action.type) {
     case "LOGIN": {
       return action.payload;

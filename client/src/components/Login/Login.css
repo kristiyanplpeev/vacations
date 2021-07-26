@@ -6,9 +6,9 @@
   padding: 10px;
 }
 
-.login-avatar {
+.login-avatar.MuiAvatar-colorDefault {
   margin: auto;
-  background-color: rgb(220, 0, 78) !important;
+  background-color: rgb(220, 0, 78);
   margin-bottom: 10px;
 }
 

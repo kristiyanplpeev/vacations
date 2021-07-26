@@ -3,10 +3,14 @@ export type UserInfoActionTypes = {
   payload: { id: string; googleId: string; email: string; firstName: string; lastName: string; picture: string } | null;
 };
 
-export type UserStatusActionTypes = {
+export type IsUserLoggedInActionTypes = {
   type: string;
   payload: boolean;
 };
+
+export type UserActionTypes = UserInfoActionTypes | IsUserLoggedInActionTypes;
+
+export type AppActions = UserActionTypes;
 
 export interface UserInfoReducerState {
   id: string;
@@ -27,6 +31,6 @@ export type UserInfoTypes = {
 };
 
 export interface ApplicationState {
-  userStatusReducer: boolean;
+  isUserLoggedInReducer: boolean;
   userInfoReducer: UserInfoReducerState;
 }

@@ -1,51 +1,73 @@
 import React, { Component, ReactNode } from "react";
 
 import { CircularProgress } from "@material-ui/core";
+import { injectable } from "inversify";
+import { connect } from "react-redux";
 import { RouteComponentProps } from "react-router-dom";
+import { bindActionCreators } from "redux";
+import { ThunkDispatch } from "redux-thunk";
 
-import { BASE_URL } from "common/constants";
-import { extractUser } from "providers/tokenManagment";
-import { logInUser, setLoginStatus } from "store/user/action";
+import AppError from "common/AppError/AppError";
+import { RedirectingInterface, UserServiceInterface } from "inversify/interfaces";
+import { myContainer } from "inversify/inversify.config";
+import { TYPES } from "inversify/types";
+import { startLogInUser, startSetIsUserLoggedIn } from "store/user/action";
+import { AppActions, UserInfoTypes } from "store/user/types";
 
-interface RedirectingProps extends RouteComponentProps {}
+interface RedirectingProps {}
 
 interface RedirectingState {
-  error: boolean;
+  error: boolean | string;
 }
 
-class Redirecting extends Component<RedirectingProps, RedirectingState> {
+type Props = RedirectingProps & RouteComponentProps & LinkDispatchProps & LinkStateProps;
+
+@injectable()
+class Redirecting extends Component<Props, RedirectingState> implements RedirectingInterface {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      error: false,
+    };
+  }
+
+  public usersService = myContainer.get<UserServiceInterface>(TYPES.UserLogger);
+
   componentDidMount = async (): Promise<void> => {
     try {
-      const res = await fetch(`${BASE_URL}auth/users`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const resJSON = await res.json();
-      const userInfo = extractUser(resJSON.access_token);
-      logInUser(userInfo);
-      setLoginStatus(true);
-      localStorage.setItem("token", resJSON.access_token);
+      const userInfo = await this.usersService.logInUserRequest();
+      this.props.logInUser(userInfo);
+      this.props.setIsUserLoggedIn(true);
       this.props.history.push("/");
     } catch (error) {
       this.setState({
-        error: true,
+        error: error.message,
       });
     }
   };
 
-  state = {
-    error: false,
-  };
-
   render(): ReactNode {
     if (this.state.error) {
-      return <div>Error</div>;
+      return <AppError message={this.state.error} />;
     }
     return <CircularProgress />;
   }
 }
 
-export default Redirecting;
+interface LinkStateProps {}
+interface LinkDispatchProps {
+  logInUser: (userInfoData: UserInfoTypes) => void;
+  setIsUserLoggedIn: (newState: boolean) => void;
+}
+
+const mapStateToProps = () => {};
+
+const mapDispatchToProps = (
+  dispatch: ThunkDispatch<any, any, AppActions>,
+  ownProps: RedirectingProps,
+): LinkDispatchProps => ({
+  logInUser: bindActionCreators(startLogInUser, dispatch),
+  setIsUserLoggedIn: bindActionCreators(startSetIsUserLoggedIn, dispatch),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Redirecting);

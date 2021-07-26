@@ -5,7 +5,9 @@ import { Typography } from "@material-ui/core";
 import { Avatar } from "@material-ui/core";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import GoogleButton from "react-google-button";
+
 import "./Login.css";
+import { BASE_URL } from "common/constants";
 
 class Login extends Component {
   render(): ReactNode {
@@ -19,7 +21,7 @@ class Login extends Component {
         </Typography>
         <GoogleButton
           className="login-google-button"
-          onClick={() => window.location.assign("http://localhost:5000/auth/google")}
+          onClick={() => window.location.assign(`${BASE_URL}auth/google`)}
         />
       </div>
     );

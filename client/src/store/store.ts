@@ -1,13 +1,15 @@
-import { combineReducers, createStore } from "redux";
+import { combineReducers, createStore, applyMiddleware, compose } from "redux";
+import thunk, { ThunkMiddleware } from "redux-thunk";
 
-import { userInfoReducer, userStatusReducer } from "./user/reducer";
+import { AppActions } from "store/user/types";
 
-const userReducers = combineReducers({
+import { userInfoReducer, isUserLoggedInReducer } from "./user/reducer";
+
+export const userReducers = combineReducers({
   userInfoReducer,
-  userStatusReducer,
+  isUserLoggedInReducer,
 });
 
-export const store = createStore(
-  userReducers,
-  (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__(),
-);
+export type AppState = ReturnType<typeof userReducers>;
+
+export const store = createStore(userReducers, applyMiddleware(thunk as ThunkMiddleware<AppState, AppActions>));
