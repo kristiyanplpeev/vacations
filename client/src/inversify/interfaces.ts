@@ -4,4 +4,6 @@ export interface UserServiceInterface {
   logInUserRequest(): Promise<UserInfoType>;
 }
 
-export interface RedirectingInterface {}
+export interface RedirectingInterface {
+  componentDidMount(): Promise<void>;
+}

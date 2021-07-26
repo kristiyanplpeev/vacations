@@ -1,20 +1,21 @@
 import React, { Component, ReactNode } from "react";
 
 import { CircularProgress } from "@material-ui/core";
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
 import { connect } from "react-redux";
 import { RouteComponentProps } from "react-router-dom";
 import { bindActionCreators } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 
-import AppError from "common/AppError/AppError";
+import "reflect-metadata";
 import { RedirectingInterface, UserServiceInterface } from "inversify/interfaces";
-import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
 import { startLogInUser, startSetIsUserLoggedIn } from "store/user/action";
 import { AppActions, UserInfoTypes } from "store/user/types";
 
-interface RedirectingProps {}
+interface RedirectingProps {
+  usersService: UserServiceInterface;
+}
 
 interface RedirectingState {
   error: boolean | string;
@@ -24,18 +25,19 @@ type Props = RedirectingProps & RouteComponentProps & LinkDispatchProps & LinkSt
 
 @injectable()
 class Redirecting extends Component<Props, RedirectingState> implements RedirectingInterface {
-  constructor(props: Props) {
+  private userService: UserServiceInterface;
+
+  public constructor(@inject(TYPES.UserLogger) usersService: UserServiceInterface, props: Props) {
     super(props);
     this.state = {
       error: false,
     };
+    this.userService = usersService;
   }
-
-  public usersService = myContainer.get<UserServiceInterface>(TYPES.UserLogger);
 
   componentDidMount = async (): Promise<void> => {
     try {
-      const userInfo = await this.usersService.logInUserRequest();
+      const userInfo = await this.userService.logInUserRequest();
       this.props.logInUser(userInfo);
       this.props.setIsUserLoggedIn(true);
       this.props.history.push("/");
@@ -48,7 +50,7 @@ class Redirecting extends Component<Props, RedirectingState> implements Redirect
 
   render(): ReactNode {
     if (this.state.error) {
-      return <AppError message={this.state.error} />;
+      return <div>Error</div>;
     }
     return <CircularProgress />;
   }

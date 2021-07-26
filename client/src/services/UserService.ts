@@ -12,6 +12,7 @@ class UserService implements UserServiceInterface {
   logInUserRequest = async (): Promise<UserInfoType> => {
     const res = (await axios.get(`${BASE_URL}auth/users`, { withCredentials: true })).data;
     localStorage.setItem("token", res.access_token);
+    console.log("testtest");
     return extractUser(res.access_token);
   };
 }

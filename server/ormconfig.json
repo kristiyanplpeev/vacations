@@ -6,7 +6,7 @@
   "password": "mysecretpassword",
   "database": "vacationdb",
   "entities": [
-    "**/*.entity{.ts,.js}"
+    "/home/kristiyan/Repos/vacations/server/src/config/**/*.entity.{ts,js}"
   ],
   "migrationsTableName": "migration",
   "migrations": [

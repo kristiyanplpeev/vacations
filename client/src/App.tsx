@@ -10,6 +10,7 @@ import Homepage from "components/Homepage/Homepage";
 import PrivateRoute from "providers/PrivateRoute";
 import { ApplicationState, UserInfoReducerState } from "store/user/types";
 
+import "reflect-metadata";
 import Login from "./components/Login/Login";
 import Redirecting from "./components/Login/Redirecting";
 
@@ -36,9 +37,9 @@ class App extends Component<AppProps> {
   }
 }
 
-const mapStateToProps = ({ userStatusReducer, userInfoReducer }: ApplicationState) => {
+const mapStateToProps = ({ isUserLoggedInReducer, userInfoReducer }: ApplicationState) => {
   return {
-    userStatus: userStatusReducer,
+    userStatus: isUserLoggedInReducer,
     userInfo: userInfoReducer,
   };
 };
