@@ -1,9 +1,8 @@
-import React, { Component, ReactNode } from "react";
+import React, { Component } from "react";
 
-import DateFnsUtils from "@date-io/date-fns";
-import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 
+import DatesCalculator from "components/NewPTO/DatesCalculator/DatesCalculator";
 import { HolidaysServiceInterface, NewPTOInterface } from "inversify/interfaces";
 import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
@@ -11,8 +10,8 @@ import { TYPES } from "inversify/types";
 interface NewPTOProps {}
 
 interface NewPTOState {
-  startingDate: MaterialUiPickersDate;
-  endingDate: MaterialUiPickersDate;
+  startingDate: Date;
+  endingDate: Date;
 }
 
 class NewPTO extends Component<NewPTOProps, NewPTOState> implements NewPTOInterface {
@@ -27,54 +26,45 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> implements NewPTOInterf
   public holidaysService = myContainer.get<HolidaysServiceInterface>(TYPES.Holidays);
 
   componentDidUpdate = async (): Promise<void> => {
-    console.log("what is going on");
-    const holidayDaysStatus = await this.holidaysService.getHolidayInfoRequest({
-      startingDate: this.state.startingDate,
-      endingDate: this.state.endingDate,
-    });
-    console.log(holidayDaysStatus);
+    console.log(this.state.startingDate);
+    try {
+      const holidayDaysStatus = await this.holidaysService.getHolidayInfoRequest({
+        startingDate: this.state.startingDate,
+        endingDate: this.state.endingDate,
+      });
+      console.log(holidayDaysStatus);
+    } catch (err) {
+      console.log(err.message);
+    }
   };
 
-  render(): ReactNode {
+  render(): JSX.Element {
     return (
-      <MuiPickersUtilsProvider utils={DateFnsUtils}>
-        <KeyboardDatePicker
-          margin="normal"
-          id="date-picker-dialog"
-          label="Date picker dialog"
-          format="yyyy/MM/dd"
-          value={this.state.startingDate}
-          onChange={(date: MaterialUiPickersDate) => this.setStartingDate(date)}
-          KeyboardButtonProps={{
-            "aria-label": "change date",
-          }}
+      <div>
+        <DatesCalculator
+          startingDate={this.state.startingDate}
+          endingDate={this.state.endingDate}
+          setStartingDate={this.setStartingDate}
+          setEndingDate={this.setEndingDate}
         />
-        <KeyboardDatePicker
-          margin="normal"
-          id="date-picker-dialog"
-          label="Date picker dialog"
-          format="yyyy/MM/dd"
-          value={this.state.endingDate}
-          onChange={(date: MaterialUiPickersDate) => this.setEndingDate(date)}
-          KeyboardButtonProps={{
-            "aria-label": "change date",
-          }}
-        />
-      </MuiPickersUtilsProvider>
+      </div>
     );
   }
 
-  setStartingDate = async (date: MaterialUiPickersDate): Promise<void> => {
-    this.setState({
-      startingDate: date,
-    });
+  setStartingDate = async (date: MaterialUiPickersDate, value: string | null | undefined): Promise<void> => {
+    if (typeof value === "string") {
+      this.setState({
+        startingDate: new Date(value),
+      });
+    }
   };
 
-  setEndingDate = async (date: MaterialUiPickersDate): Promise<void> => {
-    console.log(date);
-    this.setState({
-      endingDate: date,
-    });
+  setEndingDate = async (date: MaterialUiPickersDate, value: string | null | undefined): Promise<void> => {
+    if (typeof value === "string") {
+      this.setState({
+        endingDate: new Date(value),
+      });
+    }
   };
 }
 

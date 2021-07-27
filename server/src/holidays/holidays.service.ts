@@ -111,6 +111,7 @@ export class HolidaysService {
   };
 
   public async calculateDays(holidayPeriod: HolidayPeriodDto): Promise<any> {
+    console.log(holidayPeriod);
     const holidayPeriodAsString = {
       startingDate: holidayPeriod.startingDate.toString(),
       endingDate: holidayPeriod.endingDate.toString(),
