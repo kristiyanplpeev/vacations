@@ -1,7 +1,8 @@
 import React, { Component, ReactNode } from "react";
 
 import { CircularProgress } from "@material-ui/core";
-import { inject, injectable } from "inversify";
+import { injectable } from "inversify";
+import { resolve } from "inversify-react";
 import { connect } from "react-redux";
 import { RouteComponentProps } from "react-router-dom";
 import { bindActionCreators } from "redux";
@@ -13,9 +14,7 @@ import { TYPES } from "inversify/types";
 import { startLogInUser, startSetIsUserLoggedIn } from "store/user/action";
 import { AppActions, UserInfoTypes } from "store/user/types";
 
-interface RedirectingProps {
-  usersService: UserServiceInterface;
-}
+interface RedirectingProps {}
 
 interface RedirectingState {
   error: boolean | string;
@@ -25,19 +24,18 @@ type Props = RedirectingProps & RouteComponentProps & LinkDispatchProps & LinkSt
 
 @injectable()
 class Redirecting extends Component<Props, RedirectingState> implements RedirectingInterface {
-  private userService: UserServiceInterface;
+  @resolve(TYPES.UserLogger) usersService!: UserServiceInterface;
 
-  public constructor(@inject(TYPES.UserLogger) usersService: UserServiceInterface, props: Props) {
+  public constructor(props: Props) {
     super(props);
     this.state = {
       error: false,
     };
-    this.userService = usersService;
   }
 
   componentDidMount = async (): Promise<void> => {
     try {
-      const userInfo = await this.userService.logInUserRequest();
+      const userInfo = await this.usersService.logInUserRequest();
       this.props.logInUser(userInfo);
       this.props.setIsUserLoggedIn(true);
       this.props.history.push("/");
@@ -62,7 +60,7 @@ interface LinkDispatchProps {
   setIsUserLoggedIn: (newState: boolean) => void;
 }
 
-const mapStateToProps = () => {};
+const mapStateToProps = () => ({});
 
 const mapDispatchToProps = (
   dispatch: ThunkDispatch<any, any, AppActions>,

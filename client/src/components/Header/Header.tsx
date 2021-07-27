@@ -16,9 +16,8 @@ interface HeaderState {}
 
 type Props = RouteComponentProps & LinkDispatchProps & LinkStateProps;
 
-class Header extends Component<Props> {
+class Header extends Component<Props, HeaderState> {
   render(): ReactNode {
-    console.log(this.props.isUserLoggedIn);
     if (location.pathname === "/login") return null;
     return (
       <div className="header-root">
