@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { AuthenticationProvider } from './auth';
 import { UserDetails } from '../utils/types';
 import { JwtService } from '@nestjs/jwt';
-import { Token } from 'google/utils/types';
+import { Token } from 'src/google/utils/types';
 
 @Injectable()
 export class GoogleService implements AuthenticationProvider {
@@ -13,15 +13,6 @@ export class GoogleService implements AuthenticationProvider {
     @InjectRepository(User) private userRepo: Repository<User>,
     private jwtService: JwtService,
   ) {}
-  // googleLogin(req) {
-  //   if (!req.user) {
-  //     return 'No user from google';
-  //   }
-  //   console.log('what is dis2')
-  //   return {
-  //     message: 'User information from google',
-  //     user: req.user,
-  //   };
 
   async validateUser(details: UserDetails): Promise<UserDetails> {
     const { email } = details;

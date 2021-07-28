@@ -2,9 +2,9 @@ import { Controller, Get, Req, UseGuards, Redirect } from '@nestjs/common';
 import { GoogleService } from './google.service';
 import { AuthenticatedGuard, GoogleAuthGuard, JwtAuthGuard } from './guards';
 import { Request } from 'express';
-import { UserDetails } from 'utils/types';
+import { UserDetails } from 'src/utils/types';
 import { CLIENT_URL } from '../common/constants';
-import { Token } from 'google/utils/types';
+import { Token } from 'src/google/utils/types';
 
 @Controller('auth')
 export class GoogleController {
@@ -28,10 +28,4 @@ export class GoogleController {
   loggedUserInfo(@Req() req): Token {
     return this.googleService.login(req.user);
   }
-
-  // @UseGuards(JwtAuthGuard)
-  // @Get('vanka')
-  // vankata(@Req() req: Request) {
-  //   return req;
-  // }
 }

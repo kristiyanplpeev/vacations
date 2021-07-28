@@ -2,14 +2,14 @@ import React, { Component, ReactNode } from "react";
 
 import { CircularProgress } from "@material-ui/core";
 import { injectable } from "inversify";
+import { resolve } from "inversify-react";
 import { connect } from "react-redux";
 import { RouteComponentProps } from "react-router-dom";
 import { bindActionCreators } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 
-import AppError from "common/AppError/AppError";
+import "reflect-metadata";
 import { RedirectingInterface, UserServiceInterface } from "inversify/interfaces";
-import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
 import { startLogInUser, startSetIsUserLoggedIn } from "store/user/action";
 import { AppActions, UserInfoTypes } from "store/user/types";
@@ -24,14 +24,14 @@ type Props = RedirectingProps & RouteComponentProps & LinkDispatchProps & LinkSt
 
 @injectable()
 class Redirecting extends Component<Props, RedirectingState> implements RedirectingInterface {
-  constructor(props: Props) {
+  @resolve(TYPES.UserLogger) usersService!: UserServiceInterface;
+
+  public constructor(props: Props) {
     super(props);
     this.state = {
       error: false,
     };
   }
-
-  public usersService = myContainer.get<UserServiceInterface>(TYPES.UserLogger);
 
   componentDidMount = async (): Promise<void> => {
     try {
@@ -48,7 +48,7 @@ class Redirecting extends Component<Props, RedirectingState> implements Redirect
 
   render(): ReactNode {
     if (this.state.error) {
-      return <AppError message={this.state.error} />;
+      return <div>Error</div>;
     }
     return <CircularProgress />;
   }
@@ -60,7 +60,7 @@ interface LinkDispatchProps {
   setIsUserLoggedIn: (newState: boolean) => void;
 }
 
-const mapStateToProps = () => {};
+const mapStateToProps = () => ({});
 
 const mapDispatchToProps = (
   dispatch: ThunkDispatch<any, any, AppActions>,

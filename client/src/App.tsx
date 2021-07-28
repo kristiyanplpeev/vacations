@@ -2,15 +2,18 @@ import React, { Component, ReactNode } from "react";
 
 import "./App.css";
 
+import { Provider } from "inversify-react";
 import { connect } from "react-redux";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 
 import Header from "components/Header/Header";
 import Homepage from "components/Homepage/Homepage";
 import NewPTO from "components/NewPTO/NewPTO";
+import { myContainer } from "inversify/inversify.config";
 import PrivateRoute from "providers/PrivateRoute";
 import { ApplicationState, UserInfoReducerState } from "store/user/types";
 
+import "reflect-metadata";
 import Login from "./components/Login/Login";
 import Redirecting from "./components/Login/Redirecting";
 
@@ -24,14 +27,16 @@ class App extends Component<AppProps> {
     return (
       <div className="App">
         <BrowserRouter>
-          <Header />
-          <Switch>
-            <Redirect path="/" exact to="/home" />
-            <Route path="/login" component={Login} />
-            <Route path="/redirecting" component={Redirecting} />
-            <PrivateRoute path="/home" exact isAuthenticated={this.props.userStatus} component={Homepage} />
-            <PrivateRoute path="/new" exact isAuthenticated={this.props.userStatus} component={NewPTO} />
-          </Switch>
+          <Provider container={myContainer}>
+            <Header />
+            <Switch>
+              <Redirect path="/" exact to="/home" />
+              <Route path="/login" component={Login} />
+              <Route path="/redirecting" component={Redirecting} />
+              <PrivateRoute path="/home" exact isAuthenticated={this.props.userStatus} component={Homepage} />
+              <PrivateRoute path="/new" exact isAuthenticated={this.props.userStatus} component={NewPTO} />
+            </Switch>
+          </Provider>
         </BrowserRouter>
       </div>
     );

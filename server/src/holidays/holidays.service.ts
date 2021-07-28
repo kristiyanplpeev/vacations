@@ -3,7 +3,7 @@ import { Holiday } from '../model/holiday.entity';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HolidayPeriodDto } from './dto/holidays.dto';
-import { HolidayPeriod } from 'holidays/types';
+import { HolidayPeriod } from 'src/holidays/types';
 
 @Injectable()
 export class HolidaysService {

@@ -2,7 +2,7 @@ import { Action, Dispatch } from "redux";
 import { ThunkAction } from "redux-thunk";
 
 import { AppState } from "store/store";
-import { ApplicationState, UserInfoTypes, UserInfoActionTypes, AppActions } from "store/user/types";
+import { ApplicationState, UserInfoTypes, AppActions } from "store/user/types";
 
 export type AppThunk = ThunkAction<void, ApplicationState, null, Action<string>>;
 

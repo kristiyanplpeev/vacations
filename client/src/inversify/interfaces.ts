@@ -8,6 +8,7 @@ export interface HolidaysServiceInterface {
   getHolidayInfoRequest({ startingDate, endingDate }: HolidayInfoType): Promise<HolidayDaysInfoType>;
 }
 
-export interface RedirectingInterface {}
-
 export interface NewPTOInterface {}
+export interface RedirectingInterface {
+  componentDidMount(): Promise<void>;
+}

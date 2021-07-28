@@ -1,4 +1,4 @@
-import { Token } from 'google/utils/types';
+import { Token } from 'src/google/utils/types';
 import { User } from '../model/user.entity';
 import { UserDetails } from '../utils/types';
 
