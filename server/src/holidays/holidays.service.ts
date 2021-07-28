@@ -2,13 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { Holiday } from '../model/holiday.entity';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { HolidayPeriodDto } from './dto/holidays.dto';
-import { HolidayPeriod } from 'src/holidays/types';
+import { HolidayInfoDto, HolidayPeriodDto } from './dto/holidays.dto';
+import { HolidayPeriod, HolidaysDaysStatus } from 'src/holidays/types';
+import { PTO } from '../model/pto.entity';
+import { User } from '../model/user.entity';
 
 @Injectable()
 export class HolidaysService {
   constructor(
-    @InjectRepository(Holiday) private userRepo: Repository<Holiday>,
+    @InjectRepository(Holiday) private holidayRepo: Repository<Holiday>,
+    @InjectRepository(PTO) private PTORepo: Repository<PTO>,
+    @InjectRepository(User) private userRepo: Repository<User>,
   ) {}
 
   getDatesBetweenDates = ({ startingDate, endingDate }: HolidayPeriod) => {
@@ -31,7 +35,7 @@ export class HolidaysService {
   getConstantHolidaysForTheCurrentYear = async (
     holidayPeriod: HolidayPeriod,
   ): Promise<Holiday[]> => {
-    const constantHolidays = await this.userRepo.find({
+    const constantHolidays = await this.holidayRepo.find({
       where: { movable: false },
     });
     const constantHolidaysForCurrentYear = constantHolidays.map((el) => {
@@ -51,7 +55,7 @@ export class HolidaysService {
   getMovableHolidaysForTheCurrentYear = async (
     holidayPeriod: HolidayPeriod,
   ): Promise<Holiday[]> => {
-    const movableHolidays = await this.userRepo.find({
+    const movableHolidays = await this.holidayRepo.find({
       movable: true,
       date: Between(holidayPeriod.startingDate, holidayPeriod.endingDate),
     });
@@ -110,7 +114,9 @@ export class HolidaysService {
     return datesWirhAllHolidaysAndWeekends;
   };
 
-  public async calculateDays(holidayPeriod: HolidayPeriodDto): Promise<any> {
+  public async calculateDays(
+    holidayPeriod: HolidayPeriodDto,
+  ): Promise<HolidaysDaysStatus> {
     console.log(holidayPeriod);
     const holidayPeriodAsString = {
       startingDate: holidayPeriod.startingDate.toString(),
@@ -137,5 +143,93 @@ export class HolidaysService {
       );
 
     return datesWithAllHolidaysAndWeekends;
+  }
+
+  saveHolidayIntoPTO = async (
+    holidayInfo: HolidayInfoDto,
+    user: User,
+  ): Promise<PTO> => {
+    const approversProm = holidayInfo.approvers.map(async (el) => {
+      return await this.userRepo.findOne({ email: el });
+    });
+    const approvers = await Promise.all(approversProm);
+    const employee = this.userRepo.create(user);
+    const newHoliday = this.PTORepo.create({
+      from_date: holidayInfo.startingDate.toString(),
+      to_date: holidayInfo.endingDate.toString(),
+      comment: holidayInfo.comment,
+      status: 'requested',
+      employee,
+      approvers,
+    });
+    return await this.PTORepo.save(newHoliday);
+  };
+
+  validateHolidayPeriod = async (
+    holidayInfo: HolidayInfoDto,
+    user: User,
+  ): Promise<{ message: string } | void> => {
+    if (holidayInfo.startingDate > holidayInfo.endingDate) {
+      return { message: 'The first date must not be after the last date!' };
+    }
+
+    const vacationDays = await this.calculateDays({
+      startingDate: holidayInfo.startingDate,
+      endingDate: holidayInfo.endingDate,
+    });
+
+    let isThereAWorkdayInSubmittedPeriod = false;
+
+    for (let i = 0; i < vacationDays.length; i++) {
+      if (vacationDays[i].status === 'workday') {
+        isThereAWorkdayInSubmittedPeriod = true;
+        break;
+      }
+    }
+
+    if (!isThereAWorkdayInSubmittedPeriod) {
+      return { message: 'There are not working days in the submitted period.' };
+    }
+
+    const employeeHolidays = await this.PTORepo.find({
+      where: [
+        { employee: user.id, status: 'requested' },
+        { employee: user.id, status: 'approved' },
+      ],
+    });
+    console.log(employeeHolidays);
+
+    let overlapIndex = -1;
+
+    for (let i = 0; i < employeeHolidays.length; i++) {
+      if (
+        !(
+          holidayInfo.endingDate.toString() < employeeHolidays[i].from_date ||
+          holidayInfo.startingDate.toString() > employeeHolidays[i].to_date
+        )
+      ) {
+        overlapIndex = i;
+        break;
+      }
+    }
+    if (overlapIndex >= 0) {
+      return {
+        message: `The period you submitted is overlaping with user's vacation from ${employeeHolidays[overlapIndex].from_date} to ${employeeHolidays[overlapIndex].to_date}`,
+      };
+    }
+  };
+
+  public async postHoliday(
+    holidayInfo: HolidayInfoDto,
+    user: User,
+  ): Promise<PTO | string> {
+    const invalidPeriodMessage = await this.validateHolidayPeriod(
+      holidayInfo,
+      user,
+    );
+    if (invalidPeriodMessage) {
+      return invalidPeriodMessage.message;
+    }
+    return await this.saveHolidayIntoPTO(holidayInfo, user);
   }
 }

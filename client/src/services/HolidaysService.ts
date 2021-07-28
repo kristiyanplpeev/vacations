@@ -19,7 +19,7 @@ class HolidaysService implements HolidaysServiceInterface {
       startingDate,
       endingDate,
     };
-    const res = await axios.post(`${BASE_URL}holidays`, data, { headers });
+    const res = await axios.post(`${BASE_URL}holidays/calc`, data, { headers });
     return res.data;
   };
 }

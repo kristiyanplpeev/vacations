@@ -1,8 +1,26 @@
-import { IsDate } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsEmail,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class HolidayPeriodDto {
-  // @Matches(/^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/)
   startingDate: Date;
 
   endingDate: Date;
+}
+
+export class HolidayInfoDto extends HolidayPeriodDto {
+  @IsString()
+  @MaxLength(1000)
+  @MinLength(1)
+  comment: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsEmail({}, { each: true })
+  approvers: string[];
 }
