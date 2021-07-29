@@ -58,6 +58,7 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> implements NewPTOInterf
         holidayDaysStatus: holidayDaysStatus,
       });
     } catch (err) {
+      console.log(err);
       this.setState({
         error: true,
       });

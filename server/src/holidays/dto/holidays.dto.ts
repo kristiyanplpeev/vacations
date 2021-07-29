@@ -1,6 +1,8 @@
+import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsDateString,
   IsEmail,
   IsString,
   MaxLength,
@@ -8,9 +10,11 @@ import {
 } from 'class-validator';
 
 export class HolidayPeriodDto {
-  startingDate: Date;
+  @IsDateString()
+  startingDate: string;
 
-  endingDate: Date;
+  @IsDateString()
+  endingDate: string;
 }
 
 export class HolidayInfoDto extends HolidayPeriodDto {

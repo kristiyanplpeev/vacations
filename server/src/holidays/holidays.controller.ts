@@ -22,8 +22,18 @@ export class HolidaysController {
   @UseGuards(JwtAuthGuard)
   public async calculateHolidayPeriod(
     @Body() body: HolidayPeriodDto,
-  ): Promise<HolidaysDaysStatus> {
-    return await this.holidaysService.calculateDays(body);
+    @Res() res,
+  ): Promise<HolidaysDaysStatus | QueryFail> {
+    const vacationDays = await this.holidaysService.calculateDays(body);
+    if ('message' in vacationDays) {
+      return res.status(400).send({
+        statusCode: 400,
+        message: vacationDays.message,
+        error: 'Bad Request',
+      });
+    } else {
+      return res.status(200).send(vacationDays);
+    }
   }
 
   @Post()
@@ -34,14 +44,14 @@ export class HolidaysController {
     @Res() res,
   ): Promise<PTO | QueryFail> {
     const newHoliday = await this.holidaysService.postHoliday(body, req.user);
-    if (typeof newHoliday === 'string') {
+    if ('message' in newHoliday) {
       return res.status(400).send({
         statusCode: 400,
-        message: newHoliday,
+        message: newHoliday.message,
         error: 'Bad Request',
       });
     } else {
-      return newHoliday;
+      return res.status(200).send(newHoliday);
     }
   }
 }

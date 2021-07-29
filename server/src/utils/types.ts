@@ -16,3 +16,7 @@ export type QueryFail = {
   message: string;
   error: string;
 };
+
+export type ErrorMessage = {
+  message: string;
+};

@@ -6,6 +6,7 @@ import { HolidayInfoDto, HolidayPeriodDto } from './dto/holidays.dto';
 import { HolidayPeriod, HolidaysDaysStatus } from 'src/holidays/types';
 import { PTO } from '../model/pto.entity';
 import { User } from '../model/user.entity';
+import { ErrorMessage } from '../utils/types';
 
 @Injectable()
 export class HolidaysService {
@@ -34,33 +35,41 @@ export class HolidaysService {
 
   getConstantHolidaysForTheCurrentYear = async (
     holidayPeriod: HolidayPeriod,
-  ): Promise<Holiday[]> => {
-    const constantHolidays = await this.holidayRepo.find({
-      where: { movable: false },
-    });
-    const constantHolidaysForCurrentYear = constantHolidays.map((el) => {
-      const databaseDateArr = el.date.split('-');
-      const givenDateArr = holidayPeriod.startingDate.split('-');
-      if (databaseDateArr[0] !== givenDateArr[0]) {
-        return {
-          ...el,
-          date: `${givenDateArr[0]}-${databaseDateArr[1]}-${databaseDateArr[2]}`,
-        };
-      }
-      return el;
-    });
-    return constantHolidaysForCurrentYear;
+  ): Promise<Holiday[] | ErrorMessage> => {
+    try {
+      const constantHolidays = await this.holidayRepo.find({
+        where: { movable: false },
+      });
+      const constantHolidaysForCurrentYear = constantHolidays.map((el) => {
+        const databaseDateArr = el.date.split('-');
+        const givenDateArr = holidayPeriod.startingDate.split('-');
+        if (databaseDateArr[0] !== givenDateArr[0]) {
+          return {
+            ...el,
+            date: `${givenDateArr[0]}-${databaseDateArr[1]}-${databaseDateArr[2]}`,
+          };
+        }
+        return el;
+      });
+      return constantHolidaysForCurrentYear;
+    } catch (error) {
+      return { message: error.message };
+    }
   };
 
   getMovableHolidaysForTheCurrentYear = async (
     holidayPeriod: HolidayPeriod,
-  ): Promise<Holiday[]> => {
-    const movableHolidays = await this.holidayRepo.find({
-      movable: true,
-      date: Between(holidayPeriod.startingDate, holidayPeriod.endingDate),
-    });
+  ): Promise<Holiday[] | ErrorMessage> => {
+    try {
+      const movableHolidays = await this.holidayRepo.find({
+        movable: true,
+        date: Between(holidayPeriod.startingDate, holidayPeriod.endingDate),
+      });
 
-    return movableHolidays;
+      return movableHolidays;
+    } catch (error) {
+      return { message: error.message };
+    }
   };
 
   getDatesWithAllHolidaysAndWeekends = (
@@ -116,20 +125,26 @@ export class HolidaysService {
 
   public async calculateDays(
     holidayPeriod: HolidayPeriodDto,
-  ): Promise<HolidaysDaysStatus> {
-    console.log(holidayPeriod);
+  ): Promise<HolidaysDaysStatus | ErrorMessage> {
     const holidayPeriodAsString = {
       startingDate: holidayPeriod.startingDate.toString(),
       endingDate: holidayPeriod.endingDate.toString(),
     };
-    console.log(holidayPeriodAsString);
     const datesBetween = this.getDatesBetweenDates(holidayPeriodAsString);
     const constantHolidays = await this.getConstantHolidaysForTheCurrentYear(
       holidayPeriodAsString,
     );
+    if (!Array.isArray(constantHolidays) && 'message' in constantHolidays) {
+      return constantHolidays;
+    }
+
     const movableHolidays = await this.getMovableHolidaysForTheCurrentYear(
       holidayPeriodAsString,
     );
+
+    if (!Array.isArray(movableHolidays) && 'message' in movableHolidays) {
+      return movableHolidays;
+    }
     const datesBetweenAsObj = datesBetween.map((el) => ({
       date: el,
       status: 'workday',
@@ -148,27 +163,42 @@ export class HolidaysService {
   saveHolidayIntoPTO = async (
     holidayInfo: HolidayInfoDto,
     user: User,
-  ): Promise<PTO> => {
-    const approversProm = holidayInfo.approvers.map(async (el) => {
-      return await this.userRepo.findOne({ email: el });
-    });
-    const approvers = await Promise.all(approversProm);
-    const employee = this.userRepo.create(user);
-    const newHoliday = this.PTORepo.create({
-      from_date: holidayInfo.startingDate.toString(),
-      to_date: holidayInfo.endingDate.toString(),
-      comment: holidayInfo.comment,
-      status: 'requested',
-      employee,
-      approvers,
-    });
-    return await this.PTORepo.save(newHoliday);
+  ): Promise<PTO | ErrorMessage> => {
+    try {
+      const approversProm = holidayInfo.approvers.map(async (el) => {
+        return await this.userRepo.findOne({ email: el });
+      });
+      const approvers = await Promise.all(approversProm);
+      const approoversValidation = approvers.indexOf(undefined);
+      console.log(approversProm);
+      console.log(approoversValidation);
+      if (approoversValidation >= 0) {
+        return {
+          message: `User with email ${holidayInfo.approvers[approoversValidation]} does not exist.`,
+        };
+      }
+
+      const employee = this.userRepo.create(user);
+      const newHoliday = this.PTORepo.create({
+        from_date: holidayInfo.startingDate.toString(),
+        to_date: holidayInfo.endingDate.toString(),
+        comment: holidayInfo.comment,
+        status: 'requested',
+        employee,
+        approvers,
+      });
+      return await this.PTORepo.save(newHoliday);
+    } catch (error) {
+      return {
+        message: 'Something went wrong with saving PTO into the database.',
+      };
+    }
   };
 
   validateHolidayPeriod = async (
     holidayInfo: HolidayInfoDto,
     user: User,
-  ): Promise<{ message: string } | void> => {
+  ): Promise<ErrorMessage | void> => {
     if (holidayInfo.startingDate > holidayInfo.endingDate) {
       return { message: 'The first date must not be after the last date!' };
     }
@@ -177,6 +207,10 @@ export class HolidaysService {
       startingDate: holidayInfo.startingDate,
       endingDate: holidayInfo.endingDate,
     });
+
+    if ('message' in vacationDays) {
+      return { message: vacationDays.message };
+    }
 
     let isThereAWorkdayInSubmittedPeriod = false;
 
@@ -197,7 +231,6 @@ export class HolidaysService {
         { employee: user.id, status: 'approved' },
       ],
     });
-    console.log(employeeHolidays);
 
     let overlapIndex = -1;
 
@@ -222,13 +255,14 @@ export class HolidaysService {
   public async postHoliday(
     holidayInfo: HolidayInfoDto,
     user: User,
-  ): Promise<PTO | string> {
+  ): Promise<PTO | ErrorMessage> {
     const invalidPeriodMessage = await this.validateHolidayPeriod(
       holidayInfo,
       user,
     );
-    if (invalidPeriodMessage) {
-      return invalidPeriodMessage.message;
+
+    if (invalidPeriodMessage && 'message' in invalidPeriodMessage) {
+      return invalidPeriodMessage;
     }
     return await this.saveHolidayIntoPTO(holidayInfo, user);
   }

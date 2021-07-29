@@ -5,7 +5,7 @@ export interface UserServiceInterface {
 }
 
 export interface HolidaysServiceInterface {
-  getHolidayInfoRequest({ startingDate, endingDate }: HolidayInfoType): Promise<HolidayDaysInfoType>;
+  getHolidayInfoRequest({ startingDate, endingDate }: HolidayInfoType): Promise<HolidayDaysInfoType | null>;
 }
 
 export interface NewPTOInterface {}
