@@ -9,6 +9,7 @@ import { bindActionCreators } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 
 import "reflect-metadata";
+import AppError from "common/AppError/AppError";
 import { RedirectingInterface, UserServiceInterface } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 import { startLogInUser, startSetIsUserLoggedIn } from "store/user/action";
@@ -48,7 +49,7 @@ class Redirecting extends Component<Props, RedirectingState> implements Redirect
 
   render(): ReactNode {
     if (this.state.error) {
-      return <div>Error</div>;
+      return <AppError message={this.state.error} />;
     }
     return <CircularProgress />;
   }

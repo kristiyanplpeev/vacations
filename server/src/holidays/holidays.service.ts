@@ -53,7 +53,7 @@ export class HolidaysService {
       });
       return constantHolidaysForCurrentYear;
     } catch (error) {
-      return { message: error.message };
+      return { message: 'Invalid dates submitted.' };
     }
   };
 
@@ -68,7 +68,7 @@ export class HolidaysService {
 
       return movableHolidays;
     } catch (error) {
-      return { message: error.message };
+      return { message: 'Invalid dates submitted.' };
     }
   };
 
@@ -89,7 +89,6 @@ export class HolidaysService {
       }
       return el;
     });
-
     const datesWithMovableHolidays = datesWithWeekends.reduce((acc, el) => {
       for (let i = 0; i < movableHolidays.length; i++) {
         if (el.date == movableHolidays[i].date) {
@@ -156,7 +155,6 @@ export class HolidaysService {
         movableHolidays,
         constantHolidays,
       );
-
     return datesWithAllHolidaysAndWeekends;
   }
 
@@ -170,8 +168,6 @@ export class HolidaysService {
       });
       const approvers = await Promise.all(approversProm);
       const approoversValidation = approvers.indexOf(undefined);
-      console.log(approversProm);
-      console.log(approoversValidation);
       if (approoversValidation >= 0) {
         return {
           message: `User with email ${holidayInfo.approvers[approoversValidation]} does not exist.`,
@@ -220,7 +216,7 @@ export class HolidaysService {
         break;
       }
     }
-
+    console.log(vacationDays);
     if (!isThereAWorkdayInSubmittedPeriod) {
       return { message: 'There are not working days in the submitted period.' };
     }
@@ -237,8 +233,8 @@ export class HolidaysService {
     for (let i = 0; i < employeeHolidays.length; i++) {
       if (
         !(
-          holidayInfo.endingDate.toString() < employeeHolidays[i].from_date ||
-          holidayInfo.startingDate.toString() > employeeHolidays[i].to_date
+          holidayInfo.endingDate < employeeHolidays[i].from_date ||
+          holidayInfo.startingDate > employeeHolidays[i].to_date
         )
       ) {
         overlapIndex = i;
@@ -247,7 +243,7 @@ export class HolidaysService {
     }
     if (overlapIndex >= 0) {
       return {
-        message: `The period you submitted is overlaping with user's vacation from ${employeeHolidays[overlapIndex].from_date} to ${employeeHolidays[overlapIndex].to_date}`,
+        message: `The period you submitted is overlaping with another vacation from ${employeeHolidays[overlapIndex].from_date} to ${employeeHolidays[overlapIndex].to_date}`,
       };
     }
   };

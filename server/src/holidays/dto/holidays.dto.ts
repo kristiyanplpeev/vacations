@@ -1,4 +1,3 @@
-import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
@@ -10,10 +9,10 @@ import {
 } from 'class-validator';
 
 export class HolidayPeriodDto {
-  @IsDateString()
+  // @IsDateString({}, { message: 'The submitted starting date is invalid.' })
   startingDate: string;
 
-  @IsDateString()
+  // @IsDateString({}, { message: 'The submitted ending date is invalid.' })
   endingDate: string;
 }
 
@@ -24,7 +23,13 @@ export class HolidayInfoDto extends HolidayPeriodDto {
   comment: string;
 
   @IsArray()
-  @ArrayMinSize(1)
-  @IsEmail({}, { each: true })
+  @ArrayMinSize(1, { message: 'You must provide at least one approver' })
+  @IsEmail(
+    {},
+    {
+      each: true,
+      message: 'Approvers must be valid emails separated with comma.',
+    },
+  )
   approvers: string[];
 }

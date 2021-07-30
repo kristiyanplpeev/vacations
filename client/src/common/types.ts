@@ -1,5 +1,3 @@
-import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
-
 export type UserInfoType = {
   id: string;
   googleId: string;
@@ -10,8 +8,22 @@ export type UserInfoType = {
 };
 
 export type HolidayInfoType = {
-  startingDate: MaterialUiPickersDate;
-  endingDate: MaterialUiPickersDate;
+  startingDate: string;
+  endingDate: string;
+};
+
+export type HolidayFullInfoType = {
+  startingDate: string;
+  endingDate: string;
+  comment: string;
+  approvers: string[];
 };
 
 export type HolidayDaysInfoType = { date: string; status: string }[];
+
+export type TextFieldType = {
+  value: string;
+  isValid: boolean;
+  validate: (value: string) => boolean;
+  errorText: string;
+};

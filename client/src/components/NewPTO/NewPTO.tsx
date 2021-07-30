@@ -1,20 +1,27 @@
 import React, { Component } from "react";
 
+import CircularProgress from "@material-ui/core/CircularProgress";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { resolve } from "inversify-react";
 
-import { HolidayDaysInfoType } from "common/types";
+import { ValidationUtil } from "common/emailValidator";
+import { HolidayDaysInfoType, TextFieldType } from "common/types";
+import AdditionalInfo from "components/NewPTO/AdditionalInfo/AdditionalInfo";
 import DatesCalculator from "components/NewPTO/DatesCalculator/DatesCalculator";
 import { HolidaysServiceInterface, NewPTOInterface } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
+import "./NewPTO.css";
 
 interface NewPTOProps {}
 
 interface NewPTOState {
-  startingDate: Date;
-  endingDate: Date;
+  startingDate: string;
+  endingDate: string;
   holidayDaysStatus: HolidayDaysInfoType | null;
+  comment: TextFieldType;
+  approvers: TextFieldType;
   error: boolean;
+  loading: boolean;
 }
 
 class NewPTO extends Component<NewPTOProps, NewPTOState> implements NewPTOInterface {
@@ -23,17 +30,39 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> implements NewPTOInterf
   constructor(props: NewPTOProps) {
     super(props);
     this.state = {
-      startingDate: new Date(),
-      endingDate: new Date(),
+      startingDate: new Date().toISOString().slice(0, 10),
+      endingDate: new Date().toISOString().slice(0, 10),
       holidayDaysStatus: null,
+      loading: false,
+      comment: {
+        value: "PTO",
+        isValid: true,
+        validate: (value) => value.length >= 1 && value.length <= 1000,
+        errorText: "Comment is mandatory.",
+      },
+      approvers: {
+        value: "",
+        isValid: false,
+        validate: (value) =>
+          value.length > 0 &&
+          value
+            .replace(/ /g, "")
+            .split(",")
+            .filter((elem) => elem.length > 0)
+            .every((el) => ValidationUtil.isEmail(el)),
+        errorText: "One or more approvers separated with comma must be provided.",
+      },
       error: false,
     };
   }
 
   render(): JSX.Element {
+    if (this.state.loading) {
+      return <CircularProgress />;
+    }
     return (
-      <div>
-        Add mew Paid Time Off
+      <div className="newpto-container">
+        <h1>Add new Paid Time Off</h1>
         <DatesCalculator
           startingDate={this.state.startingDate}
           endingDate={this.state.endingDate}
@@ -41,14 +70,26 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> implements NewPTOInterf
           setEndingDate={this.setEndingDate}
           holidayDaysStatus={this.state.holidayDaysStatus}
         />
+        <AdditionalInfo
+          startingDate={this.state.startingDate}
+          endingDate={this.state.endingDate}
+          comment={this.state.comment}
+          approvers={this.state.approvers}
+          handleCommentChange={this.handleCommentChange}
+          handleApproversChange={this.handleApproversChange}
+          holidaysService={this.holidaysService}
+        />
       </div>
     );
   }
 
   getHolidayDaysStatus = async (
-    startingDate: Date = this.state.startingDate,
-    endingDate: Date = this.state.endingDate,
+    startingDate: string = this.state.startingDate,
+    endingDate: string = this.state.endingDate,
   ): Promise<void> => {
+    this.setState({
+      loading: true,
+    });
     try {
       const holidayDaysStatus = await this.holidaysService.getHolidayInfoRequest({
         startingDate,
@@ -58,31 +99,77 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> implements NewPTOInterf
         holidayDaysStatus: holidayDaysStatus,
       });
     } catch (err) {
-      console.log(err);
       this.setState({
         error: true,
       });
     }
+    this.setState({
+      loading: false,
+    });
   };
 
   setStartingDate = async (date: MaterialUiPickersDate, value: string | null | undefined): Promise<void> => {
     if (typeof value === "string") {
-      const valueAsDate = new Date(value);
       this.setState({
-        startingDate: valueAsDate,
+        loading: true,
       });
-      await this.getHolidayDaysStatus(valueAsDate);
+      try {
+        value = value.replaceAll("/", "-");
+        this.setState({
+          startingDate: value,
+        });
+        await this.getHolidayDaysStatus(value);
+      } catch (error) {
+        this.setState({
+          error: error.message,
+        });
+      }
+      this.setState({
+        loading: false,
+      });
     }
   };
 
   setEndingDate = async (date: MaterialUiPickersDate, value: string | null | undefined): Promise<void> => {
     if (typeof value === "string") {
-      const valueAsDate = new Date(value);
       this.setState({
-        endingDate: valueAsDate,
+        loading: true,
       });
-      await this.getHolidayDaysStatus(this.state.startingDate, valueAsDate);
+      try {
+        value = value.replaceAll("/", "-");
+        this.setState({
+          endingDate: value,
+        });
+        await this.getHolidayDaysStatus(this.state.startingDate, value);
+      } catch (error) {
+        this.setState({
+          error: error.message,
+        });
+      }
+      this.setState({
+        loading: false,
+      });
     }
+  };
+
+  handleCommentChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    this.setState({
+      comment: {
+        ...this.state.comment,
+        value: event.target.value,
+        isValid: this.state.comment.validate(event.target.value),
+      },
+    });
+  };
+
+  handleApproversChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    this.setState({
+      approvers: {
+        ...this.state.approvers,
+        value: event.target.value,
+        isValid: this.state.approvers.validate(event.target.value),
+      },
+    });
   };
 }
 

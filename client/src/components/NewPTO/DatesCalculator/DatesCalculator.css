@@ -1,0 +1,11 @@
+.datescalculator-table.MuiTableContainer-root {
+    width: 60%
+} 
+
+.datescalculator-datepicker.MuiFormControl-root {
+    margin-top: 35px;
+}
+
+.datescalculator-tablecell.MuiTableCell-root {
+    padding: 10px;
+}

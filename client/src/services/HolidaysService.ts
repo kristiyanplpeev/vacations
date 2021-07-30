@@ -2,7 +2,7 @@ import axios from "axios";
 import { injectable } from "inversify";
 
 import { BASE_URL } from "common/constants";
-import { HolidayInfoType, HolidayDaysInfoType } from "common/types";
+import { HolidayInfoType, HolidayDaysInfoType, HolidayFullInfoType } from "common/types";
 import { HolidaysServiceInterface } from "inversify/interfaces";
 import { getToken } from "providers/tokenManagment";
 import "reflect-metadata";
@@ -13,7 +13,7 @@ class HolidaysService implements HolidaysServiceInterface {
     const headers = {
       "Content-Type": "application/json",
       // eslint-disable-next-line prettier/prettier
-      "Authorization": `Bearer ${getToken()}`,
+      Authorization: `Bearer ${getToken()}`,
     };
     const data = {
       startingDate,
@@ -21,6 +21,34 @@ class HolidaysService implements HolidaysServiceInterface {
     };
     const res = await axios.post(`${BASE_URL}holidays/calc`, data, { headers });
     return res.data;
+  };
+
+  addPTORequest = async ({
+    startingDate,
+    endingDate,
+    comment,
+    approvers,
+  }: HolidayFullInfoType): Promise<void | { warning: string }> => {
+    const headers = {
+      "Content-Type": "application/json",
+      // eslint-disable-next-line prettier/prettier
+      Authorization: `Bearer ${getToken()}`,
+    };
+    const data = {
+      startingDate,
+      endingDate,
+      comment,
+      approvers,
+    };
+    try {
+      await axios.post(`${BASE_URL}holidays`, data, { headers });
+    } catch (error) {
+      if (Array.isArray(error.response.data.message)) {
+        return { warning: error.response.data.message[0] };
+      } else {
+        return { warning: error.response.data.message };
+      }
+    }
   };
 }
 
