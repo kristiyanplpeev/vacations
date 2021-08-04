@@ -216,7 +216,6 @@ export class HolidaysService {
         break;
       }
     }
-    console.log(vacationDays);
     if (!isThereAWorkdayInSubmittedPeriod) {
       return { message: 'There are not working days in the submitted period.' };
     }

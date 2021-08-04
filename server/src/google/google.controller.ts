@@ -1,7 +1,6 @@
 import { Controller, Get, Req, UseGuards, Redirect } from '@nestjs/common';
 import { GoogleService } from './google.service';
-import { AuthenticatedGuard, GoogleAuthGuard, JwtAuthGuard } from './guards';
-import { Request } from 'express';
+import { AuthenticatedGuard, GoogleAuthGuard } from './guards';
 import { UserDetails } from 'src/utils/types';
 import { CLIENT_URL } from '../common/constants';
 import { Token } from 'src/google/utils/types';
