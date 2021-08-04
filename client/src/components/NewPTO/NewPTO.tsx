@@ -77,7 +77,6 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> implements NewPTOInterf
           approvers={this.state.approvers}
           handleCommentChange={this.handleCommentChange}
           handleApproversChange={this.handleApproversChange}
-          holidaysService={this.holidaysService}
         />
       </div>
     );

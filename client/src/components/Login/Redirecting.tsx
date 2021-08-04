@@ -1,6 +1,7 @@
 import React, { Component, ReactNode } from "react";
 
 import { CircularProgress } from "@material-ui/core";
+import Backdrop from "@material-ui/core/Backdrop";
 import { injectable } from "inversify";
 import { resolve } from "inversify-react";
 import { connect } from "react-redux";
@@ -51,7 +52,11 @@ class Redirecting extends Component<Props, RedirectingState> implements Redirect
     if (this.state.error) {
       return <AppError message={this.state.error} />;
     }
-    return <CircularProgress />;
+    return (
+      <Backdrop open>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    );
   }
 }
 

@@ -6,12 +6,14 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import Snackbar from "@material-ui/core/Snackbar";
 import { Alert } from "@material-ui/lab";
+import { resolve } from "inversify-react";
 import { RouteComponentProps, withRouter } from "react-router";
 
 import AppError from "common/AppError/AppError";
 import { TextFieldType } from "common/types";
 import { HolidaysServiceInterface } from "inversify/interfaces";
 import "./AdditionalInfo.css";
+import { TYPES } from "inversify/types";
 
 interface AdditionalInfoState {
   warning: string | null;
@@ -29,10 +31,11 @@ interface AdditionalInfoProps extends RouteComponentProps {
   approvers: TextFieldType;
   handleCommentChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleApproversChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  holidaysService: HolidaysServiceInterface;
 }
 
 class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState> {
+  @resolve(TYPES.Holidays) private holidaysService!: HolidaysServiceInterface;
+
   constructor(props: AdditionalInfoProps) {
     super(props);
     this.state = {
@@ -48,9 +51,6 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
   render(): JSX.Element {
     if (this.state.error) {
       return <AppError message={this.state.error} />;
-    }
-    if (this.state.loading) {
-      return <CircularProgress />;
     }
     return (
       <Grid container spacing={3}>
@@ -84,7 +84,11 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
         </Grid>
         <Grid item xs={6}></Grid>
         <Grid item xs={6}>
-          {this.state.warning && <Alert severity="warning">{this.state.warning}</Alert>}
+          {this.state.warning && (
+            <Alert data-unit-test="warning-message" severity="warning">
+              {this.state.loading ? <CircularProgress /> : this.state.warning}
+            </Alert>
+          )}
         </Grid>
         <Grid item xs={6}></Grid>
         <Grid item xs={6}>
@@ -96,14 +100,20 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
           >
             Cancel
           </Button>
-          <Button className="additionalinfo-buttons" variant="outlined" color="primary" onClick={() => this.addPTO()}>
+          <Button
+            data-unit-test="addPTO-button"
+            className="additionalinfo-buttons"
+            variant="outlined"
+            color="primary"
+            onClick={() => this.addPTO()}
+          >
             Add
           </Button>
         </Grid>
         <Snackbar
           open={this.state.successMessage}
           onClose={() => this.props.history.push("/home")}
-          autoHideDuration={2000}
+          autoHideDuration={1000}
         >
           <Alert onClose={() => this.props.history.push("/home")} severity="success">
             Your PTO has been successfully submitted!
@@ -115,6 +125,9 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
 
   addPTO = async (): Promise<void> => {
     if (!this.areInputsValid()) return;
+    this.setState({
+      loading: true,
+    });
     try {
       const approversArr = this.props.approvers.value
         .replace(/ /g, "")
@@ -127,8 +140,8 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
         comment: this.props.comment.value,
         approvers: approversArr,
       };
-      const warning = await this.props.holidaysService.addPTORequest(holidayInfo);
-      if (warning && "warning" in warning) {
+      const warning = await this.holidaysService.addPTORequest(holidayInfo);
+      if (warning && warning.warning) {
         this.setState({
           warning: warning.warning,
         });
@@ -142,6 +155,9 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
         error: error.message,
       });
     }
+    this.setState({
+      loading: false,
+    });
   };
 
   areInputsValid = (): boolean => {
@@ -167,6 +183,12 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
       this.setState({
         approversInputInvalid: false,
       });
+    }
+    if (this.props.startingDate > this.props.endingDate) {
+      this.setState({
+        warning: "Starting date must not be after ending date",
+      });
+      areInputsValid = false;
     }
     return areInputsValid;
   };
