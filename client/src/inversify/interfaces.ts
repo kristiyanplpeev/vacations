@@ -1,4 +1,11 @@
-import { HolidayInfoType, HolidayDaysInfoType, UserInfoType, HolidayFullInfoType } from "common/types";
+import {
+  HolidayInfoType,
+  HolidayDaysInfoType,
+  UserInfoType,
+  HolidayFullInfoType,
+  ErrorType,
+  UserHolidayType,
+} from "common/types";
 
 export interface UserServiceInterface {
   logInUserRequest(): Promise<UserInfoType>;
@@ -12,6 +19,7 @@ export interface HolidaysServiceInterface {
     comment,
     approvers,
   }: HolidayFullInfoType): Promise<void | { warning: string }>;
+  userPTOsRequest(): Promise<UserHolidayType[]>;
 }
 
 export interface NewPTOInterface {}

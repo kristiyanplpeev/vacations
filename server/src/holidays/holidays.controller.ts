@@ -54,4 +54,19 @@ export class HolidaysController {
       return res.status(200).send(newHoliday);
     }
   }
+
+  @Get('users')
+  @UseGuards(JwtAuthGuard)
+  public async getUserPTOs(@Req() req, @Res() res): Promise<void> {
+    const userPTOs = await this.holidaysService.getUserPTOs(req.user);
+    if (!Array.isArray(userPTOs) && userPTOs.message) {
+      return res.status(400).send({
+        statusCode: 400,
+        message: userPTOs.message,
+        error: 'Bad Request',
+      });
+    } else {
+      return res.status(200).send(userPTOs);
+    }
+  }
 }

@@ -20,3 +20,13 @@ export type QueryFail = {
 export type ErrorMessage = {
   message: string;
 };
+
+export type PTOInfo = {
+  totalDays: number;
+  PTODays: number;
+  from_date: string;
+  to_date: string;
+  comment: string;
+  status: string;
+  id: string;
+};
