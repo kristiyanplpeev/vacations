@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import CircularProgress from "@material-ui/core/CircularProgress";
+import Grid from "@material-ui/core/Grid";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { resolve } from "inversify-react";
 
@@ -57,27 +57,27 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> implements NewPTOInterf
   }
 
   render(): JSX.Element {
-    if (this.state.loading) {
-      return <CircularProgress />;
-    }
     return (
       <div className="newpto-container">
         <h1>Add new Paid Time Off</h1>
-        <DatesCalculator
-          startingDate={this.state.startingDate}
-          endingDate={this.state.endingDate}
-          setStartingDate={this.setStartingDate}
-          setEndingDate={this.setEndingDate}
-          holidayDaysStatus={this.state.holidayDaysStatus}
-        />
-        <AdditionalInfo
-          startingDate={this.state.startingDate}
-          endingDate={this.state.endingDate}
-          comment={this.state.comment}
-          approvers={this.state.approvers}
-          handleCommentChange={this.handleCommentChange}
-          handleApproversChange={this.handleApproversChange}
-        />
+
+        <Grid container spacing={3}>
+          <Grid item xs={6}>
+            <AdditionalInfo
+              startingDate={this.state.startingDate}
+              endingDate={this.state.endingDate}
+              comment={this.state.comment}
+              approvers={this.state.approvers}
+              handleCommentChange={this.handleCommentChange}
+              handleApproversChange={this.handleApproversChange}
+              setStartingDate={this.setStartingDate}
+              setEndingDate={this.setEndingDate}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <DatesCalculator holidayDaysStatus={this.state.holidayDaysStatus} loading={this.state.loading} />
+          </Grid>
+        </Grid>
       </div>
     );
   }

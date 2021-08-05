@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { Component } from "react";
 
-import DateFnsUtils from "@date-io/date-fns";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Popover from "@material-ui/core/Popover";
@@ -13,18 +13,13 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Typography from "@material-ui/core/Typography";
 import InfoIcon from "@material-ui/icons/Info";
-import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
-import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 
 import { HolidayDaysInfoType } from "common/types";
 import "./DatesCalculator.css";
 
 interface DatesCalculatorProps {
-  setStartingDate: (date: MaterialUiPickersDate, value: string | null | undefined) => Promise<void>;
-  setEndingDate: (date: MaterialUiPickersDate, value: string | null | undefined) => Promise<void>;
-  startingDate: string;
-  endingDate: string;
   holidayDaysStatus: HolidayDaysInfoType | null;
+  loading: boolean;
 }
 
 interface DatesCalculatorState {
@@ -71,52 +66,22 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
 
   // eslint-disable-next-line max-lines-per-function
   render(): JSX.Element {
+    if (this.props.loading) {
+      return <CircularProgress />;
+    }
     return (
       <Grid container spacing={3}>
-        <Grid item xs={6}>
-          Details
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <Grid item xs={12}>
-              <KeyboardDatePicker
-                className="datescalculator-datepicker"
-                margin="normal"
-                id="date-picker-dialog"
-                label="From:"
-                format="yyyy/MM/dd"
-                value={this.props.startingDate}
-                onChange={(date: MaterialUiPickersDate, value: string | null | undefined) =>
-                  this.props.setStartingDate(date, value)
-                }
-                KeyboardButtonProps={{
-                  "aria-label": "change date",
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <KeyboardDatePicker
-                className="datescalculator-datepicker"
-                margin="normal"
-                id="date-picker-dialog"
-                label="To:"
-                format="yyyy/MM/dd"
-                value={this.props.endingDate}
-                onChange={(date: MaterialUiPickersDate, value: string | null | undefined) =>
-                  this.props.setEndingDate(date, value)
-                }
-                KeyboardButtonProps={{
-                  "aria-label": "change date",
-                }}
-              />
-            </Grid>
-          </MuiPickersUtilsProvider>
-        </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           {this.props.holidayDaysStatus && (
             <TableContainer className="datescalculator-table" component={Paper}>
               <Table className={"table"} aria-label="simple table">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Summary</TableCell>
+                    <TableCell>
+                      <Typography variant="h5" component="h2">
+                        Summary
+                      </Typography>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

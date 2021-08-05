@@ -1,7 +1,24 @@
-.additionalinfo-textfields {
-    width: 80%;
+.additionalinfo-textfields.MuiFormControl-root {
+  width: 80%;
+  margin: 4% 0px;
 }
 
 .additionalinfo-buttons.MuiButtonBase-root {
-    margin: 0px 5%;
+  margin: 4% 5%;
+}
+
+.additionalInfo-header.MuiTypography-root {
+  width: 80%;
+  margin: 0% 10%;
+  text-align: left;
+}
+
+.additionalinfo-datepicker.MuiFormControl-root {
+  margin: 4% 0px;
+  width: 80%;
+}
+
+.additionalinfo-warning {
+    margin: auto;
+    width: 80%;
 }
