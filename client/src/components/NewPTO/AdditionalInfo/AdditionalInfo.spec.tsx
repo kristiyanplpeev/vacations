@@ -9,6 +9,8 @@ import AdditionalInfo from "components/NewPTO/AdditionalInfo/AdditionalInfo";
 
 const handleCommentsChange = jest.fn();
 const handleApproversChange = jest.fn();
+const setStartingDate = jest.fn();
+const setEndingDate = jest.fn();
 
 const mockedProps = {
   startingDate: "2021-05-21",
@@ -60,6 +62,8 @@ const getComponent = (
         endingDate={endingDate}
         comment={comment}
         approvers={approvers}
+        setStartingDate={setStartingDate}
+        setEndingDate={setEndingDate}
       />
     </BrowserRouter>,
   );

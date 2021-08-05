@@ -130,11 +130,11 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                 />
               </Grid>
               <Grid item xs={12}>
-                {this.state.warning && (
+                {this.state.warning && !this.state.successMessage ? (
                   <Alert className="additionalinfo-warning" data-unit-test="warning-message" severity="warning">
                     {this.state.loading ? <CircularProgress /> : this.state.warning}
                   </Alert>
-                )}
+                ) : null}
               </Grid>
               <Grid item xs={12}>
                 <Button
