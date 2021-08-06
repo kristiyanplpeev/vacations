@@ -2,15 +2,16 @@ import React, { Component } from "react";
 
 import { Button } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import Divider from "@material-ui/core/Divider";
 import Paper from "@material-ui/core/Paper";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
+import TableFooter from "@material-ui/core/TableFooter";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Typography from "@material-ui/core/Typography";
+import SentimentSatisfiedSharpIcon from "@material-ui/icons/SentimentSatisfiedSharp";
 import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
@@ -31,19 +32,6 @@ interface HomepageState {
 
 class Homepage extends Component<HomepageProps, HomepageState> {
   @resolve(TYPES.Holidays) private holidaysService!: HolidaysServiceInterface;
-
-  renderAddPTOButton(): JSX.Element {
-    return (
-      <Button
-        className="homapage-addpto-button"
-        onClick={() => this.props.history.push("/new")}
-        variant="outlined"
-        color="primary"
-      >
-        Add PTO
-      </Button>
-    );
-  }
 
   constructor(props: HomepageProps) {
     super(props);
@@ -88,6 +76,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     });
   }
 
+  // eslint-disable-next-line max-lines-per-function
   render(): JSX.Element {
     if (this.state.error) {
       return <AppError message={this.state.error} />;
@@ -98,29 +87,41 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     return (
       <div className="homepage-root">
         <h1 className="homapage-header">Paid Time Off</h1>
+        {this.state.userFuturePTOs.length === 0 && this.state.userPastPTOs.length === 0
+          ? this.renderNoPTOsView()
+          : this.renderPTOsTable()}
+      </div>
+    );
+  }
+
+  renderAddPTOButton(): JSX.Element {
+    return (
+      <Button
+        className="homapage-addpto-button"
+        onClick={() => this.props.history.push("/new")}
+        variant="outlined"
+        color="primary"
+      >
+        Add PTO
+      </Button>
+    );
+  }
+
+  renderPTOsTable(): JSX.Element {
+    return (
+      <div>
         {this.renderAddPTOButton()}
         <TableContainer component={Paper}>
-          <Table className={"asd"} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>status</TableCell>
-                <TableCell align="left">from</TableCell>
-                <TableCell align="left">to</TableCell>
-                <TableCell align="left">PTO days</TableCell>
-                <TableCell align="left">Total days</TableCell>
-                <TableCell align="left"> </TableCell>
-                <TableCell align="left">comment</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {this.state.userFuturePTOs.map(this.mappingFunc)}
-              <TableRow key="key">
-                <Typography variant="h5" gutterBottom>
-                  -----today-----
-                </Typography>
-              </TableRow>
-              {this.state.userPastPTOs.map(this.mappingFunc)}
-            </TableBody>
+          <Table aria-label="simple table">
+            <TableHead>{this.renderTableHeaderAndFooter()}</TableHead>
+            <TableBody>{this.state.userFuturePTOs.map(this.mappingFunc)}</TableBody>
+          </Table>
+        </TableContainer>
+        {this.renderPTOsSeparator()}
+        <TableContainer component={Paper}>
+          <Table aria-label="simple table">
+            <TableBody>{this.state.userPastPTOs.map(this.mappingFunc)}</TableBody>
+            <TableFooter className="homepage-table-footer">{this.renderTableHeaderAndFooter()}</TableFooter>
           </Table>
         </TableContainer>
         {this.renderAddPTOButton()}
@@ -128,15 +129,84 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
+  renderTableHeaderAndFooter(): JSX.Element {
+    return (
+      <TableRow>
+        <TableCell width="10%">
+          <b>Status</b>
+        </TableCell>
+        <TableCell width="10%" align="left">
+          <b>From</b>
+        </TableCell>
+        <TableCell width="10%" align="left">
+          <b>To</b>
+        </TableCell>
+        <TableCell width="10%" align="left">
+          <b>PTO days</b>
+        </TableCell>
+        <TableCell width="10%" align="left">
+          <b>Total days</b>
+        </TableCell>
+        <TableCell width="5%" align="left"></TableCell>
+        <TableCell width="30%" align="left">
+          <b>Comment</b>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
+  renderPTOsSeparator(): JSX.Element | null {
+    if (this.state.userFuturePTOs.length === 0 || this.state.userPastPTOs.length === 0) return null;
+    return (
+      <div className="or-spacer">
+        <div className="mask"></div>
+        <span>
+          <i>now</i>
+        </span>
+      </div>
+    );
+  }
+
+  renderNoPTOsView(): JSX.Element {
+    return (
+      <div>
+        <Typography variant="h5" gutterBottom>
+          Looks like you need a break <SentimentSatisfiedSharpIcon fontSize="large" />
+        </Typography>
+        <Typography
+          className="homepage-button-text"
+          variant="button"
+          display="block"
+          gutterBottom
+          onClick={() => this.props.history.push("/new")}
+        >
+          Click here to request one
+        </Typography>
+      </div>
+    );
+  }
+
   private mappingFunc = (el: UserHolidayType): JSX.Element => (
-    <TableRow key={el.id}>
-      <TableCell>{el.status}</TableCell>
-      <TableCell align="left">{el.from_date}</TableCell>
-      <TableCell align="left">{el.to_date}</TableCell>
-      <TableCell align="left">{el.PTODays}</TableCell>
-      <TableCell align="left">{el.totalDays}</TableCell>
-      <TableCell align="left">view</TableCell>
-      <TableCell align="left">{el.comment}</TableCell>
+    <TableRow hover key={el.id}>
+      <TableCell width="10%">{el.status}</TableCell>
+      <TableCell width="10%" align="left">
+        {el.from_date}
+      </TableCell>
+      <TableCell width="10%" align="left">
+        {el.to_date}
+      </TableCell>
+      <TableCell width="10%" align="left">
+        {el.PTODays}
+      </TableCell>
+      <TableCell width="10%" align="left">
+        {el.totalDays}
+      </TableCell>
+      <TableCell width="5%" align="left">
+        view
+      </TableCell>
+      <TableCell width="30%" align="left">
+        {el.comment}
+      </TableCell>
     </TableRow>
   );
 }
