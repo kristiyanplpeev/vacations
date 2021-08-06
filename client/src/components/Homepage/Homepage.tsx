@@ -170,18 +170,20 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   renderNoPTOsView(): JSX.Element {
     return (
       <div>
-        <Typography variant="h5" gutterBottom>
-          Looks like you need a break <SentimentSatisfiedSharpIcon fontSize="large" />
-        </Typography>
-        <Typography
+        <div className="homepage-message-wrapper">
+          <Typography className="homepage-message-text" variant="h5" gutterBottom>
+            Looks like you need a break
+          </Typography>
+          <SentimentSatisfiedSharpIcon fontSize="large" />
+        </div>
+        <Button
           className="homepage-button-text"
-          variant="button"
-          display="block"
-          gutterBottom
           onClick={() => this.props.history.push("/new")}
+          variant="outlined"
+          color="primary"
         >
-          Click here to request one
-        </Typography>
+          REQUEST VACATION
+        </Button>
       </div>
     );
   }

@@ -11,6 +11,17 @@
   cursor: pointer;
 }
 
+.homepage-message-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.homepage-message-text.MuiTypography-root {
+  margin-right: 5px;
+  margin-bottom: 2%;
+  line-height: 1.5;
+}
+
 .homapage-addpto-button.MuiButtonBase-root {
   margin: 2% 0%;
   float: left;
