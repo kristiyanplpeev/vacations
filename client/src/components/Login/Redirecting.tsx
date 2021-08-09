@@ -19,7 +19,7 @@ import { AppActions, UserInfoTypes } from "store/user/types";
 interface RedirectingProps {}
 
 interface RedirectingState {
-  error: boolean | string;
+  error: string;
 }
 
 type Props = RedirectingProps & RouteComponentProps & LinkDispatchProps & LinkStateProps;
@@ -31,7 +31,7 @@ class Redirecting extends Component<Props, RedirectingState> implements Redirect
   public constructor(props: Props) {
     super(props);
     this.state = {
-      error: false,
+      error: "",
     };
   }
 

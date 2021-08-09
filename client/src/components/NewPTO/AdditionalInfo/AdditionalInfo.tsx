@@ -16,18 +16,20 @@ import { resolve } from "inversify-react";
 import { RouteComponentProps, withRouter } from "react-router";
 
 import AppError from "common/AppError/AppError";
-import { TextFieldType } from "common/types";
+import { IHolidayFullInfo, TextFieldType } from "common/types";
 import { HolidaysServiceInterface } from "inversify/interfaces";
 import "./AdditionalInfo.css";
 import { TYPES } from "inversify/types";
 
+type OptionalWithNull<T> = T | null | undefined;
+
 interface AdditionalInfoState {
-  warning: string | null;
+  warning: string;
   commentInputInvalid: boolean;
   approversInputInvalid: boolean;
   successMessage: boolean;
   loading: boolean;
-  error: boolean | string;
+  error: string;
 }
 
 interface AdditionalInfoProps extends RouteComponentProps {
@@ -37,8 +39,8 @@ interface AdditionalInfoProps extends RouteComponentProps {
   approvers: TextFieldType;
   handleCommentChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleApproversChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  setStartingDate: (date: MaterialUiPickersDate, value: string | null | undefined) => Promise<void>;
-  setEndingDate: (date: MaterialUiPickersDate, value: string | null | undefined) => Promise<void>;
+  setStartingDate: (date: MaterialUiPickersDate, value: OptionalWithNull<string>) => Promise<void>;
+  setEndingDate: (date: MaterialUiPickersDate, value: OptionalWithNull<string>) => Promise<void>;
 }
 
 class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState> {
@@ -47,12 +49,12 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
   constructor(props: AdditionalInfoProps) {
     super(props);
     this.state = {
-      warning: null,
+      warning: "",
       commentInputInvalid: false,
       approversInputInvalid: false,
       successMessage: false,
       loading: false,
-      error: false,
+      error: "",
     };
   }
   // eslint-disable-next-line max-lines-per-function
@@ -65,19 +67,19 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
         <Grid item xs={12}>
           <Card>
             <CardContent>
-              <Typography className="additionalInfo-header" variant="h5" component="h2">
+              <Typography className="additionalInfo-header additionalinfo-card-content" variant="h5" component="h2">
                 Details
               </Typography>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <Grid item xs={12}>
                   <KeyboardDatePicker
-                    className="additionalinfo-datepicker"
+                    className="additionalinfo-datepicker additionalinfo-card-content"
                     margin="normal"
                     id="date-picker-dialog"
                     label="From:"
                     format="yyyy/MM/dd"
                     value={this.props.startingDate}
-                    onChange={(date: MaterialUiPickersDate, value: string | null | undefined) =>
+                    onChange={(date: MaterialUiPickersDate, value: OptionalWithNull<string>) =>
                       this.props.setStartingDate(date, value)
                     }
                     KeyboardButtonProps={{
@@ -87,13 +89,13 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                 </Grid>
                 <Grid item xs={12}>
                   <KeyboardDatePicker
-                    className="additionalinfo-datepicker"
+                    className="additionalinfo-datepicker additionalinfo-card-content"
                     margin="normal"
                     id="date-picker-dialog"
                     label="To:"
                     format="yyyy/MM/dd"
                     value={this.props.endingDate}
-                    onChange={(date: MaterialUiPickersDate, value: string | null | undefined) =>
+                    onChange={(date: MaterialUiPickersDate, value: OptionalWithNull<string>) =>
                       this.props.setEndingDate(date, value)
                     }
                     KeyboardButtonProps={{
@@ -104,7 +106,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
               </MuiPickersUtilsProvider>
               <Grid item xs={12}>
                 <TextField
-                  className="additionalinfo-textfields"
+                  className="additionalinfo-textfields additionalinfo-card-content"
                   error={this.state.commentInputInvalid}
                   id="outlined-multiline-static"
                   label="Comments"
@@ -117,7 +119,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
               </Grid>
               <Grid item xs={12}>
                 <TextField
-                  className="additionalinfo-textfields"
+                  className="additionalinfo-textfields additionalinfo-card-content"
                   error={this.state.approversInputInvalid}
                   id="outlined-multiline-static"
                   label="Approvers"
@@ -131,7 +133,11 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
               </Grid>
               <Grid item xs={12}>
                 {this.state.warning && !this.state.successMessage ? (
-                  <Alert className="additionalinfo-warning" data-unit-test="warning-message" severity="warning">
+                  <Alert
+                    className="additionalinfo-warning additionalinfo-card-content"
+                    data-unit-test="warning-message"
+                    severity="warning"
+                  >
                     {this.state.loading ? <CircularProgress /> : this.state.warning}
                   </Alert>
                 ) : null}
@@ -150,7 +156,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                   className="additionalinfo-buttons"
                   variant="outlined"
                   color="primary"
-                  onClick={() => this.addPTO()}
+                  onClick={this.addPTO}
                 >
                   Add
                 </Button>
@@ -177,17 +183,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
       loading: true,
     });
     try {
-      const approversArr = this.props.approvers.value
-        .replace(/ /g, "")
-        .split(",")
-        .filter((elem) => elem.length > 0);
-
-      const holidayInfo = {
-        startingDate: this.props.startingDate,
-        endingDate: this.props.endingDate,
-        comment: this.props.comment.value,
-        approvers: approversArr,
-      };
+      const holidayInfo = this.formatHolidayInfoAsObj();
       const warning = await this.holidaysService.addPTORequest(holidayInfo);
       if (warning && warning.warning) {
         this.setState({
@@ -207,6 +203,20 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
       loading: false,
     });
   };
+
+  private formatHolidayInfoAsObj(): IHolidayFullInfo {
+    const approversArr = this.props.approvers.value
+      .replace(/ /g, "")
+      .split(",")
+      .filter((elem) => elem.length > 0);
+
+    return {
+      startingDate: this.props.startingDate,
+      endingDate: this.props.endingDate,
+      comment: this.props.comment.value,
+      approvers: approversArr,
+    };
+  }
 
   areInputsValid = (): boolean => {
     let areInputsValid = true;

@@ -1,5 +1,8 @@
-.additionalinfo-textfields.MuiFormControl-root {
+.additionalinfo-card-content {
   width: 80%;
+}
+
+.additionalinfo-textfields.MuiFormControl-root {
   margin: 4% 0px;
 }
 
@@ -8,17 +11,14 @@
 }
 
 .additionalInfo-header.MuiTypography-root {
-  width: 80%;
   margin: 0% 10%;
   text-align: left;
 }
 
 .additionalinfo-datepicker.MuiFormControl-root {
   margin: 4% 0px;
-  width: 80%;
 }
 
 .additionalinfo-warning {
-    margin: auto;
-    width: 80%;
+  margin: auto;
 }
