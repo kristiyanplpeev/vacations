@@ -182,16 +182,16 @@ describe('HolidaysService', () => {
   ];
 
   const mockHolidaysRepository = {
-    find: jest.fn((something) => Promise.resolve(constantHolidays)),
+    find: jest.fn(() => Promise.resolve(constantHolidays)),
   };
   const mockPTORepository = {
-    save: jest.fn((something) => Promise.resolve(mockSavedHoliday)),
-    create: jest.fn((something) => Promise.resolve(undefined)),
-    find: jest.fn((something) => Promise.resolve(mockEmployeeHolidays)),
+    save: jest.fn(() => Promise.resolve(mockSavedHoliday)),
+    create: jest.fn(() => Promise.resolve(undefined)),
+    find: jest.fn(() => Promise.resolve(mockEmployeeHolidays)),
   };
   const mockUserRepository = {
-    findOne: jest.fn((something) => Promise.resolve(mockApprovers)),
-    create: jest.fn((something) => Promise.resolve(undefined)),
+    findOne: jest.fn(() => Promise.resolve(mockApprovers)),
+    create: jest.fn(() => Promise.resolve(undefined)),
   };
 
   beforeEach(async () => {
@@ -310,7 +310,7 @@ describe('HolidaysService', () => {
     });
   });
   describe('validateHolidayPeriod', () => {
-    it('should return error message', async () => {
+    it('should throw an error when starting date is before ending date', async () => {
       const dto = {
         startingDate: '2021-08-12',
         endingDate: '2021-08-11',
@@ -318,13 +318,11 @@ describe('HolidaysService', () => {
         approvers: ['kristiyan.peev@atscale.com'],
       };
       const spy = jest.spyOn(service, 'validateHolidayPeriod');
-      const result = await service.validateHolidayPeriod(dto, mockedUser);
+      const result = service.validateHolidayPeriod(dto, mockedUser);
       expect(spy).toHaveBeenCalled();
-      expect(result).toEqual({
-        message: 'The first date must not be after the last date!',
-      });
+      await expect(result).rejects.toThrow();
     });
-    it('should return error message', async () => {
+    it('should throw an error when only non-working days are passed', async () => {
       const dto = {
         startingDate: '2021-08-14',
         endingDate: '2021-08-15',
@@ -332,11 +330,9 @@ describe('HolidaysService', () => {
         approvers: ['kristiyan.peev@atscale.com'],
       };
       const spy = jest.spyOn(service, 'validateHolidayPeriod');
-      const result = await service.validateHolidayPeriod(dto, mockedUser);
+      const result = service.validateHolidayPeriod(dto, mockedUser);
       expect(spy).toHaveBeenCalled();
-      expect(result).toEqual({
-        message: 'There are not working days in the submitted period.',
-      });
+      await expect(result).rejects.toThrow();
     });
     it('should return nothing when data is valid', async () => {
       const dto = {

@@ -18,7 +18,7 @@ import { HolidayDaysInfoType } from "common/types";
 import "./DatesCalculator.css";
 
 type calcVacation = {
-  nonWorkingDays: string[];
+  nonWorkingDays: Array<string>;
   numberOfNonWorkingDays: number;
   totalVacationDays: number;
   numberOfWorkingDays: number;

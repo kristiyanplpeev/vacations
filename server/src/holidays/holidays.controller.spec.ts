@@ -56,18 +56,14 @@ describe('HolidaysController', () => {
   const mockHolidaysService = {
     calculateDays: jest.fn((body) => {
       if (body.startingDate > body.endingDate) {
-        return {
-          message: 'There is an error.',
-        };
+        throw new Error('There is an error.');
       } else {
         return mockHolidayPeriod;
       }
     }),
     postHoliday: jest.fn((body) => {
       if (body.startingDate > body.endingDate) {
-        return {
-          message: 'There is an error.',
-        };
+        throw new Error('There is an error.');
       } else {
         return mockHolidayInfoResponse;
       }

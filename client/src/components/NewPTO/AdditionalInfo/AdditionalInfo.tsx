@@ -79,9 +79,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                     label="From:"
                     format="yyyy/MM/dd"
                     value={this.props.startingDate}
-                    onChange={(date: MaterialUiPickersDate, value: OptionalWithNull<string>) =>
-                      this.props.setStartingDate(date, value)
-                    }
+                    onChange={this.props.setStartingDate}
                     KeyboardButtonProps={{
                       "aria-label": "change date",
                     }}
@@ -95,9 +93,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                     label="To:"
                     format="yyyy/MM/dd"
                     value={this.props.endingDate}
-                    onChange={(date: MaterialUiPickersDate, value: OptionalWithNull<string>) =>
-                      this.props.setEndingDate(date, value)
-                    }
+                    onChange={this.props.setEndingDate}
                     KeyboardButtonProps={{
                       "aria-label": "change date",
                     }}

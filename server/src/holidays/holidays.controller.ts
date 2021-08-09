@@ -24,15 +24,15 @@ export class HolidaysController {
     @Body() body: HolidayPeriodDto,
     @Res() res,
   ): Promise<HolidaysDaysStatus | QueryFail> {
-    const vacationDays = await this.holidaysService.calculateDays(body);
-    if ('message' in vacationDays) {
+    try {
+      const vacationDays = await this.holidaysService.calculateDays(body);
+      return res.status(200).send(vacationDays);
+    } catch (error) {
       return res.status(400).send({
         statusCode: 400,
-        message: vacationDays.message,
+        message: error.message,
         error: 'Bad Request',
       });
-    } else {
-      return res.status(200).send(vacationDays);
     }
   }
 
@@ -43,15 +43,15 @@ export class HolidaysController {
     @Req() req,
     @Res() res,
   ): Promise<PTO | QueryFail> {
-    const newHoliday = await this.holidaysService.postHoliday(body, req.user);
-    if ('message' in newHoliday) {
+    try {
+      const newHoliday = await this.holidaysService.postHoliday(body, req.user);
+      return res.status(200).send(newHoliday);
+    } catch (error) {
       return res.status(400).send({
         statusCode: 400,
-        message: newHoliday.message,
+        message: error.message,
         error: 'Bad Request',
       });
-    } else {
-      return res.status(200).send(newHoliday);
     }
   }
 }
