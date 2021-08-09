@@ -46,8 +46,8 @@ const mockedPropsInvalid = {
   },
 };
 
-const warningMessageUnit = `[data-unit-test="warning-message"]`;
-const addPTOUnit = `[data-unit-test="addPTO-button"]`;
+const addPTOButtonDataUnitTest = "addPTO-button";
+const warningMessageDataUnitTest = "warning-message";
 
 const getSelector = (value: string) => `[data-unit-test="${value}"]`;
 
@@ -84,11 +84,11 @@ describe("AdditionalInfo", () => {
       mockedProps.comment,
       mockedProps.approvers,
     );
-    const addPTOButton = component.find(getSelector("addPTO-button")).find(Button);
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
 
     // act
     addPTOButton.simulate("click");
-    const warning = component.find(getSelector("warning-message"));
+    const warning = component.find(getSelector(warningMessageDataUnitTest));
 
     // assert
     expect(warning).toHaveLength(5);
@@ -101,11 +101,11 @@ describe("AdditionalInfo", () => {
       mockedPropsInvalid.comment,
       mockedProps.approvers,
     );
-    const addPTOButton = component.find(addPTOUnit).find(Button);
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
 
     // act
     addPTOButton.simulate("click");
-    const warning = component.find(warningMessageUnit);
+    const warning = component.find(getSelector(warningMessageDataUnitTest));
 
     // assert
     expect(warning).toHaveLength(5);
@@ -118,11 +118,11 @@ describe("AdditionalInfo", () => {
       mockedProps.comment,
       mockedPropsInvalid.approvers,
     );
-    const addPTOButton = component.find(addPTOUnit).find(Button);
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
 
     // act
     addPTOButton.simulate("click");
-    const warning = component.find(warningMessageUnit);
+    const warning = component.find(getSelector(warningMessageDataUnitTest));
 
     // assert
     expect(warning).toHaveLength(5);
@@ -135,11 +135,11 @@ describe("AdditionalInfo", () => {
       mockedProps.comment,
       mockedProps.approvers,
     );
-    const addPTOButton = component.find(addPTOUnit).find(Button);
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
 
     // act
     addPTOButton.simulate("click");
-    const warning = component.find(warningMessageUnit);
+    const warning = component.find(getSelector(warningMessageDataUnitTest));
 
     // assert
     expect(warning).toHaveLength(0);
