@@ -49,22 +49,11 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       loading: true,
     });
     try {
-      const userPTOs = await this.holidaysService.userPTOsRequest();
-      const sortingFunc = (a: UserHolidayType, b: UserHolidayType) => {
-        const aa = a.from_date.split("-").join();
-        const bb = b.from_date.split("-").join();
-        return aa > bb ? -1 : aa < bb ? 1 : 0;
-      };
-      const userFuturePTOs = userPTOs
-        .filter((el) => el.from_date > new Date().toISOString().slice(0, 10))
-        .sort(sortingFunc);
-      const userPastPTOs = userPTOs
-        .filter((el) => el.from_date <= new Date().toISOString().slice(0, 10))
-        .sort(sortingFunc);
+      const userPTOs = await this.getUserPTOs();
 
       this.setState({
-        userFuturePTOs,
-        userPastPTOs,
+        userFuturePTOs: userPTOs.userFuturePTOs,
+        userPastPTOs: userPTOs.userPastPTOs,
       });
     } catch (error) {
       this.setState({
@@ -186,6 +175,26 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         </Button>
       </div>
     );
+  }
+
+  private async getUserPTOs() {
+    const userPTOs = await this.holidaysService.userPTOsRequest();
+    const sortingFunc = (a: UserHolidayType, b: UserHolidayType) => {
+      const aa = a.from_date.split("-").join();
+      const bb = b.from_date.split("-").join();
+      return aa > bb ? -1 : aa < bb ? 1 : 0;
+    };
+    const userFuturePTOs = userPTOs
+      .filter((el) => el.from_date > new Date().toISOString().slice(0, 10))
+      .sort(sortingFunc);
+    const userPastPTOs = userPTOs
+      .filter((el) => el.from_date <= new Date().toISOString().slice(0, 10))
+      .sort(sortingFunc);
+
+    return {
+      userFuturePTOs,
+      userPastPTOs,
+    };
   }
 
   private mappingFunc = (el: UserHolidayType): JSX.Element => (
