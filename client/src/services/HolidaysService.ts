@@ -2,14 +2,14 @@ import axios from "axios";
 import { injectable } from "inversify";
 
 import { BASE_URL } from "common/constants";
-import { HolidayInfoType, HolidayDaysInfoType, HolidayFullInfoType, UserHolidayType, ErrorType } from "common/types";
+import { IHolidayInfo, HolidayDaysInfoType, IHolidayFullInfo, UserHolidayType } from "common/types";
 import { HolidaysServiceInterface } from "inversify/interfaces";
 import { getToken } from "providers/tokenManagment";
 import "reflect-metadata";
 
 @injectable()
 class HolidaysService implements HolidaysServiceInterface {
-  getHolidayInfoRequest = async ({ startingDate, endingDate }: HolidayInfoType): Promise<HolidayDaysInfoType> => {
+  getHolidayInfoRequest = async ({ startingDate, endingDate }: IHolidayInfo): Promise<HolidayDaysInfoType> => {
     const headers = {
       "Content-Type": "application/json",
       // eslint-disable-next-line prettier/prettier
@@ -28,7 +28,7 @@ class HolidaysService implements HolidaysServiceInterface {
     endingDate,
     comment,
     approvers,
-  }: HolidayFullInfoType): Promise<void | { warning: string }> => {
+  }: IHolidayFullInfo): Promise<void | { warning: string }> => {
     const headers = {
       "Content-Type": "application/json",
       // eslint-disable-next-line prettier/prettier

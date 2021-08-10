@@ -46,6 +46,11 @@ const mockedPropsInvalid = {
   },
 };
 
+const addPTOButtonDataUnitTest = "addPTO-button";
+const warningMessageDataUnitTest = "warning-message";
+
+const getSelector = (value: string) => `[data-unit-test="${value}"]`;
+
 const getComponent = (
   startingDate: string,
   endingDate: string,
@@ -72,51 +77,71 @@ const getComponent = (
 // eslint-disable-next-line max-lines-per-function
 describe("AdditionalInfo", () => {
   it("Should render warning after clicking Add button with invalid PTO period", () => {
+    // arrange
     const component = getComponent(
       mockedPropsInvalid.startingDate,
       mockedPropsInvalid.endingDate,
       mockedProps.comment,
       mockedProps.approvers,
     );
-    const addPTOButton = component.find(`[data-unit-test="addPTO-button"]`).find(Button);
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
+
+    // act
     addPTOButton.simulate("click");
-    const warning = component.find(`[data-unit-test="warning-message"]`);
+    const warning = component.find(getSelector(warningMessageDataUnitTest));
+
+    // assert
     expect(warning).toHaveLength(5);
   });
   it("Should render warning after clicking Add button with invalid PTO comment", () => {
+    // arrange
     const component = getComponent(
       mockedProps.startingDate,
       mockedProps.endingDate,
       mockedPropsInvalid.comment,
       mockedProps.approvers,
     );
-    const addPTOButton = component.find(`[data-unit-test="addPTO-button"]`).find(Button);
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
+
+    // act
     addPTOButton.simulate("click");
-    const warning = component.find(`[data-unit-test="warning-message"]`);
+    const warning = component.find(getSelector(warningMessageDataUnitTest));
+
+    // assert
     expect(warning).toHaveLength(5);
   });
   it("Should render warning after clicking Add button with invalid PTO approvers", () => {
+    // arrange
     const component = getComponent(
       mockedProps.startingDate,
       mockedProps.endingDate,
       mockedProps.comment,
       mockedPropsInvalid.approvers,
     );
-    const addPTOButton = component.find(`[data-unit-test="addPTO-button"]`).find(Button);
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
+
+    // act
     addPTOButton.simulate("click");
-    const warning = component.find(`[data-unit-test="warning-message"]`);
+    const warning = component.find(getSelector(warningMessageDataUnitTest));
+
+    // assert
     expect(warning).toHaveLength(5);
   });
   it("Should not render warning after clicking Add button", () => {
+    // arrange
     const component = getComponent(
       mockedProps.startingDate,
       mockedProps.endingDate,
       mockedProps.comment,
       mockedProps.approvers,
     );
-    const addPTOButton = component.find(`[data-unit-test="addPTO-button"]`).find(Button);
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
+
+    // act
     addPTOButton.simulate("click");
-    const warning = component.find(`[data-unit-test="warning-message"]`);
+    const warning = component.find(getSelector(warningMessageDataUnitTest));
+
+    // assert
     expect(warning).toHaveLength(0);
   });
 });

@@ -25,7 +25,7 @@ interface HomepageProps extends RouteComponentProps {}
 
 interface HomepageState {
   loading: boolean;
-  error: boolean;
+  error: string;
   userPastPTOs: UserHolidayType[];
   userFuturePTOs: UserHolidayType[];
 }
@@ -37,7 +37,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     super(props);
     this.state = {
       loading: false,
-      error: false,
+      error: "",
       userPastPTOs: [],
       userFuturePTOs: [],
     };
@@ -68,7 +68,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       });
     } catch (error) {
       this.setState({
-        error: true,
+        error: error.message,
       });
     }
     this.setState({

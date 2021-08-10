@@ -24,15 +24,15 @@ export class HolidaysController {
     @Body() body: HolidayPeriodDto,
     @Res() res,
   ): Promise<HolidaysDaysStatus | QueryFail> {
-    const vacationDays = await this.holidaysService.calculateDays(body);
-    if ('message' in vacationDays) {
+    try {
+      const vacationDays = await this.holidaysService.calculateDays(body);
+      return res.status(200).send(vacationDays);
+    } catch (error) {
       return res.status(400).send({
         statusCode: 400,
-        message: vacationDays.message,
+        message: error.message,
         error: 'Bad Request',
       });
-    } else {
-      return res.status(200).send(vacationDays);
     }
   }
 
@@ -43,30 +43,30 @@ export class HolidaysController {
     @Req() req,
     @Res() res,
   ): Promise<PTO | QueryFail> {
-    const newHoliday = await this.holidaysService.postHoliday(body, req.user);
-    if ('message' in newHoliday) {
+    try {
+      const newHoliday = await this.holidaysService.postHoliday(body, req.user);
+      return res.status(200).send(newHoliday);
+    } catch (error) {
       return res.status(400).send({
         statusCode: 400,
-        message: newHoliday.message,
+        message: error.message,
         error: 'Bad Request',
       });
-    } else {
-      return res.status(200).send(newHoliday);
     }
   }
 
   @Get('users')
   @UseGuards(JwtAuthGuard)
   public async getUserPTOs(@Req() req, @Res() res): Promise<void> {
-    const userPTOs = await this.holidaysService.getUserPTOs(req.user);
-    if (!Array.isArray(userPTOs) && userPTOs.message) {
+    try {
+      const userPTOs = await this.holidaysService.getUserPTOs(req.user);
+      return res.status(200).send(userPTOs);
+    } catch (error) {
       return res.status(400).send({
         statusCode: 400,
-        message: userPTOs.message,
+        message: error.message,
         error: 'Bad Request',
       });
-    } else {
-      return res.status(200).send(userPTOs);
     }
   }
 }

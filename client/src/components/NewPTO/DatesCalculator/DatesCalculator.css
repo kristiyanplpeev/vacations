@@ -5,3 +5,11 @@
 .datescalculator-tablecell.MuiTableCell-root {
     padding: 10px;
 }
+
+.datescalculator-popover-text {
+    white-space: pre-wrap;
+}
+
+.datescalculator-popover {
+    pointer-events: none;
+}

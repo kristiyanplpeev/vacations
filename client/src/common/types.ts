@@ -7,17 +7,15 @@ export type UserInfoType = {
   picture: string;
 };
 
-export type HolidayInfoType = {
+export interface IHolidayInfo {
   startingDate: string;
   endingDate: string;
-};
+}
 
-export type HolidayFullInfoType = {
-  startingDate: string;
-  endingDate: string;
+export interface IHolidayFullInfo extends IHolidayInfo {
   comment: string;
   approvers: string[];
-};
+}
 
 export type HolidayDaysInfoType = { date: string; status: string }[];
 

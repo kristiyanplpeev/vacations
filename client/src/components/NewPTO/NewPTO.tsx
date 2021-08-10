@@ -17,7 +17,7 @@ interface NewPTOProps {}
 interface NewPTOState {
   startingDate: string;
   endingDate: string;
-  holidayDaysStatus: HolidayDaysInfoType | null;
+  holidayDaysStatus: HolidayDaysInfoType;
   comment: TextFieldType;
   approvers: TextFieldType;
   error: boolean;
@@ -32,7 +32,7 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> implements NewPTOInterf
     this.state = {
       startingDate: new Date().toISOString().slice(0, 10),
       endingDate: new Date().toISOString().slice(0, 10),
-      holidayDaysStatus: null,
+      holidayDaysStatus: [],
       loading: false,
       comment: {
         value: "PTO",

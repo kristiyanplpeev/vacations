@@ -35,7 +35,7 @@ export class HolidaysService {
 
   getConstantHolidaysForTheCurrentYear = async (
     holidayPeriod: HolidayPeriod,
-  ): Promise<Holiday[] | ErrorMessage> => {
+  ): Promise<Holiday[]> => {
     try {
       const constantHolidays = await this.holidayRepo.find({
         where: { movable: false },
@@ -53,13 +53,13 @@ export class HolidaysService {
       });
       return constantHolidaysForCurrentYear;
     } catch (error) {
-      return { message: 'Invalid dates submitted.' };
+      throw new Error('Invalid dates submitted.');
     }
   };
 
   getMovableHolidaysForTheCurrentYear = async (
     holidayPeriod: HolidayPeriod,
-  ): Promise<Holiday[] | ErrorMessage> => {
+  ): Promise<Array<Holiday>> => {
     try {
       const movableHolidays = await this.holidayRepo.find({
         movable: true,
@@ -68,17 +68,17 @@ export class HolidaysService {
 
       return movableHolidays;
     } catch (error) {
-      return { message: 'Invalid dates submitted.' };
+      throw new Error('Invalid dates submitted.');
     }
   };
 
   getDatesWithAllHolidaysAndWeekends = (
-    datesBetweenAsObj: {
+    datesBetweenAsObj: Array<{
       date: string;
       status: string;
-    }[],
-    movableHolidays: Holiday[],
-    constantHolidays: Holiday[],
+    }>,
+    movableHolidays: Array<Holiday>,
+    constantHolidays: Array<Holiday>,
   ): {
     date: string;
     status: string;
@@ -124,44 +124,42 @@ export class HolidaysService {
 
   public async calculateDays(
     holidayPeriod: HolidayPeriodDto,
-  ): Promise<HolidaysDaysStatus | ErrorMessage> {
-    const holidayPeriodAsString = {
-      startingDate: holidayPeriod.startingDate.toString(),
-      endingDate: holidayPeriod.endingDate.toString(),
-    };
-    const datesBetween = this.getDatesBetweenDates(holidayPeriodAsString);
-    const constantHolidays = await this.getConstantHolidaysForTheCurrentYear(
-      holidayPeriodAsString,
-    );
-    if (!Array.isArray(constantHolidays) && 'message' in constantHolidays) {
-      return constantHolidays;
-    }
-
-    const movableHolidays = await this.getMovableHolidaysForTheCurrentYear(
-      holidayPeriodAsString,
-    );
-
-    if (!Array.isArray(movableHolidays) && 'message' in movableHolidays) {
-      return movableHolidays;
-    }
-    const datesBetweenAsObj = datesBetween.map((el) => ({
-      date: el,
-      status: 'workday',
-    }));
-
-    const datesWithAllHolidaysAndWeekends =
-      this.getDatesWithAllHolidaysAndWeekends(
-        datesBetweenAsObj,
-        movableHolidays,
-        constantHolidays,
+  ): Promise<HolidaysDaysStatus> {
+    try {
+      const holidayPeriodAsString = {
+        startingDate: holidayPeriod.startingDate.toString(),
+        endingDate: holidayPeriod.endingDate.toString(),
+      };
+      const datesBetween = this.getDatesBetweenDates(holidayPeriodAsString);
+      const constantHolidays = await this.getConstantHolidaysForTheCurrentYear(
+        holidayPeriodAsString,
       );
-    return datesWithAllHolidaysAndWeekends;
+
+      const movableHolidays = await this.getMovableHolidaysForTheCurrentYear(
+        holidayPeriodAsString,
+      );
+
+      const datesBetweenAsObj = datesBetween.map((el) => ({
+        date: el,
+        status: 'workday',
+      }));
+
+      const datesWithAllHolidaysAndWeekends =
+        this.getDatesWithAllHolidaysAndWeekends(
+          datesBetweenAsObj,
+          movableHolidays,
+          constantHolidays,
+        );
+      return datesWithAllHolidaysAndWeekends;
+    } catch (error) {
+      throw new Error(error.message);
+    }
   }
 
   saveHolidayIntoPTO = async (
     holidayInfo: HolidayInfoDto,
     user: User,
-  ): Promise<PTO | ErrorMessage> => {
+  ): Promise<PTO> => {
     try {
       const approversProm = holidayInfo.approvers.map(async (el) => {
         return await this.userRepo.findOne({ email: el });
@@ -169,9 +167,9 @@ export class HolidaysService {
       const approvers = await Promise.all(approversProm);
       const approoversValidation = approvers.indexOf(undefined);
       if (approoversValidation >= 0) {
-        return {
-          message: `User with email ${holidayInfo.approvers[approoversValidation]} does not exist.`,
-        };
+        throw new Error(
+          `User with email ${holidayInfo.approvers[approoversValidation]} does not exist.`,
+        );
       }
 
       const employee = this.userRepo.create(user);
@@ -185,65 +183,63 @@ export class HolidaysService {
       });
       return await this.PTORepo.save(newHoliday);
     } catch (error) {
-      return {
-        message: 'Something went wrong with saving PTO into the database.',
-      };
+      throw new Error(error.message);
     }
   };
 
   validateHolidayPeriod = async (
     holidayInfo: HolidayInfoDto,
     user: User,
-  ): Promise<ErrorMessage | void> => {
-    if (holidayInfo.startingDate > holidayInfo.endingDate) {
-      return { message: 'The first date must not be after the last date!' };
-    }
-
-    const vacationDays = await this.calculateDays({
-      startingDate: holidayInfo.startingDate,
-      endingDate: holidayInfo.endingDate,
-    });
-
-    if ('message' in vacationDays) {
-      return { message: vacationDays.message };
-    }
-
-    let isThereAWorkdayInSubmittedPeriod = false;
-
-    for (let i = 0; i < vacationDays.length; i++) {
-      if (vacationDays[i].status === 'workday') {
-        isThereAWorkdayInSubmittedPeriod = true;
-        break;
+  ): Promise<void> => {
+    try {
+      if (holidayInfo.startingDate > holidayInfo.endingDate) {
+        throw new Error('The first date must not be after the last date!');
       }
-    }
-    if (!isThereAWorkdayInSubmittedPeriod) {
-      return { message: 'There are not working days in the submitted period.' };
-    }
 
-    const employeeHolidays = await this.PTORepo.find({
-      where: [
-        { employee: user.id, status: 'requested' },
-        { employee: user.id, status: 'approved' },
-      ],
-    });
+      const vacationDays = await this.calculateDays({
+        startingDate: holidayInfo.startingDate,
+        endingDate: holidayInfo.endingDate,
+      });
 
-    let overlapIndex = -1;
+      let isThereAWorkdayInSubmittedPeriod = false;
 
-    for (let i = 0; i < employeeHolidays.length; i++) {
-      if (
-        !(
-          holidayInfo.endingDate < employeeHolidays[i].from_date ||
-          holidayInfo.startingDate > employeeHolidays[i].to_date
-        )
-      ) {
-        overlapIndex = i;
-        break;
+      for (let i = 0; i < vacationDays.length; i++) {
+        if (vacationDays[i].status === 'workday') {
+          isThereAWorkdayInSubmittedPeriod = true;
+          break;
+        }
       }
-    }
-    if (overlapIndex >= 0) {
-      return {
-        message: `The period you submitted is overlaping with another vacation from ${employeeHolidays[overlapIndex].from_date} to ${employeeHolidays[overlapIndex].to_date}`,
-      };
+      if (!isThereAWorkdayInSubmittedPeriod) {
+        throw new Error('There are not working days in the submitted period.');
+      }
+
+      const employeeHolidays = await this.PTORepo.find({
+        where: [
+          { employee: user.id, status: 'requested' },
+          { employee: user.id, status: 'approved' },
+        ],
+      });
+
+      let overlapIndex = -1;
+
+      for (let i = 0; i < employeeHolidays.length; i++) {
+        if (
+          !(
+            holidayInfo.endingDate < employeeHolidays[i].from_date ||
+            holidayInfo.startingDate > employeeHolidays[i].to_date
+          )
+        ) {
+          overlapIndex = i;
+          break;
+        }
+      }
+      if (overlapIndex >= 0) {
+        throw new Error(
+          `The period you submitted is overlaping with another vacation from ${employeeHolidays[overlapIndex].from_date} to ${employeeHolidays[overlapIndex].to_date}`,
+        );
+      }
+    } catch (error) {
+      throw new Error(error.message);
     }
   };
 
@@ -251,15 +247,12 @@ export class HolidaysService {
     holidayInfo: HolidayInfoDto,
     user: User,
   ): Promise<PTO | ErrorMessage> {
-    const invalidPeriodMessage = await this.validateHolidayPeriod(
-      holidayInfo,
-      user,
-    );
-
-    if (invalidPeriodMessage && 'message' in invalidPeriodMessage) {
-      return invalidPeriodMessage;
+    try {
+      await this.validateHolidayPeriod(holidayInfo, user);
+      return await this.saveHolidayIntoPTO(holidayInfo, user);
+    } catch (error) {
+      throw new Error(error.message);
     }
-    return await this.saveHolidayIntoPTO(holidayInfo, user);
   }
 
   public async getUserPTOs(user: User): Promise<PTOInfo[] | ErrorMessage> {
@@ -289,7 +282,7 @@ export class HolidaysService {
       );
       return resolvedHolidaysInfo;
     } catch (error) {
-      return { message: 'Something went wrong with getting user holidays' };
+      throw new Error('Something went wrong with getting user holidays');
     }
   }
 }

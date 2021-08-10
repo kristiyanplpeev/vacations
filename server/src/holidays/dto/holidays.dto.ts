@@ -9,10 +9,10 @@ import {
 } from 'class-validator';
 
 export class HolidayPeriodDto {
-  // @IsDateString({}, { message: 'The submitted starting date is invalid.' })
+  @IsDateString({}, { message: 'The submitted starting date is invalid.' })
   startingDate: string;
 
-  // @IsDateString({}, { message: 'The submitted ending date is invalid.' })
+  @IsDateString({}, { message: 'The submitted ending date is invalid.' })
   endingDate: string;
 }
 

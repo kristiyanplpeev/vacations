@@ -17,8 +17,15 @@ import InfoIcon from "@material-ui/icons/Info";
 import { HolidayDaysInfoType } from "common/types";
 import "./DatesCalculator.css";
 
+type calcVacation = {
+  nonWorkingDays: Array<string>;
+  numberOfNonWorkingDays: number;
+  totalVacationDays: number;
+  numberOfWorkingDays: number;
+};
+
 interface DatesCalculatorProps {
-  holidayDaysStatus: HolidayDaysInfoType | null;
+  holidayDaysStatus: HolidayDaysInfoType;
   loading: boolean;
 }
 
@@ -44,22 +51,16 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
 
   componentDidUpdate = (): void => {
     if (this.props.holidayDaysStatus && this.props.holidayDaysStatus.length !== this.state.totalDays) {
-      const nonWorkingDays = this.props.holidayDaysStatus
-        .filter((el) => el.status !== "workday")
-        .map((element) => {
-          const formattedDate = element.date.replace(/[-]/g, ".");
-          return `${formattedDate} - ${element.status}`;
-        });
-      const numberOfNonWorkingDays = nonWorkingDays.length;
-      const totalVacationDays = this.props.holidayDaysStatus.length;
-      const numberOfWorkingDays = totalVacationDays - numberOfNonWorkingDays;
+      const calculatedVacationDays = this.calculateVacationDays();
 
       this.setState({
-        weekdays: numberOfWorkingDays,
-        freeDays: numberOfNonWorkingDays,
+        weekdays: calculatedVacationDays.numberOfWorkingDays,
+        freeDays: calculatedVacationDays.numberOfNonWorkingDays,
         freeDaysStatuses:
-          nonWorkingDays.length !== 0 ? nonWorkingDays.join("\r\n") : "There are no free days in that period",
-        totalDays: totalVacationDays,
+          calculatedVacationDays.nonWorkingDays.length !== 0
+            ? calculatedVacationDays.nonWorkingDays.join("\r\n")
+            : "There are no free days in that period",
+        totalDays: calculatedVacationDays.totalVacationDays,
       });
     }
   };
@@ -72,7 +73,7 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
     return (
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          {this.props.holidayDaysStatus && (
+          {this.props.holidayDaysStatus.length !== 0 && (
             <TableContainer className="datescalculator-table" component={Paper}>
               <Table className={"table"} aria-label="simple table">
                 <TableHead>
@@ -96,11 +97,11 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
                       <InfoIcon
                         aria-owns={!!this.state.anchorEl ? "mouse-over-popover" : undefined}
                         aria-haspopup="true"
-                        onMouseEnter={(e) => this.handlePopoverOpen(e)}
-                        onMouseLeave={() => this.handlePopoverClose()}
+                        onMouseEnter={this.handlePopoverOpen}
+                        onMouseLeave={this.handlePopoverClose}
                       />
                       <Popover
-                        style={{ pointerEvents: "none" }}
+                        className="datescalculator-popover"
                         id="mouse-over-popover"
                         open={Boolean(this.state.anchorEl)}
                         anchorEl={this.state.anchorEl}
@@ -112,10 +113,10 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
                           vertical: "top",
                           horizontal: "left",
                         }}
-                        onClose={() => this.handlePopoverClose()}
+                        onClose={this.handlePopoverClose}
                         disableRestoreFocus
                       >
-                        <Typography style={{ whiteSpace: "pre-wrap" }}>{this.state.freeDaysStatuses}</Typography>
+                        <Typography className="datescalculator-popover-text">{this.state.freeDaysStatuses}</Typography>
                       </Popover>
                     </TableCell>
                   </TableRow>
@@ -142,6 +143,25 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
         </Grid>
       </Grid>
     );
+  }
+
+  private calculateVacationDays(): calcVacation {
+    const nonWorkingDays = this.props.holidayDaysStatus
+      .filter((el) => el.status !== "workday")
+      .map((element) => {
+        const formattedDate = element.date.replace(/[-]/g, ".");
+        return `${formattedDate} - ${element.status}`;
+      });
+    const numberOfNonWorkingDays = nonWorkingDays.length;
+    const totalVacationDays = this.props.holidayDaysStatus.length;
+    const numberOfWorkingDays = totalVacationDays - numberOfNonWorkingDays;
+
+    return {
+      nonWorkingDays,
+      numberOfNonWorkingDays,
+      totalVacationDays,
+      numberOfWorkingDays,
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
