@@ -7,6 +7,7 @@ import { Session } from './model/session.entity';
 import { TypeormStore } from 'typeorm-store';
 import * as helmet from 'helmet';
 import { config } from 'dotenv';
+import { ValidationPipe } from '@nestjs/common';
 
 config();
 
@@ -31,7 +32,7 @@ async function bootstrap() {
       store: new TypeormStore({ repository }),
     }),
   );
-
+  app.useGlobalPipes(new ValidationPipe());
   app.use(passport.initialize());
   app.use(passport.session());
   await app.listen(process.env.PORT, () =>
@@ -39,3 +40,5 @@ async function bootstrap() {
   );
 }
 bootstrap();
+
+//https://medium.com/@gausmann.simon/nestjs-typeorm-and-postgresql-full-example-development-and-project-setup-working-with-database-c1a2b1b11b8f

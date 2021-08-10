@@ -1,0 +1,24 @@
+.additionalinfo-card-content {
+  width: 80%;
+}
+
+.additionalinfo-textfields.MuiFormControl-root {
+  margin: 4% 0px;
+}
+
+.additionalinfo-buttons.MuiButtonBase-root {
+  margin: 4% 5%;
+}
+
+.additionalInfo-header.MuiTypography-root {
+  margin: 0% 10%;
+  text-align: left;
+}
+
+.additionalinfo-datepicker.MuiFormControl-root {
+  margin: 4% 0px;
+}
+
+.additionalinfo-warning {
+  margin: auto;
+}

@@ -1,6 +1,7 @@
 import React, { Component, ReactNode } from "react";
 
 import { CircularProgress } from "@material-ui/core";
+import Backdrop from "@material-ui/core/Backdrop";
 import { injectable } from "inversify";
 import { resolve } from "inversify-react";
 import { connect } from "react-redux";
@@ -9,6 +10,7 @@ import { bindActionCreators } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 
 import "reflect-metadata";
+import AppError from "common/AppError/AppError";
 import { RedirectingInterface, UserServiceInterface } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 import { startLogInUser, startSetIsUserLoggedIn } from "store/user/action";
@@ -17,7 +19,7 @@ import { AppActions, UserInfoTypes } from "store/user/types";
 interface RedirectingProps {}
 
 interface RedirectingState {
-  error: boolean | string;
+  error: string;
 }
 
 type Props = RedirectingProps & RouteComponentProps & LinkDispatchProps & LinkStateProps;
@@ -29,7 +31,7 @@ class Redirecting extends Component<Props, RedirectingState> implements Redirect
   public constructor(props: Props) {
     super(props);
     this.state = {
-      error: false,
+      error: "",
     };
   }
 
@@ -48,9 +50,13 @@ class Redirecting extends Component<Props, RedirectingState> implements Redirect
 
   render(): ReactNode {
     if (this.state.error) {
-      return <div>Error</div>;
+      return <AppError message={this.state.error} />;
     }
-    return <CircularProgress />;
+    return (
+      <Backdrop open>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    );
   }
 }
 
