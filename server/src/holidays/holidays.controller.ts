@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Req,
   Res,
@@ -10,7 +11,7 @@ import {
 import { HolidaysService } from './holidays.service';
 import { JwtAuthGuard } from '../google/guards';
 import { HolidayInfoDto, HolidayPeriodDto } from './dto/holidays.dto';
-import { HolidaysDaysStatus } from 'src/holidays/types';
+import { HolidaysDaysStatus, PTOFullInfo } from 'src/holidays/types';
 import { QueryFail } from 'src/utils/types';
 import { PTO } from 'src/model/pto.entity';
 
@@ -61,6 +62,24 @@ export class HolidaysController {
     try {
       const userPTOs = await this.holidaysService.getUserPTOs(req.user);
       return res.status(200).send(userPTOs);
+    } catch (error) {
+      return res.status(400).send({
+        statusCode: 400,
+        message: error.message,
+        error: 'Bad Request',
+      });
+    }
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  public async getPTOById(
+    @Param('id') id: string,
+    @Res() res,
+  ): Promise<PTOFullInfo | QueryFail> {
+    try {
+      const PTOInfo = await this.holidaysService.getPTOById(id);
+      return res.status(200).send(PTOInfo);
     } catch (error) {
       return res.status(400).send({
         statusCode: 400,

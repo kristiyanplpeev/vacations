@@ -3,7 +3,11 @@ import { Holiday } from '../model/holiday.entity';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HolidayInfoDto, HolidayPeriodDto } from './dto/holidays.dto';
-import { HolidayPeriod, HolidaysDaysStatus } from 'src/holidays/types';
+import {
+  HolidayPeriod,
+  HolidaysDaysStatus,
+  PTOFullInfo,
+} from 'src/holidays/types';
 import { PTO } from '../model/pto.entity';
 import { User } from '../model/user.entity';
 import { ErrorMessage, PTOInfo } from '../utils/types';
@@ -283,6 +287,31 @@ export class HolidaysService {
       return resolvedHolidaysInfo;
     } catch (error) {
       throw new Error('Something went wrong with getting user holidays');
+    }
+  }
+
+  private async getPTOFullInfo(PTOId: string): Promise<PTO> {
+    try {
+      return await this.PTORepo.findOne({
+        where: { id: PTOId },
+        relations: ['employee', 'approvers'],
+      });
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  public async getPTOById(PTOId: string): Promise<PTOFullInfo> {
+    try {
+      const PTOInfo = await this.getPTOFullInfo(PTOId);
+      const eachDayStatus = await this.calculateDays({
+        startingDate: PTOInfo.from_date,
+        endingDate: PTOInfo.to_date,
+      });
+      const PTOInfoWithEachDayStatus = { ...PTOInfo, eachDayStatus };
+      return PTOInfoWithEachDayStatus;
+    } catch (error) {
+      throw new Error('Invalid PTO.');
     }
   }
 }
