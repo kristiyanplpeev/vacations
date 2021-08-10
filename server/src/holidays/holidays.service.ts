@@ -6,8 +6,7 @@ import { HolidayInfoDto, HolidayPeriodDto } from './dto/holidays.dto';
 import { HolidayPeriod, HolidaysDaysStatus } from 'src/holidays/types';
 import { PTO } from '../model/pto.entity';
 import { User } from '../model/user.entity';
-import { ErrorMessage } from '../utils/types';
-import { errorMonitor } from 'events';
+import { ErrorMessage, PTOInfo } from '../utils/types';
 
 @Injectable()
 export class HolidaysService {
@@ -253,6 +252,37 @@ export class HolidaysService {
       return await this.saveHolidayIntoPTO(holidayInfo, user);
     } catch (error) {
       throw new Error(error.message);
+    }
+  }
+
+  public async getUserPTOs(user: User): Promise<PTOInfo[] | ErrorMessage> {
+    try {
+      const userHolidays = await this.PTORepo.find({
+        where: { employee: user.id },
+      });
+
+      const userHolidaysWithCalculatedPTOs = userHolidays.map(async (el) => {
+        const eachDayStatus = await this.calculateDays({
+          startingDate: el.from_date,
+          endingDate: el.to_date,
+        });
+        if (Array.isArray(eachDayStatus)) {
+          const workDays = eachDayStatus.filter(
+            (elem) => elem.status === 'workday',
+          );
+          return {
+            ...el,
+            totalDays: eachDayStatus.length,
+            PTODays: workDays.length,
+          };
+        }
+      });
+      const resolvedHolidaysInfo = await Promise.all(
+        userHolidaysWithCalculatedPTOs,
+      );
+      return resolvedHolidaysInfo;
+    } catch (error) {
+      throw new Error('Something went wrong with getting user holidays');
     }
   }
 }

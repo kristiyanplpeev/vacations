@@ -25,3 +25,17 @@ export type TextFieldType = {
   validate: (value: string) => boolean;
   errorText: string;
 };
+
+export type UserHolidayType = {
+  id: string;
+  from_date: string;
+  to_date: string;
+  comment: string;
+  status: string;
+  PTODays: number;
+  totalDays: number;
+};
+
+export type ErrorType = {
+  error: string;
+};

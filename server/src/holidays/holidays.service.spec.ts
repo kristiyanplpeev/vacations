@@ -154,6 +154,27 @@ describe('HolidaysService', () => {
     },
   ];
 
+  const mockEmployeeHolidaysCalc = [
+    {
+      id: '8389e44d-d807-4580-a9bf-ac59c07f1c4f',
+      from_date: '2021-08-04',
+      to_date: '2021-08-04',
+      comment: 'PTO',
+      status: 'requested',
+      totalDays: 1,
+      PTODays: 1,
+    },
+    {
+      id: '89b04b55-f047-4ce1-87f2-21f849ccd398',
+      from_date: '2021-08-05',
+      to_date: '2021-08-05',
+      comment: 'PTO',
+      status: 'requested',
+      totalDays: 1,
+      PTODays: 1,
+    },
+  ];
+
   const mockApprovers = [
     {
       id: '749da264-0641-4d80-b6be-fe1c38ae2f93',
@@ -345,6 +366,14 @@ describe('HolidaysService', () => {
       const result = await service.validateHolidayPeriod(dto, mockedUser);
       expect(spy).toHaveBeenCalled();
       expect(result).toBeUndefined();
+    });
+  });
+  describe('getUserPTOs', () => {
+    it('should return PTO information', async () => {
+      const spy = jest.spyOn(service, 'getUserPTOs');
+      const result = await service.getUserPTOs(mockedUser);
+      expect(spy).toHaveBeenCalled();
+      expect(result).toEqual(mockEmployeeHolidaysCalc);
     });
   });
 });

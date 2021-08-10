@@ -52,6 +52,37 @@ describe('HolidaysController', () => {
     message: 'There is an error.',
     error: 'Bad Request',
   };
+  const mockedUser = {
+    id: '749da264-0641-4d80-b6be-fe1c38ae2f93',
+    googleId: '106956791077954804246',
+    email: 'kristiyan.peev@atscale.com',
+    firstName: 'Kristiyan',
+    lastName: 'Peev',
+    picture:
+      'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
+    PTO: [],
+  };
+
+  const mockEmployeeHolidaysCalc = [
+    {
+      id: '8389e44d-d807-4580-a9bf-ac59c07f1c4f',
+      from_date: '2021-08-04',
+      to_date: '2021-08-04',
+      comment: 'PTO',
+      status: 'requested',
+      totalDays: 1,
+      PTODays: 1,
+    },
+    {
+      id: '89b04b55-f047-4ce1-87f2-21f849ccd398',
+      from_date: '2021-08-05',
+      to_date: '2021-08-05',
+      comment: 'PTO',
+      status: 'requested',
+      totalDays: 1,
+      PTODays: 1,
+    },
+  ];
 
   const mockHolidaysService = {
     calculateDays: jest.fn((body) => {
@@ -67,6 +98,9 @@ describe('HolidaysController', () => {
       } else {
         return mockHolidayInfoResponse;
       }
+    }),
+    getUserPTOs: jest.fn((user) => {
+      return mockEmployeeHolidaysCalc;
     }),
   };
 
@@ -133,6 +167,18 @@ describe('HolidaysController', () => {
       );
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockErrorMessage);
+    });
+  });
+  describe('getUserPTOs', () => {
+    it('should return posted holiday info', async () => {
+      const spy = jest.spyOn(controller, 'getUserPTOs');
+
+      const result = await controller.getUserPTOs(
+        { user: mockedUser },
+        response,
+      );
+      expect(spy).toHaveBeenCalled();
+      expect(result).toEqual(mockEmployeeHolidaysCalc);
     });
   });
 });
