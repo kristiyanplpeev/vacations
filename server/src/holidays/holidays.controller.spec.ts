@@ -84,6 +84,38 @@ describe('HolidaysController', () => {
     },
   ];
 
+  const mockPTOInfo = {
+    id: '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
+    from_date: '2021-07-07',
+    to_date: '2021-07-08',
+    comment: 'PTO',
+    status: 'requested',
+    employee: {
+      id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
+      googleId: '106956791077954804246',
+      email: 'kristiyan.peev@atscale.com',
+      firstName: 'Kristiyan',
+      lastName: 'Peev',
+      picture:
+        'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
+    },
+    approvers: [
+      {
+        id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
+        googleId: '106956791077954804246',
+        email: 'kristiyan.peev@atscale.com',
+        firstName: 'Kristiyan',
+        lastName: 'Peev',
+        picture:
+          'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
+      },
+    ],
+    eachDayStatus: [
+      { date: '2021-07-07', status: 'workday' },
+      { date: '2021-07-08', status: 'workday' },
+    ],
+  };
+
   const mockHolidaysService = {
     calculateDays: jest.fn((body) => {
       if (body.startingDate > body.endingDate) {
@@ -102,6 +134,7 @@ describe('HolidaysController', () => {
     getUserPTOs: jest.fn((user) => {
       return mockEmployeeHolidaysCalc;
     }),
+    getPTOById: jest.fn(() => mockPTOInfo),
   };
 
   beforeEach(async () => {
@@ -125,60 +158,99 @@ describe('HolidaysController', () => {
   });
   describe('calculateHolidayPeriod', () => {
     it('should return days and statuses for PTO period', async () => {
+      //arrange
       const dto = {
         startingDate: '2021-08-12',
         endingDate: '2021-08-14',
       };
       const spy = jest.spyOn(controller, 'calculateHolidayPeriod');
+
+      //act
       const result = await controller.calculateHolidayPeriod(dto, response);
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockHolidayPeriod);
     });
     it('should return error message', async () => {
+      //arrange
       const dto = {
         startingDate: '2021-08-12',
         endingDate: '2021-08-11',
       };
       const spy = jest.spyOn(controller, 'calculateHolidayPeriod');
+
+      //act
       const result = await controller.calculateHolidayPeriod(dto, response);
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockErrorMessage);
     });
   });
   describe('postHoliday', () => {
     it('should return posted holiday info', async () => {
+      //arrange
       const spy = jest.spyOn(controller, 'postHoliday');
 
+      //act
       const result = await controller.postHoliday(
         mockHolidayInfo,
         { user: 'mock' },
         response,
       );
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockHolidayInfoResponse);
     });
     it('should return error message', async () => {
+      //arrange
       const spy = jest.spyOn(controller, 'postHoliday');
 
+      //act
       const result = await controller.postHoliday(
         mockHolidayInfoInvalid,
         { user: 'mock' },
         response,
       );
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockErrorMessage);
     });
   });
   describe('getUserPTOs', () => {
     it('should return posted holiday info', async () => {
+      //arrange
       const spy = jest.spyOn(controller, 'getUserPTOs');
 
+      //act
       const result = await controller.getUserPTOs(
         { user: mockedUser },
         response,
       );
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockEmployeeHolidaysCalc);
+    });
+
+    describe('getPTOById', () => {
+      it('should return detailed PTO information', async () => {
+        //arrange
+        const spy = jest.spyOn(controller, 'getPTOById');
+
+        //act
+        const result = await controller.getPTOById(
+          '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
+          response,
+        );
+
+        //assert
+        expect(spy).toHaveBeenCalled();
+        expect(result).toEqual(mockPTOInfo);
+      });
     });
   });
 });

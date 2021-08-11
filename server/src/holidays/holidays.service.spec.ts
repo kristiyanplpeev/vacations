@@ -187,6 +187,34 @@ describe('HolidaysService', () => {
     },
   ];
 
+  const mockPTOInfo = {
+    id: '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
+    from_date: '2021-07-07',
+    to_date: '2021-07-08',
+    comment: 'PTO',
+    status: 'requested',
+    employee: {
+      id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
+      googleId: '106956791077954804246',
+      email: 'kristiyan.peev@atscale.com',
+      firstName: 'Kristiyan',
+      lastName: 'Peev',
+      picture:
+        'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
+    },
+    approvers: [
+      {
+        id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
+        googleId: '106956791077954804246',
+        email: 'kristiyan.peev@atscale.com',
+        firstName: 'Kristiyan',
+        lastName: 'Peev',
+        picture:
+          'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
+      },
+    ],
+  };
+
   const mockReturnedPeriod = [
     {
       date: '2021-08-12',
@@ -209,6 +237,7 @@ describe('HolidaysService', () => {
     save: jest.fn(() => Promise.resolve(mockSavedHoliday)),
     create: jest.fn(() => Promise.resolve(undefined)),
     find: jest.fn(() => Promise.resolve(mockEmployeeHolidays)),
+    findOne: jest.fn(() => Promise.resolve(mockPTOInfo)),
   };
   const mockUserRepository = {
     findOne: jest.fn(() => Promise.resolve(mockApprovers)),
@@ -244,42 +273,58 @@ describe('HolidaysService', () => {
 
   describe('getDatesBetweenDates', () => {
     it('should return dates in a period', () => {
+      //arrange
       const dto = {
         startingDate: '2021-08-12',
         endingDate: '2021-08-14',
       };
       const spy = jest.spyOn(service, 'getDatesBetweenDates');
+
+      //act
       const result = service.getDatesBetweenDates(dto);
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(['2021-08-12', '2021-08-13', '2021-08-14']);
     });
   });
   describe('getConstantHolidaysForTheCurrentYear', () => {
     it('should return dates of constant holidays in the current year', async () => {
+      //arrange
       const dto = {
         startingDate: '2022-08-12',
         endingDate: '2022-08-14',
       };
       const spy = jest.spyOn(service, 'getConstantHolidaysForTheCurrentYear');
+
+      //act
       const result = await service.getConstantHolidaysForTheCurrentYear(dto);
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(constantHolidays);
     });
   });
   describe('getMovableHolidaysForTheCurrentYear', () => {
     it('should return dates of movable holidays in the current year', async () => {
+      //arrange
       const dto = {
         startingDate: '2021-08-12',
         endingDate: '2021-08-14',
       };
       const spy = jest.spyOn(service, 'getMovableHolidaysForTheCurrentYear');
+
+      //act
       const result = await service.getMovableHolidaysForTheCurrentYear(dto);
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(constantHolidays);
     });
   });
   describe('getDatesWithAllHolidaysAndWeekends', () => {
     it('should return holiday days with status', () => {
+      //arrange
       const datesBetweenDates = [
         {
           date: '2021-08-12',
@@ -295,29 +340,39 @@ describe('HolidaysService', () => {
         },
       ];
       const spy = jest.spyOn(service, 'getDatesWithAllHolidaysAndWeekends');
+
+      //act
       const result = service.getDatesWithAllHolidaysAndWeekends(
         datesBetweenDates,
         movableHolidays,
         constantHolidays,
       );
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockReturnedPeriod);
     });
   });
   describe('calculateDays', () => {
     it('should return holiday days with status', async () => {
+      //arrange
       const dto = {
         startingDate: '2021-08-12',
         endingDate: '2021-08-14',
       };
       const spy = jest.spyOn(service, 'calculateDays');
+
+      //act
       const result = await service.calculateDays(dto);
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockReturnedPeriod);
     });
   });
   describe('saveHolidayIntoPTO', () => {
     it('should return PTO information', async () => {
+      //arrange
       const dto = {
         startingDate: '2021-08-12',
         endingDate: '2021-08-14',
@@ -325,13 +380,18 @@ describe('HolidaysService', () => {
         approvers: ['kristiyan.peev@atscale.com'],
       };
       const spy = jest.spyOn(service, 'saveHolidayIntoPTO');
+
+      //act
       const result = await service.saveHolidayIntoPTO(dto, mockedUser);
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockSavedHoliday);
     });
   });
   describe('validateHolidayPeriod', () => {
     it('should throw an error when starting date is before ending date', async () => {
+      //arrange
       const dto = {
         startingDate: '2021-08-12',
         endingDate: '2021-08-11',
@@ -339,11 +399,16 @@ describe('HolidaysService', () => {
         approvers: ['kristiyan.peev@atscale.com'],
       };
       const spy = jest.spyOn(service, 'validateHolidayPeriod');
+
+      //act
       const result = service.validateHolidayPeriod(dto, mockedUser);
+
+      //assert
       expect(spy).toHaveBeenCalled();
       await expect(result).rejects.toThrow();
     });
     it('should throw an error when only non-working days are passed', async () => {
+      //arrange
       const dto = {
         startingDate: '2021-08-14',
         endingDate: '2021-08-15',
@@ -351,11 +416,16 @@ describe('HolidaysService', () => {
         approvers: ['kristiyan.peev@atscale.com'],
       };
       const spy = jest.spyOn(service, 'validateHolidayPeriod');
+
+      //act
       const result = service.validateHolidayPeriod(dto, mockedUser);
+
+      //assert
       expect(spy).toHaveBeenCalled();
       await expect(result).rejects.toThrow();
     });
     it('should return nothing when data is valid', async () => {
+      //arrange
       const dto = {
         startingDate: '2021-08-11',
         endingDate: '2021-08-13',
@@ -363,17 +433,46 @@ describe('HolidaysService', () => {
         approvers: ['kristiyan.peev@atscale.com'],
       };
       const spy = jest.spyOn(service, 'validateHolidayPeriod');
+
+      //act
       const result = await service.validateHolidayPeriod(dto, mockedUser);
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
   });
   describe('getUserPTOs', () => {
-    it('should return PTO information', async () => {
+    it('should return user PTOs information', async () => {
+      //arrange
       const spy = jest.spyOn(service, 'getUserPTOs');
+
+      //act
       const result = await service.getUserPTOs(mockedUser);
+
+      //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockEmployeeHolidaysCalc);
+    });
+  });
+
+  describe('getPTOById', () => {
+    it('should return detailed PTO information', async () => {
+      //arrange
+      const eachDayStatus = [
+        { date: '2021-07-07', status: 'workday' },
+        { date: '2021-07-08', status: 'workday' },
+      ];
+      const spy = jest.spyOn(service, 'getPTOById');
+
+      //act
+      const result = await service.getPTOById(
+        '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
+      );
+
+      //assert
+      expect(spy).toHaveBeenCalled();
+      expect(result).toEqual({ ...mockPTOInfo, eachDayStatus });
     });
   });
 });
