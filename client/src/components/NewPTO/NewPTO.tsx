@@ -8,7 +8,7 @@ import DatesCalculator from "common/DatesCalculator/DatesCalculator";
 import { ValidationUtil } from "common/emailValidator";
 import { HolidayDaysInfoType, TextFieldType } from "common/types";
 import AdditionalInfo from "components/NewPTO/AdditionalInfo/AdditionalInfo";
-import { HolidaysServiceInterface, NewPTOInterface } from "inversify/interfaces";
+import { IHolidaysService, INewPTO } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 import "./NewPTO.css";
 
@@ -24,8 +24,8 @@ interface NewPTOState {
   loading: boolean;
 }
 
-class NewPTO extends Component<NewPTOProps, NewPTOState> implements NewPTOInterface {
-  @resolve(TYPES.Holidays) holidaysService!: HolidaysServiceInterface;
+class NewPTO extends Component<NewPTOProps, NewPTOState> implements INewPTO {
+  @resolve(TYPES.Holidays) holidaysService!: IHolidaysService;
 
   constructor(props: NewPTOProps) {
     super(props);

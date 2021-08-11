@@ -7,11 +7,11 @@ import {
   PTOFullInfo,
 } from "common/types";
 
-export interface UserServiceInterface {
+export interface IUserService {
   logInUserRequest(): Promise<UserInfoType>;
 }
 
-export interface HolidaysServiceInterface {
+export interface IHolidaysService {
   getHolidayInfoRequest({ startingDate, endingDate }: IHolidayInfo): Promise<HolidayDaysInfoType>;
   addPTORequest({
     startingDate,
@@ -19,11 +19,11 @@ export interface HolidaysServiceInterface {
     comment,
     approvers,
   }: IHolidayFullInfo): Promise<void | { warning: string }>;
-  userPTOsRequest(): Promise<UserHolidayType[]>;
+  userPTOsRequest(): Promise<Array<UserHolidayType>>;
   PTODetailedRequest(PTOId: string): Promise<PTOFullInfo>;
 }
 
-export interface NewPTOInterface {}
-export interface RedirectingInterface {
+export interface INewPTO {}
+export interface IRedirecting {
   componentDidMount(): Promise<void>;
 }

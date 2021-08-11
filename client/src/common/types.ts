@@ -16,10 +16,10 @@ export interface IHolidayInfo {
 
 export interface IHolidayFullInfo extends IHolidayInfo {
   comment: string;
-  approvers: string[];
+  approvers: Array<string>;
 }
 
-export type HolidayDaysInfoType = { date: string; status: string }[];
+export type HolidayDaysInfoType = Array<{ date: string; status: string }>;
 
 export type TextFieldType = {
   value: string;

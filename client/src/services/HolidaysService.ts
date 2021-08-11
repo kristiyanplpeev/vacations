@@ -3,12 +3,12 @@ import { injectable } from "inversify";
 
 import { BASE_URL } from "common/constants";
 import { IHolidayInfo, HolidayDaysInfoType, IHolidayFullInfo, UserHolidayType, PTOFullInfo } from "common/types";
-import { HolidaysServiceInterface } from "inversify/interfaces";
+import { IHolidaysService } from "inversify/interfaces";
 import { getToken } from "providers/tokenManagment";
 import "reflect-metadata";
 
 @injectable()
-class HolidaysService implements HolidaysServiceInterface {
+class HolidaysService implements IHolidaysService {
   getHolidayInfoRequest = async ({ startingDate, endingDate }: IHolidayInfo): Promise<HolidayDaysInfoType> => {
     const headers = {
       "Content-Type": "application/json",
@@ -51,7 +51,7 @@ class HolidaysService implements HolidaysServiceInterface {
     }
   };
 
-  userPTOsRequest = async (): Promise<UserHolidayType[]> => {
+  userPTOsRequest = async (): Promise<Array<UserHolidayType>> => {
     const headers = {
       // eslint-disable-next-line prettier/prettier
       Authorization: `Bearer ${getToken()}`,

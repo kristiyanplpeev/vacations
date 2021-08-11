@@ -10,7 +10,7 @@ import AppError from "common/AppError/AppError";
 import DatesCalculator from "common/DatesCalculator/DatesCalculator";
 import { UserHolidayBasicInfoType, UserInfoType, HolidayDaysInfoType } from "common/types";
 import PTOBasicInfo from "components/PTODetails/PTOBasicInfo/PTOBasicInfo";
-import { HolidaysServiceInterface } from "inversify/interfaces";
+import { IHolidaysService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
 interface PTODetailsMatchProps {
@@ -29,7 +29,7 @@ interface PTODetailsState {
 }
 
 class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
-  @resolve(TYPES.Holidays) holidaysService!: HolidaysServiceInterface;
+  @resolve(TYPES.Holidays) holidaysService!: IHolidaysService;
 
   constructor(props: PTODetailsProps) {
     super(props);

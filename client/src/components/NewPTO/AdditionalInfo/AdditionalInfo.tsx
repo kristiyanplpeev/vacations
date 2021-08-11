@@ -17,7 +17,7 @@ import { RouteComponentProps, withRouter } from "react-router";
 
 import AppError from "common/AppError/AppError";
 import { IHolidayFullInfo, TextFieldType } from "common/types";
-import { HolidaysServiceInterface } from "inversify/interfaces";
+import { IHolidaysService } from "inversify/interfaces";
 import "./AdditionalInfo.css";
 import { TYPES } from "inversify/types";
 
@@ -44,7 +44,7 @@ interface AdditionalInfoProps extends RouteComponentProps {
 }
 
 class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState> {
-  @resolve(TYPES.Holidays) private holidaysService!: HolidaysServiceInterface;
+  @resolve(TYPES.Holidays) private holidaysService!: IHolidaysService;
 
   constructor(props: AdditionalInfoProps) {
     super(props);
