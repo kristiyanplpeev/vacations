@@ -212,7 +212,12 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       <TableCell width="10%" align="left">
         {el.totalDays}
       </TableCell>
-      <TableCell width="5%" align="left">
+      <TableCell
+        className="homepage-viewpto-button"
+        width="5%"
+        align="left"
+        onClick={() => this.props.history.push(`/pto/${el.id}`)}
+      >
         view
       </TableCell>
       <TableCell width="30%" align="left">

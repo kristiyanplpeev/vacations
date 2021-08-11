@@ -1,3 +1,5 @@
+import { UserInfo } from "os";
+
 export type UserInfoType = {
   id: string;
   googleId: string;
@@ -26,6 +28,14 @@ export type TextFieldType = {
   errorText: string;
 };
 
+export type UserHolidayBasicInfoType = {
+  id: string;
+  from_date: string;
+  to_date: string;
+  comment: string;
+  status: string;
+};
+
 export type UserHolidayType = {
   id: string;
   from_date: string;
@@ -38,4 +48,15 @@ export type UserHolidayType = {
 
 export type ErrorType = {
   error: string;
+};
+
+export type PTOFullInfo = {
+  id: string;
+  from_date: string;
+  to_date: string;
+  comment: string;
+  status: string;
+  employee: UserInfoType;
+  approvers: Array<UserInfoType>;
+  eachDayStatus: HolidayDaysInfoType;
 };

@@ -2,7 +2,7 @@ import axios from "axios";
 import { injectable } from "inversify";
 
 import { BASE_URL } from "common/constants";
-import { IHolidayInfo, HolidayDaysInfoType, IHolidayFullInfo, UserHolidayType } from "common/types";
+import { IHolidayInfo, HolidayDaysInfoType, IHolidayFullInfo, UserHolidayType, PTOFullInfo } from "common/types";
 import { HolidaysServiceInterface } from "inversify/interfaces";
 import { getToken } from "providers/tokenManagment";
 import "reflect-metadata";
@@ -58,6 +58,15 @@ class HolidaysService implements HolidaysServiceInterface {
     };
 
     return (await axios.get(`${BASE_URL}holidays/users`, { headers })).data;
+  };
+
+  PTODetailedRequest = async (PTOId: string): Promise<PTOFullInfo> => {
+    const headers = {
+      // eslint-disable-next-line prettier/prettier
+      Authorization: `Bearer ${getToken()}`,
+    };
+
+    return (await axios.get(`${BASE_URL}holidays/${PTOId}`, { headers })).data;
   };
 }
 

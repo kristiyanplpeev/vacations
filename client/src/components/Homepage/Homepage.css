@@ -11,6 +11,10 @@
   cursor: pointer;
 }
 
+.homepage-viewpto-button:hover {
+  cursor: pointer;
+}
+
 .homepage-message-wrapper {
   display: flex;
   justify-content: center;
