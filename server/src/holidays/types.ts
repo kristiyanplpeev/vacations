@@ -5,7 +5,7 @@ export type HolidayPeriod = {
   endingDate: string;
 };
 
-export type HolidaysDaysStatus = { date: string; status: string }[];
+export type HolidaysDaysStatus = Array<{ date: string; status: string }>;
 
 export type PTOFullInfo = {
   id: string;

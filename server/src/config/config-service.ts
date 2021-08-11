@@ -15,7 +15,7 @@ class ConfigService {
     return value;
   }
 
-  public ensureValues(keys: string[]) {
+  public ensureValues(keys: Array<string>) {
     keys.forEach((k) => this.getValue(k, true));
     return this;
   }

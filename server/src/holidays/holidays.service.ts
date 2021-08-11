@@ -39,7 +39,7 @@ export class HolidaysService {
 
   getConstantHolidaysForTheCurrentYear = async (
     holidayPeriod: HolidayPeriod,
-  ): Promise<Holiday[]> => {
+  ): Promise<Array<Holiday>> => {
     try {
       const constantHolidays = await this.holidayRepo.find({
         where: { movable: false },
@@ -83,10 +83,10 @@ export class HolidaysService {
     }>,
     movableHolidays: Array<Holiday>,
     constantHolidays: Array<Holiday>,
-  ): {
+  ): Array<{
     date: string;
     status: string;
-  }[] => {
+  }> => {
     const datesWithWeekends = datesBetweenAsObj.map((el) => {
       if (new Date(el.date).getDay() == 6 || new Date(el.date).getDay() == 0) {
         el.status = 'weekend';
@@ -259,7 +259,7 @@ export class HolidaysService {
     }
   }
 
-  public async getUserPTOs(user: User): Promise<PTOInfo[] | ErrorMessage> {
+  public async getUserPTOs(user: User): Promise<Array<PTOInfo>> {
     try {
       const userHolidays = await this.PTORepo.find({
         where: { employee: user.id },
@@ -291,14 +291,10 @@ export class HolidaysService {
   }
 
   private async getPTOFullInfo(PTOId: string): Promise<PTO> {
-    try {
-      return await this.PTORepo.findOne({
-        where: { id: PTOId },
-        relations: ['employee', 'approvers'],
-      });
-    } catch (error) {
-      throw new Error(error.message);
-    }
+    return await this.PTORepo.findOne({
+      where: { id: PTOId },
+      relations: ['employee', 'approvers'],
+    });
   }
 
   public async getPTOById(PTOId: string): Promise<PTOFullInfo> {
