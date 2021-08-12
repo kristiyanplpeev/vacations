@@ -73,7 +73,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <Grid item xs={12}>
                   <KeyboardDatePicker
-                    className="additionalinfo-datepicker additionalinfo-card-content"
+                    className="additional-info-datepicker additionalinfo-card-content"
                     margin="normal"
                     id="date-picker-dialog"
                     label="From:"
@@ -87,7 +87,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                 </Grid>
                 <Grid item xs={12}>
                   <KeyboardDatePicker
-                    className="additionalinfo-datepicker additionalinfo-card-content"
+                    className="additional-info-datepicker additionalinfo-card-content"
                     margin="normal"
                     id="date-picker-dialog"
                     label="To:"

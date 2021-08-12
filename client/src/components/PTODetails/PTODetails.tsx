@@ -26,6 +26,7 @@ interface PTODetailsState {
   employee: UserInfoType;
   approvers: Array<UserInfoType>;
   eachDayStatus: HolidayDaysInfoType;
+  workingDays: number;
 }
 
 class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
@@ -53,6 +54,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
       },
       approvers: [],
       eachDayStatus: [],
+      workingDays: 0,
     };
   }
 
@@ -63,6 +65,8 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
       });
       const PTOId = this.props.match.params.id;
       const PTOFullInfo = await this.holidaysService.PTODetailedRequest(PTOId);
+      const workingDays = this.calculateWorkingDays(PTOFullInfo.eachDayStatus);
+
       this.setState({
         employee: PTOFullInfo.employee,
         PTOInfo: {
@@ -74,6 +78,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
         },
         approvers: PTOFullInfo.approvers,
         eachDayStatus: PTOFullInfo.eachDayStatus,
+        workingDays,
       });
     } catch (error) {
       this.setState({
@@ -100,6 +105,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
                 employee={this.state.employee}
                 approvers={this.state.approvers}
                 PTOInfo={this.state.PTOInfo}
+                workingDays={this.state.workingDays}
               />
             )}
           </Grid>
@@ -109,6 +115,10 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
         </Grid>
       </div>
     );
+  }
+
+  private calculateWorkingDays(daysStatuses: HolidayDaysInfoType): number {
+    return daysStatuses.filter((el) => el.status === "workday").length;
   }
 }
 
