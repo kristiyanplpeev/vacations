@@ -94,8 +94,8 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
       return <AppError message={this.state.error} />;
     }
     return (
-      <div className="ptodetails-container">
-        <h1 className="ptodetails-header">View Vacation</h1>
+      <div className="pto-details-container">
+        <h1 className="pto-details-header">View Vacation</h1>
         <Grid container spacing={3}>
           <Grid item xs={6}>
             {this.state.loading ? (
