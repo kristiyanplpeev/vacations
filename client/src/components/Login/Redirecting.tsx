@@ -11,7 +11,7 @@ import { ThunkDispatch } from "redux-thunk";
 
 import "reflect-metadata";
 import AppError from "common/AppError/AppError";
-import { RedirectingInterface, UserServiceInterface } from "inversify/interfaces";
+import { IRedirecting, IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 import { startLogInUser, startSetIsUserLoggedIn } from "store/user/action";
 import { AppActions, UserInfoTypes } from "store/user/types";
@@ -25,8 +25,8 @@ interface RedirectingState {
 type Props = RedirectingProps & RouteComponentProps & LinkDispatchProps & LinkStateProps;
 
 @injectable()
-class Redirecting extends Component<Props, RedirectingState> implements RedirectingInterface {
-  @resolve(TYPES.UserLogger) usersService!: UserServiceInterface;
+class Redirecting extends Component<Props, RedirectingState> implements IRedirecting {
+  @resolve(TYPES.UserLogger) usersService!: IUserService;
 
   public constructor(props: Props) {
     super(props);

@@ -3,7 +3,11 @@ import { Holiday } from '../model/holiday.entity';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HolidayInfoDto, HolidayPeriodDto } from './dto/holidays.dto';
-import { HolidayPeriod, HolidaysDaysStatus } from 'src/holidays/types';
+import {
+  HolidayPeriod,
+  HolidaysDaysStatus,
+  PTOFullInfo,
+} from 'src/holidays/types';
 import { PTO } from '../model/pto.entity';
 import { User } from '../model/user.entity';
 import { ErrorMessage, PTOInfo } from '../utils/types';
@@ -35,7 +39,7 @@ export class HolidaysService {
 
   getConstantHolidaysForTheCurrentYear = async (
     holidayPeriod: HolidayPeriod,
-  ): Promise<Holiday[]> => {
+  ): Promise<Array<Holiday>> => {
     try {
       const constantHolidays = await this.holidayRepo.find({
         where: { movable: false },
@@ -79,10 +83,10 @@ export class HolidaysService {
     }>,
     movableHolidays: Array<Holiday>,
     constantHolidays: Array<Holiday>,
-  ): {
+  ): Array<{
     date: string;
     status: string;
-  }[] => {
+  }> => {
     const datesWithWeekends = datesBetweenAsObj.map((el) => {
       if (new Date(el.date).getDay() == 6 || new Date(el.date).getDay() == 0) {
         el.status = 'weekend';
@@ -255,7 +259,7 @@ export class HolidaysService {
     }
   }
 
-  public async getUserPTOs(user: User): Promise<PTOInfo[] | ErrorMessage> {
+  public async getUserPTOs(user: User): Promise<Array<PTOInfo>> {
     try {
       const userHolidays = await this.PTORepo.find({
         where: { employee: user.id },
@@ -283,6 +287,27 @@ export class HolidaysService {
       return resolvedHolidaysInfo;
     } catch (error) {
       throw new Error('Something went wrong with getting user holidays');
+    }
+  }
+
+  private async getPTOFullInfo(PTOId: string): Promise<PTO> {
+    return await this.PTORepo.findOne({
+      where: { id: PTOId },
+      relations: ['employee', 'approvers'],
+    });
+  }
+
+  public async getPTOById(PTOId: string): Promise<PTOFullInfo> {
+    try {
+      const PTOInfo = await this.getPTOFullInfo(PTOId);
+      const eachDayStatus = await this.calculateDays({
+        startingDate: PTOInfo.from_date,
+        endingDate: PTOInfo.to_date,
+      });
+      const PTOInfoWithEachDayStatus = { ...PTOInfo, eachDayStatus };
+      return PTOInfoWithEachDayStatus;
+    } catch (error) {
+      throw new Error('Invalid PTO.');
     }
   }
 }

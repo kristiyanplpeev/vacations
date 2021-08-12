@@ -31,5 +31,5 @@ export class HolidayInfoDto extends HolidayPeriodDto {
       message: 'Approvers must be valid emails separated with comma.',
     },
   )
-  approvers: string[];
+  approvers: Array<string>;
 }

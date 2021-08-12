@@ -18,7 +18,7 @@ import { RouteComponentProps } from "react-router";
 
 import AppError from "common/AppError/AppError";
 import { UserHolidayType } from "common/types";
-import { HolidaysServiceInterface } from "inversify/interfaces";
+import { IHolidaysService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
 interface HomepageProps extends RouteComponentProps {}
@@ -26,12 +26,12 @@ interface HomepageProps extends RouteComponentProps {}
 interface HomepageState {
   loading: boolean;
   error: string;
-  userPastPTOs: UserHolidayType[];
-  userFuturePTOs: UserHolidayType[];
+  userPastPTOs: Array<UserHolidayType>;
+  userFuturePTOs: Array<UserHolidayType>;
 }
 
 class Homepage extends Component<HomepageProps, HomepageState> {
-  @resolve(TYPES.Holidays) private holidaysService!: HolidaysServiceInterface;
+  @resolve(TYPES.Holidays) private holidaysService!: IHolidaysService;
 
   constructor(props: HomepageProps) {
     super(props);
@@ -212,7 +212,12 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       <TableCell width="10%" align="left">
         {el.totalDays}
       </TableCell>
-      <TableCell width="5%" align="left">
+      <TableCell
+        className="homepage-viewpto-button"
+        width="5%"
+        align="left"
+        onClick={() => this.props.history.push(`/pto/${el.id}`)}
+      >
         view
       </TableCell>
       <TableCell width="30%" align="left">

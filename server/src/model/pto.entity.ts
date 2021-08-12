@@ -21,5 +21,5 @@ export class PTO extends BaseEntity {
 
   @ManyToMany(() => User)
   @JoinTable()
-  approvers: User[];
+  approvers: Array<User>;
 }

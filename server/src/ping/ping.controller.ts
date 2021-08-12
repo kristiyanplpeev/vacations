@@ -7,7 +7,7 @@ export class PingController {
   constructor(private serv: PingService) {}
 
   @Get()
-  public async getMessages(): Promise<Message[]> {
+  public async getMessages(): Promise<Array<Message>> {
     return await this.serv.getAllMessages();
   }
 }

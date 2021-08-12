@@ -17,7 +17,7 @@ import { RouteComponentProps, withRouter } from "react-router";
 
 import AppError from "common/AppError/AppError";
 import { IHolidayFullInfo, TextFieldType } from "common/types";
-import { HolidaysServiceInterface } from "inversify/interfaces";
+import { IHolidaysService } from "inversify/interfaces";
 import "./AdditionalInfo.css";
 import { TYPES } from "inversify/types";
 
@@ -44,7 +44,7 @@ interface AdditionalInfoProps extends RouteComponentProps {
 }
 
 class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState> {
-  @resolve(TYPES.Holidays) private holidaysService!: HolidaysServiceInterface;
+  @resolve(TYPES.Holidays) private holidaysService!: IHolidaysService;
 
   constructor(props: AdditionalInfoProps) {
     super(props);
@@ -138,24 +138,30 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                   </Alert>
                 ) : null}
               </Grid>
-              <Grid item xs={12}>
-                <Button
-                  className="additionalinfo-buttons"
-                  variant="outlined"
-                  color="primary"
-                  onClick={() => this.props.history.push("/home")}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  data-unit-test="addPTO-button"
-                  className="additionalinfo-buttons"
-                  variant="outlined"
-                  color="primary"
-                  onClick={this.addPTO}
-                >
-                  Add
-                </Button>
+              <Grid container spacing={3}>
+                <Grid item xs={2}></Grid>
+                <Grid item xs={4}>
+                  <Button
+                    className="additionalinfo-buttons"
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => this.props.history.push("/home")}
+                  >
+                    Cancel
+                  </Button>
+                </Grid>
+                <Grid item xs={4}>
+                  <Button
+                    data-unit-test="addPTO-button"
+                    className="additionalinfo-buttons"
+                    variant="outlined"
+                    color="primary"
+                    onClick={this.addPTO}
+                  >
+                    Add
+                  </Button>
+                </Grid>
+                <Grid item xs={2}></Grid>
               </Grid>
             </CardContent>
           </Card>
