@@ -11,14 +11,17 @@ import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import DescriptionIcon from "@material-ui/icons/Description";
 import EditIcon from "@material-ui/icons/Edit";
 import "./PTOBasicInfo.css";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import { RouteComponentProps, withRouter } from "react-router";
 
 import { UserHolidayBasicInfoType, UserInfoType } from "common/types";
+import MyDocument from "components/PTODetails/PDFDocu/AtscaleLeaveRequest";
 
 interface PTOBasicInfoProps extends RouteComponentProps {
   PTOInfo: UserHolidayBasicInfoType;
   employee: UserInfoType;
   approvers: Array<UserInfoType>;
+  workingDays: number;
 }
 
 class PTOBasicInfo extends Component<PTOBasicInfoProps> {
@@ -49,15 +52,26 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
               </Button>
             </Grid>
             <Grid item xs={4}>
-              <Button
-                data-unit-test="addPTO-button"
-                className="ptobasicinfo-buttons"
-                variant="outlined"
-                color="primary"
-                onClick={() => {}}
+              <PDFDownloadLink
+                document={
+                  <MyDocument
+                    employee={this.props.employee}
+                    PTOInfo={this.props.PTOInfo}
+                    workingDays={this.props.workingDays}
+                  />
+                }
+                fileName={`${this.props.employee.firstName} ${this.props.employee.lastName} Vacation.pdf`}
               >
-                <DescriptionIcon /> Generate doc
-              </Button>
+                <Button
+                  data-unit-test="addPTO-button"
+                  className="ptobasicinfo-buttons"
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => {}}
+                >
+                  <DescriptionIcon /> Generate pdf
+                </Button>
+              </PDFDownloadLink>
             </Grid>
             <Grid item xs={4}>
               <Button
