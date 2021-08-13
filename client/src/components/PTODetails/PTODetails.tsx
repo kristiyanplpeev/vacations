@@ -6,10 +6,10 @@ import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
 import "./PTODetails.css";
-import Error from "common/AppError/Error";
 import { dayStatus } from "common/constants";
-import DatesCalculator from "common/DatesCalculator/DatesCalculator";
 import { UserHolidayBasicInfoType, UserInfoType, HolidayDaysInfoType } from "common/types";
+import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
+import Error from "components/common/Error/Error";
 import PTOBasicInfo from "components/PTODetails/PTOBasicInfo/PTOBasicInfo";
 import { IHolidaysService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
@@ -83,7 +83,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
       });
     } catch (error) {
       this.setState({
-        error: error.response.data.message,
+        error: error.message,
       });
     }
     this.setState({

@@ -15,8 +15,8 @@ import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, withRouter } from "react-router";
 
-import Error from "common/AppError/Error";
 import { IHolidayFullInfo, TextFieldType } from "common/types";
+import Error from "components/common/Error/Error";
 import { IHolidaysService } from "inversify/interfaces";
 import "./AdditionalInfo.css";
 import { TYPES } from "inversify/types";

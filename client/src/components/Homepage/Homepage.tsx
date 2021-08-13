@@ -16,8 +16,8 @@ import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
-import Error from "common/AppError/Error";
 import { UserHolidayType } from "common/types";
+import Error from "components/common/Error/Error";
 import { IHolidaysService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 

@@ -10,7 +10,7 @@ import { bindActionCreators } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 
 import "reflect-metadata";
-import Error from "common/AppError/Error";
+import Error from "components/common/Error/Error";
 import { IRedirecting, IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 import { startLogInUser, startSetIsUserLoggedIn } from "store/user/action";

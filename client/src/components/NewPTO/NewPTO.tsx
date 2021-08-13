@@ -4,9 +4,9 @@ import Grid from "@material-ui/core/Grid";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { resolve } from "inversify-react";
 
-import DatesCalculator from "common/DatesCalculator/DatesCalculator";
 import { ValidationUtil } from "common/emailValidator";
 import { HolidayDaysInfoType, TextFieldType } from "common/types";
+import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import AdditionalInfo from "components/NewPTO/AdditionalInfo/AdditionalInfo";
 import { IHolidaysService, INewPTO } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
