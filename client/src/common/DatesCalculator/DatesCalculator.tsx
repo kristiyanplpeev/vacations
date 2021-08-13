@@ -14,6 +14,7 @@ import TableRow from "@material-ui/core/TableRow";
 import Typography from "@material-ui/core/Typography";
 import InfoIcon from "@material-ui/icons/Info";
 
+import { dayStatus } from "common/constants";
 import { HolidayDaysInfoType } from "common/types";
 import "./DatesCalculator.css";
 
@@ -147,7 +148,7 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
 
   private calculateVacationDays(): calcVacation {
     const nonWorkingDays = this.props.holidayDaysStatus
-      .filter((el) => el.status !== "workday")
+      .filter((el) => el.status !== dayStatus.workday)
       .map((element) => {
         const formattedDate = element.date.replace(/[-]/g, ".");
         return `${formattedDate} - ${element.status}`;
