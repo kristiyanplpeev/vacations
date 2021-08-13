@@ -15,7 +15,7 @@ import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, withRouter } from "react-router";
 
-import AppError from "common/AppError/AppError";
+import Error from "common/AppError/Error";
 import { IHolidayFullInfo, TextFieldType } from "common/types";
 import { IHolidaysService } from "inversify/interfaces";
 import "./AdditionalInfo.css";
@@ -60,7 +60,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
   // eslint-disable-next-line max-lines-per-function
   render(): JSX.Element {
     if (this.state.error) {
-      return <AppError message={this.state.error} />;
+      return <Error />;
     }
     return (
       <Grid container spacing={5}>

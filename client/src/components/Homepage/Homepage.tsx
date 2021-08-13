@@ -16,7 +16,7 @@ import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
-import AppError from "common/AppError/AppError";
+import Error from "common/AppError/Error";
 import { UserHolidayType } from "common/types";
 import { IHolidaysService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
@@ -68,7 +68,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   // eslint-disable-next-line max-lines-per-function
   render(): JSX.Element {
     if (this.state.error) {
-      return <AppError message={this.state.error} />;
+      return <Error />;
     }
     if (this.state.loading) {
       return <CircularProgress />;
