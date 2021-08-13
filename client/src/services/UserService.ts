@@ -10,7 +10,7 @@ import "reflect-metadata";
 @injectable()
 class UserService implements IUserService {
   constructor() {}
-  logInUserRequest = async (): Promise<IUserInfo> => {
+  logInUser = async (): Promise<IUserInfo> => {
     const res = (await axios.get(`${BASE_URL}auth/users`, { withCredentials: true })).data;
     localStorage.setItem("token", res.access_token);
     return extractUser(res.access_token);

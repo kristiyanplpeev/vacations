@@ -18,7 +18,7 @@ import { RouteComponentProps } from "react-router";
 
 import { IUserHoliday } from "common/types";
 import Error from "components/common/Error/Error";
-import { IHolidaysService } from "inversify/interfaces";
+import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
 interface HomepageProps extends RouteComponentProps {}
@@ -31,7 +31,7 @@ interface HomepageState {
 }
 
 class Homepage extends Component<HomepageProps, HomepageState> {
-  @resolve(TYPES.Holidays) private holidaysService!: IHolidaysService;
+  @resolve(TYPES.PTO) private PTOService!: IPTOService;
 
   constructor(props: HomepageProps) {
     super(props);
@@ -178,7 +178,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   }
 
   private async getUserPTOs() {
-    const userPTOs = await this.holidaysService.userPTOsRequest();
+    const userPTOs = await this.PTOService.userPTOs();
     const sortingFunc = (a: IUserHoliday, b: IUserHoliday) => {
       const aa = a.from_date.split("-").join();
       const bb = b.from_date.split("-").join();

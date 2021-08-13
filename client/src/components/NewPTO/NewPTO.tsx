@@ -8,7 +8,7 @@ import { ValidationUtil } from "common/emailValidator";
 import { HolidayDays, TextFieldType } from "common/types";
 import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import AdditionalInfo from "components/NewPTO/AdditionalInfo/AdditionalInfo";
-import { IHolidaysService, INewPTO } from "inversify/interfaces";
+import { IHolidaysService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 import "./NewPTO.css";
 
@@ -24,7 +24,7 @@ interface NewPTOState {
   loading: boolean;
 }
 
-class NewPTO extends Component<NewPTOProps, NewPTOState> implements INewPTO {
+class NewPTO extends Component<NewPTOProps, NewPTOState> {
   @resolve(TYPES.Holidays) holidaysService!: IHolidaysService;
 
   constructor(props: NewPTOProps) {
@@ -90,7 +90,7 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> implements INewPTO {
       loading: true,
     });
     try {
-      const holidayDaysStatus = await this.holidaysService.getHolidayInfoRequest({
+      const holidayDaysStatus = await this.holidaysService.getDatesStatus({
         startingDate,
         endingDate,
       });

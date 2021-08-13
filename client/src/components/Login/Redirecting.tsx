@@ -37,7 +37,7 @@ class Redirecting extends Component<Props, RedirectingState> implements IRedirec
 
   componentDidMount = async (): Promise<void> => {
     try {
-      const userInfo = await this.usersService.logInUserRequest();
+      const userInfo = await this.usersService.logInUser();
       this.props.logInUser(userInfo);
       this.props.setIsUserLoggedIn(true);
       this.props.history.push("/");

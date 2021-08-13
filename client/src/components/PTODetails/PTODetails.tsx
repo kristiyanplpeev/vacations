@@ -11,7 +11,7 @@ import { IUserHolidayBasicInfo, IUserInfo, HolidayDays } from "common/types";
 import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import Error from "components/common/Error/Error";
 import PTOBasicInfo from "components/PTODetails/PTOBasicInfo/PTOBasicInfo";
-import { IHolidaysService } from "inversify/interfaces";
+import { IHolidaysService, IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
 interface PTODetailsMatchProps {
@@ -32,6 +32,7 @@ interface PTODetailsState {
 
 class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
   @resolve(TYPES.Holidays) holidaysService!: IHolidaysService;
+  @resolve(TYPES.PTO) private PTOService!: IPTOService;
 
   constructor(props: PTODetailsProps) {
     super(props);
@@ -65,7 +66,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
         loading: true,
       });
       const PTOId = this.props.match.params.id;
-      const PTOFullInfo = await this.holidaysService.PTODetailedRequest(PTOId);
+      const PTOFullInfo = await this.PTOService.PTODetailed(PTOId);
       const workingDays = this.calculateWorkingDays(PTOFullInfo.eachDayStatus);
 
       this.setState({

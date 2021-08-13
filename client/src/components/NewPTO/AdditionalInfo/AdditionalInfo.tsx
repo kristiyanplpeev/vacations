@@ -17,7 +17,7 @@ import { RouteComponentProps, withRouter } from "react-router";
 
 import { IHolidayFullInfo, TextFieldType } from "common/types";
 import Error from "components/common/Error/Error";
-import { IHolidaysService } from "inversify/interfaces";
+import { IPTOService } from "inversify/interfaces";
 import "./AdditionalInfo.css";
 import { TYPES } from "inversify/types";
 
@@ -44,7 +44,7 @@ interface AdditionalInfoProps extends RouteComponentProps {
 }
 
 class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState> {
-  @resolve(TYPES.Holidays) private holidaysService!: IHolidaysService;
+  @resolve(TYPES.PTO) private PTOService!: IPTOService;
 
   constructor(props: AdditionalInfoProps) {
     super(props);
@@ -75,7 +75,6 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                   <KeyboardDatePicker
                     className="additional-info-datepicker additional-info-card-content"
                     margin="normal"
-                    id="date-picker-dialog"
                     label="From:"
                     format="yyyy/MM/dd"
                     value={this.props.startingDate}
@@ -89,7 +88,6 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                   <KeyboardDatePicker
                     className="additional-info-datepicker additional-info-card-content"
                     margin="normal"
-                    id="date-picker-dialog"
                     label="To:"
                     format="yyyy/MM/dd"
                     value={this.props.endingDate}
@@ -107,7 +105,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                   id="outlined-multiline-static"
                   label="Comments"
                   value={this.props.comment.value}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.props.handleCommentChange(e)}
+                  onChange={this.props.handleCommentChange}
                   multiline
                   rows={4}
                   variant="outlined"
@@ -120,7 +118,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                   id="outlined-multiline-static"
                   label="Approvers"
                   value={this.props.approvers.value}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.props.handleApproversChange(e)}
+                  onChange={this.props.handleApproversChange}
                   placeholder="comma separated emails of the approvers"
                   multiline
                   rows={4}
@@ -185,8 +183,8 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
       loading: true,
     });
     try {
-      const holidayInfo = this.formatHolidayInfoAsObj();
-      const warning = await this.holidaysService.addPTORequest(holidayInfo);
+      const holidayInfo = this.holiday();
+      const warning = await this.PTOService.addPTO(holidayInfo);
       if (warning && warning.warning) {
         this.setState({
           warning: warning.warning,
@@ -206,7 +204,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
     });
   };
 
-  private formatHolidayInfoAsObj(): IHolidayFullInfo {
+  private holiday(): IHolidayFullInfo {
     const approversArr = this.props.approvers.value
       .replace(/ /g, "")
       .split(",")
