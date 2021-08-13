@@ -5,7 +5,7 @@ import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { resolve } from "inversify-react";
 
 import { ValidationUtil } from "common/emailValidator";
-import { HolidayDaysInfoType, TextFieldType } from "common/types";
+import { HolidayDays, TextFieldType } from "common/types";
 import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import AdditionalInfo from "components/NewPTO/AdditionalInfo/AdditionalInfo";
 import { IHolidaysService, INewPTO } from "inversify/interfaces";
@@ -17,7 +17,7 @@ interface NewPTOProps {}
 interface NewPTOState {
   startingDate: string;
   endingDate: string;
-  holidayDaysStatus: HolidayDaysInfoType;
+  holidayDaysStatus: HolidayDays;
   comment: TextFieldType;
   approvers: TextFieldType;
   error: boolean;

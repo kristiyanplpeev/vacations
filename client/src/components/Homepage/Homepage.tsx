@@ -16,7 +16,7 @@ import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
-import { UserHolidayType } from "common/types";
+import { IUserHoliday } from "common/types";
 import Error from "components/common/Error/Error";
 import { IHolidaysService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
@@ -26,8 +26,8 @@ interface HomepageProps extends RouteComponentProps {}
 interface HomepageState {
   loading: boolean;
   error: string;
-  userPastPTOs: Array<UserHolidayType>;
-  userFuturePTOs: Array<UserHolidayType>;
+  userPastPTOs: Array<IUserHoliday>;
+  userFuturePTOs: Array<IUserHoliday>;
 }
 
 class Homepage extends Component<HomepageProps, HomepageState> {
@@ -179,7 +179,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
 
   private async getUserPTOs() {
     const userPTOs = await this.holidaysService.userPTOsRequest();
-    const sortingFunc = (a: UserHolidayType, b: UserHolidayType) => {
+    const sortingFunc = (a: IUserHoliday, b: IUserHoliday) => {
       const aa = a.from_date.split("-").join();
       const bb = b.from_date.split("-").join();
       return aa > bb ? -1 : aa < bb ? 1 : 0;
@@ -197,7 +197,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     };
   }
 
-  private mappingFunc = (el: UserHolidayType): JSX.Element => (
+  private mappingFunc = (el: IUserHoliday): JSX.Element => (
     <TableRow hover key={el.id}>
       <TableCell width="10%">{el.status}</TableCell>
       <TableCell width="10%" align="left">

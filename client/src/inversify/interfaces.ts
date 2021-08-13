@@ -1,26 +1,19 @@
-import {
-  IHolidayInfo,
-  HolidayDaysInfoType,
-  UserInfoType,
-  IHolidayFullInfo,
-  UserHolidayType,
-  PTOFullInfo,
-} from "common/types";
+import { IHolidayInfo, HolidayDays, IUserInfo, IHolidayFullInfo, IUserHoliday, IPTOFullInfo } from "common/types";
 
 export interface IUserService {
-  logInUserRequest(): Promise<UserInfoType>;
+  logInUserRequest(): Promise<IUserInfo>;
 }
 
 export interface IHolidaysService {
-  getHolidayInfoRequest({ startingDate, endingDate }: IHolidayInfo): Promise<HolidayDaysInfoType>;
+  getHolidayInfoRequest({ startingDate, endingDate }: IHolidayInfo): Promise<HolidayDays>;
   addPTORequest({
     startingDate,
     endingDate,
     comment,
     approvers,
   }: IHolidayFullInfo): Promise<void | { warning: string }>;
-  userPTOsRequest(): Promise<Array<UserHolidayType>>;
-  PTODetailedRequest(PTOId: string): Promise<PTOFullInfo>;
+  userPTOsRequest(): Promise<Array<IUserHoliday>>;
+  PTODetailedRequest(PTOId: string): Promise<IPTOFullInfo>;
 }
 
 export interface INewPTO {}

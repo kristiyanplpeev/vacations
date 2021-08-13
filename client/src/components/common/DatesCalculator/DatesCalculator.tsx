@@ -15,7 +15,7 @@ import Typography from "@material-ui/core/Typography";
 import InfoIcon from "@material-ui/icons/Info";
 
 import { dayStatus } from "common/constants";
-import { HolidayDaysInfoType } from "common/types";
+import { HolidayDays } from "common/types";
 import "./DatesCalculator.css";
 
 type calcVacation = {
@@ -26,7 +26,7 @@ type calcVacation = {
 };
 
 interface DatesCalculatorProps {
-  holidayDaysStatus: HolidayDaysInfoType;
+  holidayDaysStatus: HolidayDays;
   loading: boolean;
 }
 

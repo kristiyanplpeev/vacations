@@ -2,7 +2,7 @@ import React from "react";
 
 import { Page, Text, View, Document, StyleSheet, Image, Font } from "@react-pdf/renderer";
 
-import { UserHolidayBasicInfoType, UserInfoType } from "common/types";
+import { IUserHolidayBasicInfo, IUserInfo } from "common/types";
 import font from "components/PTODetails/PDFDocu/roboto-medium-webfont.ttf";
 
 // Create styles
@@ -97,8 +97,8 @@ const emptyBox = process.env.PUBLIC_URL + "/emptyBox.png";
 const checkedBox = process.env.PUBLIC_URL + "/checkedBox.png";
 
 interface MyDocumentProps {
-  employee: UserInfoType;
-  PTOInfo: UserHolidayBasicInfoType;
+  employee: IUserInfo;
+  PTOInfo: IUserHolidayBasicInfo;
   workingDays: number;
 }
 

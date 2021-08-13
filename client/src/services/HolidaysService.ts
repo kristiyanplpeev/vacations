@@ -2,14 +2,14 @@ import axios from "axios";
 import { injectable } from "inversify";
 
 import { BASE_URL } from "common/constants";
-import { IHolidayInfo, HolidayDaysInfoType, IHolidayFullInfo, UserHolidayType, PTOFullInfo } from "common/types";
+import { IHolidayInfo, HolidayDays, IHolidayFullInfo, IUserHoliday, IPTOFullInfo } from "common/types";
 import { IHolidaysService } from "inversify/interfaces";
 import { getToken } from "providers/tokenManagment";
 import "reflect-metadata";
 
 @injectable()
 class HolidaysService implements IHolidaysService {
-  getHolidayInfoRequest = async ({ startingDate, endingDate }: IHolidayInfo): Promise<HolidayDaysInfoType> => {
+  getHolidayInfoRequest = async ({ startingDate, endingDate }: IHolidayInfo): Promise<HolidayDays> => {
     const headers = {
       "Content-Type": "application/json",
       // eslint-disable-next-line prettier/prettier
@@ -51,7 +51,7 @@ class HolidaysService implements IHolidaysService {
     }
   };
 
-  userPTOsRequest = async (): Promise<Array<UserHolidayType>> => {
+  userPTOsRequest = async (): Promise<Array<IUserHoliday>> => {
     const headers = {
       // eslint-disable-next-line prettier/prettier
       Authorization: `Bearer ${getToken()}`,
@@ -60,7 +60,7 @@ class HolidaysService implements IHolidaysService {
     return (await axios.get(`${BASE_URL}holidays/users`, { headers })).data;
   };
 
-  PTODetailedRequest = async (PTOId: string): Promise<PTOFullInfo> => {
+  PTODetailedRequest = async (PTOId: string): Promise<IPTOFullInfo> => {
     const headers = {
       // eslint-disable-next-line prettier/prettier
       Authorization: `Bearer ${getToken()}`,

@@ -7,7 +7,7 @@ import { RouteComponentProps } from "react-router";
 
 import "./PTODetails.css";
 import { dayStatus } from "common/constants";
-import { UserHolidayBasicInfoType, UserInfoType, HolidayDaysInfoType } from "common/types";
+import { IUserHolidayBasicInfo, IUserInfo, HolidayDays } from "common/types";
 import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import Error from "components/common/Error/Error";
 import PTOBasicInfo from "components/PTODetails/PTOBasicInfo/PTOBasicInfo";
@@ -23,10 +23,10 @@ interface PTODetailsProps extends RouteComponentProps<PTODetailsMatchProps> {}
 interface PTODetailsState {
   error: string;
   loading: boolean;
-  PTOInfo: UserHolidayBasicInfoType;
-  employee: UserInfoType;
-  approvers: Array<UserInfoType>;
-  eachDayStatus: HolidayDaysInfoType;
+  PTOInfo: IUserHolidayBasicInfo;
+  employee: IUserInfo;
+  approvers: Array<IUserInfo>;
+  eachDayStatus: HolidayDays;
   workingDays: number;
 }
 
@@ -118,7 +118,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
     );
   }
 
-  private calculateWorkingDays(daysStatuses: HolidayDaysInfoType): number {
+  private calculateWorkingDays(daysStatuses: HolidayDays): number {
     return daysStatuses.filter((el) => el.status === dayStatus.workday).length;
   }
 }

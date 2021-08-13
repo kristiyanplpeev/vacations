@@ -1,6 +1,4 @@
-import { UserInfo } from "os";
-
-export type UserInfoType = {
+export type IUserInfo = {
   id: string;
   googleId: string;
   email: string;
@@ -19,7 +17,7 @@ export interface IHolidayFullInfo extends IHolidayInfo {
   approvers: Array<string>;
 }
 
-export type HolidayDaysInfoType = Array<{ date: string; status: string }>;
+export type HolidayDays = Array<{ date: string; status: string }>;
 
 export type TextFieldType = {
   value: string;
@@ -28,35 +26,25 @@ export type TextFieldType = {
   errorText: string;
 };
 
-export type UserHolidayBasicInfoType = {
+export interface IUserHolidayBasicInfo {
   id: string;
   from_date: string;
   to_date: string;
   comment: string;
   status: string;
-};
+}
 
-export type UserHolidayType = {
-  id: string;
-  from_date: string;
-  to_date: string;
-  comment: string;
-  status: string;
+export interface IUserHoliday extends IUserHolidayBasicInfo {
   PTODays: number;
   totalDays: number;
-};
+}
 
-export type ErrorType = {
+export interface Error {
   error: string;
-};
+}
 
-export type PTOFullInfo = {
-  id: string;
-  from_date: string;
-  to_date: string;
-  comment: string;
-  status: string;
-  employee: UserInfoType;
-  approvers: Array<UserInfoType>;
-  eachDayStatus: HolidayDaysInfoType;
-};
+export interface IPTOFullInfo extends IUserHolidayBasicInfo {
+  employee: IUserInfo;
+  approvers: Array<IUserInfo>;
+  eachDayStatus: HolidayDays;
+}
