@@ -26,7 +26,7 @@ class Header extends Component<Props, HeaderState> {
             <Button onClick={() => this.logout()} color="inherit">
               LOGOUT
             </Button>
-            <IconButton edge="start" className="header-menubutton" color="inherit" aria-label="menu"></IconButton>
+            <IconButton edge="start" className="header-menu-button" color="inherit" aria-label="menu"></IconButton>
             <Typography variant="h6" className="header-title">
               {this.props.userInfo.firstName} {this.props.userInfo.lastName}
             </Typography>

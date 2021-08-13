@@ -1,15 +1,15 @@
-.datescalculator-table.MuiTableContainer-root {
+.dates-calculator-table.MuiTableContainer-root {
     width: 60%
 } 
 
-.datescalculator-tablecell.MuiTableCell-root {
+.dates-calculator-table-cell.MuiTableCell-root {
     padding: 10px;
 }
 
-.datescalculator-popover-text {
+.dates-calculator-popover-text {
     white-space: pre-wrap;
 }
 
-.datescalculator-popover {
+.dates-calculator-popover {
     pointer-events: none;
 }

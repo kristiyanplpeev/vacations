@@ -75,7 +75,7 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
       <Grid container spacing={3}>
         <Grid item xs={12}>
           {this.props.holidayDaysStatus.length !== 0 && (
-            <TableContainer className="datescalculator-table" component={Paper}>
+            <TableContainer className="dates-calculator-table" component={Paper}>
               <Table className={"table"} aria-label="simple table">
                 <TableHead>
                   <TableRow>
@@ -88,13 +88,13 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
                 </TableHead>
                 <TableBody>
                   <TableRow key={"1"}>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       Non- working days:
                     </TableCell>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       {this.state.freeDays}
                     </TableCell>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       <InfoIcon
                         aria-owns={!!this.state.anchorEl ? "mouse-over-popover" : undefined}
                         aria-haspopup="true"
@@ -102,7 +102,7 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
                         onMouseLeave={this.handlePopoverClose}
                       />
                       <Popover
-                        className="datescalculator-popover"
+                        className="dates-calculator-popover"
                         id="mouse-over-popover"
                         open={Boolean(this.state.anchorEl)}
                         anchorEl={this.state.anchorEl}
@@ -117,23 +117,23 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
                         onClose={this.handlePopoverClose}
                         disableRestoreFocus
                       >
-                        <Typography className="datescalculator-popover-text">{this.state.freeDaysStatuses}</Typography>
+                        <Typography className="dates-calculator-popover-text">{this.state.freeDaysStatuses}</Typography>
                       </Popover>
                     </TableCell>
                   </TableRow>
                   <TableRow key={"2"}>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       Working days:
                     </TableCell>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       {this.state.weekdays}
                     </TableCell>
                   </TableRow>
                   <TableRow key={"3"}>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       Total:
                     </TableCell>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       {this.state.totalDays}
                     </TableCell>
                   </TableRow>

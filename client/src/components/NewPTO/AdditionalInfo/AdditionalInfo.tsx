@@ -67,13 +67,13 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
         <Grid item xs={12}>
           <Card>
             <CardContent>
-              <Typography className="additionalInfo-header additionalinfo-card-content" variant="h5" component="h2">
+              <Typography className="additional-info-header additional-info-card-content" variant="h5" component="h2">
                 Details
               </Typography>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <Grid item xs={12}>
                   <KeyboardDatePicker
-                    className="additional-info-datepicker additionalinfo-card-content"
+                    className="additional-info-datepicker additional-info-card-content"
                     margin="normal"
                     id="date-picker-dialog"
                     label="From:"
@@ -87,7 +87,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                 </Grid>
                 <Grid item xs={12}>
                   <KeyboardDatePicker
-                    className="additional-info-datepicker additionalinfo-card-content"
+                    className="additional-info-datepicker additional-info-card-content"
                     margin="normal"
                     id="date-picker-dialog"
                     label="To:"
@@ -102,7 +102,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
               </MuiPickersUtilsProvider>
               <Grid item xs={12}>
                 <TextField
-                  className="additionalinfo-textfields additionalinfo-card-content"
+                  className="additional-info-text-fields additional-info-card-content"
                   error={this.state.commentInputInvalid}
                   id="outlined-multiline-static"
                   label="Comments"
@@ -115,7 +115,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
               </Grid>
               <Grid item xs={12}>
                 <TextField
-                  className="additionalinfo-textfields additionalinfo-card-content"
+                  className="additional-info-text-fields additional-info-card-content"
                   error={this.state.approversInputInvalid}
                   id="outlined-multiline-static"
                   label="Approvers"
@@ -130,7 +130,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
               <Grid item xs={12}>
                 {this.state.warning && !this.state.successMessage ? (
                   <Alert
-                    className="additionalinfo-warning additionalinfo-card-content"
+                    className="additional-info-warning additional-info-card-content"
                     data-unit-test="warning-message"
                     severity="warning"
                   >
@@ -142,7 +142,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                 <Grid item xs={2}></Grid>
                 <Grid item xs={4}>
                   <Button
-                    className="additionalinfo-buttons"
+                    className="additional-info-buttons"
                     variant="outlined"
                     color="primary"
                     onClick={() => this.props.history.push("/home")}
@@ -153,7 +153,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                 <Grid item xs={4}>
                   <Button
                     data-unit-test="addPTO-button"
-                    className="additionalinfo-buttons"
+                    className="additional-info-buttons"
                     variant="outlined"
                     color="primary"
                     onClick={this.addPTO}

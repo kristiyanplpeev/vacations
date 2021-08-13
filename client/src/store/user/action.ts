@@ -31,7 +31,7 @@ export const setIsUserLoggedIn = (status: boolean): AppActions => {
 };
 
 export const startLogInUser = (userInfoData: UserInfoTypes) => {
-  return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+  return (dispatch: Dispatch<AppActions>, getState: () => AppState): void => {
     const { id = "", googleId = "", email = "", firstName = "", lastName = "", picture = "" } = userInfoData;
 
     const user = { id, googleId, email, firstName, lastName, picture };
@@ -45,13 +45,13 @@ export const startLogInUser = (userInfoData: UserInfoTypes) => {
 };
 
 export const startLogOutUser = () => {
-  return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+  return (dispatch: Dispatch<AppActions>, getState: () => AppState): void => {
     dispatch(logOutUser());
   };
 };
 
 export const startSetIsUserLoggedIn = (newState: boolean) => {
-  return (dispatch: Dispatch<AppActions>, getState: () => AppState) => {
+  return (dispatch: Dispatch<AppActions>, getState: () => AppState): void => {
     dispatch(setIsUserLoggedIn(newState));
   };
 };

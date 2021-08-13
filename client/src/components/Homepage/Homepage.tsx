@@ -75,7 +75,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     }
     return (
       <div className="homepage-root">
-        <h1 className="homapage-header">Paid Time Off</h1>
+        <h1 className="homepage-header">Paid Time Off</h1>
         {this.state.userFuturePTOs.length === 0 && this.state.userPastPTOs.length === 0
           ? this.renderNoPTOsView()
           : this.renderPTOsTable()}
@@ -86,7 +86,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   renderAddPTOButton(): JSX.Element {
     return (
       <Button
-        className="homapage-addpto-button"
+        className="homepage-add-pto-button"
         onClick={() => this.props.history.push("/new")}
         variant="outlined"
         color="primary"
@@ -213,7 +213,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         {el.totalDays}
       </TableCell>
       <TableCell
-        className="homepage-viewpto-button"
+        className="homepage-view-pto-button"
         width="5%"
         align="left"
         onClick={() => this.props.history.push(`/pto/${el.id}`)}

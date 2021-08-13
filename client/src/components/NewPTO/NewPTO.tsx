@@ -58,7 +58,7 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> implements INewPTO {
 
   render(): JSX.Element {
     return (
-      <div className="newpto-container">
+      <div className="new-pto-container">
         <h1>Add new Paid Time Off</h1>
 
         <Grid container spacing={3}>

@@ -34,7 +34,7 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
     return (
       <Card>
         <CardContent>
-          <Typography className="ptobasicinfo-header" variant="h5" component="h2">
+          <Typography className="pto-basic-info-header" variant="h5" component="h2">
             Details
           </Typography>
           {this.renderUser([this.props.employee], "Employee")}
@@ -43,7 +43,7 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
           <Grid container spacing={3}>
             <Grid item xs={4}>
               <Button
-                className="ptobasicinfo-buttons"
+                className="pto-basic-info-buttons"
                 variant="outlined"
                 color="primary"
                 onClick={() => this.props.history.push("/home")}
@@ -64,7 +64,7 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
               >
                 <Button
                   data-unit-test="addPTO-button"
-                  className="ptobasicinfo-buttons"
+                  className="pto-basic-info-buttons"
                   variant="outlined"
                   color="primary"
                   onClick={() => {}}
@@ -76,7 +76,7 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
             <Grid item xs={4}>
               <Button
                 data-unit-test="addPTO-button"
-                className="ptobasicinfo-buttons"
+                className="pto-basic-info-buttons"
                 variant="outlined"
                 color="primary"
                 onClick={() => {}}
@@ -103,7 +103,7 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
       const keyCapitalized = this.stringCapitalized(key);
       return (
         <Grid item xs={12} key={key}>
-          <Card className="ptobasicinfo-small-card">
+          <Card className="pto-basic-info-small-card">
             <CardContent>
               <Grid container spacing={2}>
                 <Grid item xs={3}>
@@ -128,15 +128,15 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
     const userChips = users.map((user) => (
       <Chip
         key={user.id}
-        className="ptobasicinfo-chip"
-        avatar={<Avatar className="ptobasicinfo-chip-avatar" alt={user.firstName[0]} src={user.picture} />}
+        className="pto-basic-info-chip"
+        avatar={<Avatar className="pto-basic-info-chip-avatar" alt={user.firstName[0]} src={user.picture} />}
         label={user.email}
         variant="outlined"
       />
     ));
     return (
       <Grid item xs={12}>
-        <Card className="ptobasicinfo-small-card">
+        <Card className="pto-basic-info-small-card">
           <CardContent>
             <Grid container spacing={2}>
               <Grid item xs={3}>

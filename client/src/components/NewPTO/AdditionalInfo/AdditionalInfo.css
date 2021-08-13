@@ -1,16 +1,16 @@
-.additionalinfo-card-content {
+.additional-info-card-content {
   width: 80%;
 }
 
-.additionalinfo-textfields.MuiFormControl-root {
+.additional-info-text-fields.MuiFormControl-root {
   margin: 4% 0px;
 }
 
-.additionalinfo-buttons.MuiButtonBase-root {
+.additional-info-buttons.MuiButtonBase-root {
   margin: 4% auto;
 }
 
-.additionalInfo-header.MuiTypography-root {
+.additional-info-header.MuiTypography-root {
   margin: 0% 10%;
   text-align: left;
 }
@@ -19,6 +19,6 @@
   margin: 4% 0px;
 }
 
-.additionalinfo-warning {
+.additional-info-warning {
   margin: auto;
 }
