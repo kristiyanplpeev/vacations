@@ -2,19 +2,14 @@ import axios from "axios";
 import { injectable } from "inversify";
 
 import { BASE_URL } from "common/constants";
-import { IHolidayFullInfo, IUserHoliday, IPTOFullInfo } from "common/types";
+import { IPTO, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/types";
 import { IPTOService } from "inversify/interfaces";
 import { getToken } from "providers/tokenManagment";
 import "reflect-metadata";
 
 @injectable()
 class PTOService implements IPTOService {
-  addPTO = async ({
-    startingDate,
-    endingDate,
-    comment,
-    approvers,
-  }: IHolidayFullInfo): Promise<void | { warning: string }> => {
+  addPTO = async ({ startingDate, endingDate, comment, approvers }: IPTO): Promise<void | { warning: string }> => {
     const headers = {
       "Content-Type": "application/json",
       // eslint-disable-next-line prettier/prettier
@@ -37,7 +32,7 @@ class PTOService implements IPTOService {
     }
   };
 
-  userPTOs = async (): Promise<Array<IUserHoliday>> => {
+  getUserPTOs = async (): Promise<Array<IUserPTOWithCalcDays>> => {
     const headers = {
       // eslint-disable-next-line prettier/prettier
       Authorization: `Bearer ${getToken()}`,
@@ -46,7 +41,7 @@ class PTOService implements IPTOService {
     return (await axios.get(`${BASE_URL}holidays/users`, { headers })).data;
   };
 
-  PTODetailed = async (PTOId: string): Promise<IPTOFullInfo> => {
+  PTODetailed = async (PTOId: string): Promise<IUserPTOFullDetails> => {
     const headers = {
       // eslint-disable-next-line prettier/prettier
       Authorization: `Bearer ${getToken()}`,

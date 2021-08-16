@@ -1,19 +1,15 @@
-import { IHolidayInfo, HolidayDays, IUserInfo, IHolidayFullInfo, IUserHoliday, IPTOFullInfo } from "common/types";
+import { IPTOPeriod, HolidayDays, IUser, IPTO, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/types";
 
 export interface IUserService {
-  logInUser(): Promise<IUserInfo>;
+  logInUser(): Promise<IUser>;
 }
 
 export interface IHolidaysService {
-  getDatesStatus({ startingDate, endingDate }: IHolidayInfo): Promise<HolidayDays>;
+  getDatesStatus({ startingDate, endingDate }: IPTOPeriod): Promise<HolidayDays>;
 }
 
 export interface IPTOService {
-  addPTO({ startingDate, endingDate, comment, approvers }: IHolidayFullInfo): Promise<void | { warning: string }>;
-  userPTOs(): Promise<Array<IUserHoliday>>;
-  PTODetailed(PTOId: string): Promise<IPTOFullInfo>;
-}
-
-export interface IRedirecting {
-  componentDidMount(): Promise<void>;
+  addPTO({ startingDate, endingDate, comment, approvers }: IPTO): Promise<void | { warning: string }>;
+  getUserPTOs(): Promise<Array<IUserPTOWithCalcDays>>;
+  PTODetailed(PTOId: string): Promise<IUserPTOFullDetails>;
 }

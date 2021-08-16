@@ -4,7 +4,7 @@ import { Button } from "@material-ui/core";
 import { mount } from "enzyme";
 import { BrowserRouter } from "react-router-dom";
 
-import { TextFieldType } from "common/types";
+import { TextBox } from "common/types";
 import AdditionalInfo from "components/NewPTO/AdditionalInfo/AdditionalInfo";
 
 const handleCommentsChange = jest.fn();
@@ -54,8 +54,8 @@ const getSelector = (value: string) => `[data-unit-test="${value}"]`;
 const getComponent = (
   startingDate: string,
   endingDate: string,
-  comment: TextFieldType,
-  approvers: TextFieldType,
+  comment: TextBox,
+  approvers: TextBox,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any => {
   return mount(

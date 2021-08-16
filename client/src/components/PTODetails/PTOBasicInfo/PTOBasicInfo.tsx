@@ -14,13 +14,13 @@ import "./PTOBasicInfo.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { RouteComponentProps, withRouter } from "react-router";
 
-import { IUserHolidayBasicInfo, IUserInfo } from "common/types";
+import { IUserPTO, IUser } from "common/types";
 import MyDocument from "components/PTODetails/PDFDocu/AtscaleLeaveRequest";
 
 interface PTOBasicInfoProps extends RouteComponentProps {
-  PTOInfo: IUserHolidayBasicInfo;
-  employee: IUserInfo;
-  approvers: Array<IUserInfo>;
+  PTOInfo: IUserPTO;
+  employee: IUser;
+  approvers: Array<IUser>;
   workingDays: number;
 }
 
@@ -124,7 +124,7 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
     });
   }
 
-  renderUser(users: Array<IUserInfo>, fieldType: string): JSX.Element {
+  renderUser(users: Array<IUser>, fieldType: string): JSX.Element {
     const userChips = users.map((user) => (
       <Chip
         key={user.id}

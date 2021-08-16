@@ -1,4 +1,4 @@
-export type IUserInfo = {
+export type IUser = {
   id: string;
   googleId: string;
   email: string;
@@ -7,26 +7,26 @@ export type IUserInfo = {
   picture: string;
 };
 
-export interface IHolidayInfo {
+export interface IPTOPeriod {
   startingDate: string;
   endingDate: string;
 }
 
-export interface IHolidayFullInfo extends IHolidayInfo {
+export interface IPTO extends IPTOPeriod {
   comment: string;
   approvers: Array<string>;
 }
 
 export type HolidayDays = Array<{ date: string; status: string }>;
 
-export type TextFieldType = {
+export type TextBox = {
   value: string;
   isValid: boolean;
   validate: (value: string) => boolean;
   errorText: string;
 };
 
-export interface IUserHolidayBasicInfo {
+export interface IUserPTO {
   id: string;
   from_date: string;
   to_date: string;
@@ -34,17 +34,17 @@ export interface IUserHolidayBasicInfo {
   status: string;
 }
 
-export interface IUserHoliday extends IUserHolidayBasicInfo {
+export interface IUserPTOWithCalcDays extends IUserPTO {
   PTODays: number;
   totalDays: number;
 }
 
-export interface Error {
-  error: string;
+export interface IUserPTOFullDetails extends IUserPTO {
+  employee: IUser;
+  approvers: Array<IUser>;
+  eachDayStatus: HolidayDays;
 }
 
-export interface IPTOFullInfo extends IUserHolidayBasicInfo {
-  employee: IUserInfo;
-  approvers: Array<IUserInfo>;
-  eachDayStatus: HolidayDays;
+export interface Error {
+  error: string;
 }

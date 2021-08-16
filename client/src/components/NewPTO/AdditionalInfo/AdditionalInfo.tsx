@@ -15,7 +15,7 @@ import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, withRouter } from "react-router";
 
-import { IHolidayFullInfo, TextFieldType } from "common/types";
+import { IPTO, TextBox } from "common/types";
 import Error from "components/common/Error/Error";
 import { IPTOService } from "inversify/interfaces";
 import "./AdditionalInfo.css";
@@ -35,8 +35,8 @@ interface AdditionalInfoState {
 interface AdditionalInfoProps extends RouteComponentProps {
   startingDate: string;
   endingDate: string;
-  comment: TextFieldType;
-  approvers: TextFieldType;
+  comment: TextBox;
+  approvers: TextBox;
   handleCommentChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleApproversChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   setStartingDate: (date: MaterialUiPickersDate, value: OptionalWithNull<string>) => Promise<void>;
@@ -204,7 +204,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
     });
   };
 
-  private holiday(): IHolidayFullInfo {
+  private holiday(): IPTO {
     const approversArr = this.props.approvers.value
       .replace(/ /g, "")
       .split(",")

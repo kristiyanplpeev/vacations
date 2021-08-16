@@ -2,15 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Holiday } from '../model/holiday.entity';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { HolidayInfoDto, HolidayPeriodDto } from './dto/holidays.dto';
-import {
-  HolidayPeriod,
-  HolidaysDaysStatus,
-  PTOFullInfo,
-} from 'src/holidays/types';
-import { PTO } from '../model/pto.entity';
-import { User } from '../model/user.entity';
-import { ErrorMessage, PTOInfo } from '../utils/types';
+import { HolidayPeriodDto } from './dto/holidays.dto';
+import { HolidayPeriod, HolidaysDaysStatus } from 'src/holidays/types';
 import DateUtil from '../utils/Utils';
 
 @Injectable()
@@ -116,7 +109,9 @@ export class HolidaysService {
         startingDate: holidayPeriod.startingDate.toString(),
         endingDate: holidayPeriod.endingDate.toString(),
       };
-      const datesBetween = DateUtil.getDatesBetweenDates(holidayPeriodAsString);
+      const datesBetween = DateUtil.getPeriodBetweenDates(
+        holidayPeriodAsString,
+      );
       const constantHolidays = await this.getConstantHolidaysForTheCurrentYear(
         holidayPeriodAsString,
       );

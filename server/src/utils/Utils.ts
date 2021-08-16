@@ -1,7 +1,7 @@
 import { HolidayPeriod } from '../holidays/types';
 
 class DateUtil {
-  static getDatesBetweenDates = ({
+  static getPeriodBetweenDates = ({
     startingDate,
     endingDate,
   }: HolidayPeriod) => {
