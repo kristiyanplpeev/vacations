@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { HolidaysService } from './holidays.service';
+import { PTOsService } from './pto.service';
 import { JwtAuthGuard } from '../google/guards';
 import { HolidayInfoDto, HolidayPeriodDto } from './dto/holidays.dto';
 import { HolidaysDaysStatus, PTOFullInfo } from 'src/holidays/types';
@@ -17,7 +18,10 @@ import { PTO } from 'src/model/pto.entity';
 
 @Controller('holidays')
 export class HolidaysController {
-  constructor(private readonly holidaysService: HolidaysService) {}
+  constructor(
+    private readonly holidaysService: HolidaysService,
+    private readonly PTOService: PTOsService,
+  ) {}
 
   @Post('calc')
   @UseGuards(JwtAuthGuard)
@@ -45,7 +49,7 @@ export class HolidaysController {
     @Res() res,
   ): Promise<PTO | QueryFail> {
     try {
-      const newHoliday = await this.holidaysService.postHoliday(body, req.user);
+      const newHoliday = await this.PTOService.postPTO(body, req.user);
       return res.status(200).send(newHoliday);
     } catch (error) {
       return res.status(400).send({
@@ -60,7 +64,7 @@ export class HolidaysController {
   @UseGuards(JwtAuthGuard)
   public async getUserPTOs(@Req() req, @Res() res): Promise<void> {
     try {
-      const userPTOs = await this.holidaysService.getUserPTOs(req.user);
+      const userPTOs = await this.PTOService.getUserPTOs(req.user);
       return res.status(200).send(userPTOs);
     } catch (error) {
       return res.status(400).send({
@@ -78,7 +82,7 @@ export class HolidaysController {
     @Res() res,
   ): Promise<PTOFullInfo | QueryFail> {
     try {
-      const PTOInfo = await this.holidaysService.getPTOById(id);
+      const PTOInfo = await this.PTOService.getPTOById(id);
       return res.status(200).send(PTOInfo);
     } catch (error) {
       return res.status(400).send({

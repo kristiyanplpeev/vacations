@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HolidaysService } from './holidays.service';
 import { HolidaysController } from './holidays.controller';
+import { PTOsService } from './pto.service';
 
 describe('HolidaysController', () => {
   let controller: HolidaysController;
@@ -124,7 +125,10 @@ describe('HolidaysController', () => {
         return mockHolidayPeriod;
       }
     }),
-    postHoliday: jest.fn((body) => {
+  };
+
+  const mockPTOsService = {
+    postPTO: jest.fn((body) => {
       if (body.startingDate > body.endingDate) {
         throw new Error('There is an error.');
       } else {
@@ -140,10 +144,12 @@ describe('HolidaysController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [HolidaysController],
-      providers: [HolidaysService],
+      providers: [HolidaysService, PTOsService],
     })
       .overrideProvider(HolidaysService)
       .useValue(mockHolidaysService)
+      .overrideProvider(PTOsService)
+      .useValue(mockPTOsService)
       .compile();
 
     controller = module.get<HolidaysController>(HolidaysController);
