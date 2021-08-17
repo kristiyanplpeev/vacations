@@ -19,12 +19,13 @@ export interface IPTO extends IPTOPeriod {
 
 export type HolidayDays = Array<{ date: string; status: string }>;
 
-export type TextBox = {
+export interface ITextBox {
   value: string;
   isValid: boolean;
   validate: (value: string) => boolean;
   errorText: string;
-};
+  textBoxInvalid: boolean;
+}
 
 export interface IUserPTO {
   id: string;
@@ -48,3 +49,5 @@ export interface IUserPTOFullDetails extends IUserPTO {
 export interface Error {
   error: string;
 }
+
+export type OptionalWithNull<T> = T | null | undefined;

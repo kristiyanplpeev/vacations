@@ -10,7 +10,7 @@ import { dayStatus } from "common/constants";
 import { IUserPTO, IUser, HolidayDays } from "common/types";
 import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import Error from "components/common/Error/Error";
-import PTOBasicInfo from "components/PTODetails/PTOBasicInfo/PTOBasicInfo";
+import PTOCard from "components/PTODetails/PTOCard/PTOCard";
 import { IHolidaysService, IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
@@ -103,7 +103,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
             {this.state.loading ? (
               <CircularProgress />
             ) : (
-              <PTOBasicInfo
+              <PTOCard
                 employee={this.state.employee}
                 approvers={this.state.approvers}
                 PTOInfo={this.state.PTOInfo}

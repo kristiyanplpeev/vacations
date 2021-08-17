@@ -4,10 +4,14 @@ import Grid from "@material-ui/core/Grid";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { resolve } from "inversify-react";
 
-import { ValidationUtil } from "common/emailValidator";
-import { HolidayDays, TextBox } from "common/types";
+import { DateUtil } from "common/DateUtil";
+import { HolidayDays, ITextBox, OptionalWithNull } from "common/types";
+import { IPTO } from "common/types";
+import { ValidationUtil } from "common/ValidationUtil";
 import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
-import AdditionalInfo from "components/NewPTO/AdditionalInfo/AdditionalInfo";
+import Error from "components/common/Error/Error";
+import PTOForm from "components/NewPTO/PTOForm/PTOForm";
+import { IPTOService } from "inversify/interfaces";
 import { IHolidaysService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 import "./NewPTO.css";
@@ -18,52 +22,59 @@ interface NewPTOState {
   startingDate: string;
   endingDate: string;
   holidayDaysStatus: HolidayDays;
-  comment: TextBox;
-  approvers: TextBox;
+  comment: ITextBox;
+  approvers: ITextBox;
+  warning: string;
   error: boolean;
   loading: boolean;
+  successMessage: boolean;
 }
 
 class NewPTO extends Component<NewPTOProps, NewPTOState> {
   @resolve(TYPES.Holidays) holidaysService!: IHolidaysService;
+  @resolve(TYPES.PTO) private PTOService!: IPTOService;
 
   constructor(props: NewPTOProps) {
     super(props);
     this.state = {
-      startingDate: new Date().toISOString().slice(0, 10),
-      endingDate: new Date().toISOString().slice(0, 10),
+      startingDate: DateUtil.todayStringified(),
+      endingDate: DateUtil.todayStringified(),
       holidayDaysStatus: [],
       loading: false,
+      warning: "",
       comment: {
         value: "PTO",
         isValid: true,
         validate: (value) => value.length >= 1 && value.length <= 1000,
         errorText: "Comment is mandatory.",
+        textBoxInvalid: false,
       },
       approvers: {
         value: "",
         isValid: false,
-        validate: (value) =>
-          value.length > 0 &&
-          value
-            .replace(/ /g, "")
-            .split(",")
-            .filter((elem) => elem.length > 0)
-            .every((el) => ValidationUtil.isEmail(el)),
+        validate: (value) => value.length > 0 && this.isApproversValid(value),
         errorText: "One or more approvers separated with comma must be provided.",
+        textBoxInvalid: false,
       },
       error: false,
+      successMessage: false,
     };
   }
 
   render(): JSX.Element {
+    if (this.state.error) {
+      return <Error />;
+    }
     return (
       <div className="new-pto-container">
         <h1>Add new Paid Time Off</h1>
 
         <Grid container spacing={3}>
           <Grid item xs={6}>
-            <AdditionalInfo
+            <PTOForm
+              loading={this.state.loading}
+              warning={this.state.warning}
+              successMessage={this.state.successMessage}
               startingDate={this.state.startingDate}
               endingDate={this.state.endingDate}
               comment={this.state.comment}
@@ -72,6 +83,7 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
               handleApproversChange={this.handleApproversChange}
               setStartingDate={this.setStartingDate}
               setEndingDate={this.setEndingDate}
+              addPTO={this.addPTO}
             />
           </Grid>
           <Grid item xs={6}>
@@ -107,8 +119,91 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
     });
   };
 
-  setStartingDate = async (date: MaterialUiPickersDate, value: string | null | undefined): Promise<void> => {
-    if (typeof value === "string") {
+  addPTO = async (): Promise<void> => {
+    if (!this.areInputsValid()) return;
+    this.setState({
+      loading: true,
+    });
+    try {
+      const PTODetails = this.getHoliday();
+      const warning = await this.PTOService.addPTO(PTODetails);
+      if (warning && warning.warning) {
+        this.setState({
+          warning: warning.warning,
+        });
+      } else {
+        this.setState({
+          successMessage: true,
+        });
+      }
+    } catch (error) {
+      this.setState({
+        error: error.message,
+      });
+    }
+    this.setState({
+      loading: false,
+    });
+  };
+
+  private getHoliday(): IPTO {
+    const approversArr = this.formatApprovers(this.state.approvers.value);
+
+    return {
+      startingDate: this.state.startingDate,
+      endingDate: this.state.endingDate,
+      comment: this.state.comment.value,
+      approvers: approversArr,
+    };
+  }
+
+  private formatApprovers(approversValue: string): Array<string> {
+    return approversValue
+      .replace(/ /g, "")
+      .split(",")
+      .filter((elem) => elem.length > 0);
+  }
+
+  private isApproversValid(approversValue: string): boolean {
+    const approversArr = this.formatApprovers(approversValue);
+    return approversArr.every((el) => ValidationUtil.isEmail(el));
+  }
+
+  areInputsValid = (): boolean => {
+    let areInputsValid = true;
+    if (!this.state.comment.isValid) {
+      this.setState({
+        comment: { ...this.state.comment, textBoxInvalid: true },
+        warning: this.state.comment.errorText,
+      });
+      areInputsValid = false;
+    } else {
+      this.setState({
+        comment: { ...this.state.comment, textBoxInvalid: false },
+      });
+    }
+    if (!this.state.approvers.isValid) {
+      this.setState({
+        approvers: { ...this.state.approvers, textBoxInvalid: true },
+        warning: this.state.approvers.errorText,
+      });
+      areInputsValid = false;
+    } else {
+      this.setState({
+        approvers: { ...this.state.approvers, textBoxInvalid: false },
+      });
+    }
+    if (this.state.startingDate > this.state.endingDate) {
+      this.setState({
+        warning: "Starting date must not be after ending date",
+      });
+      areInputsValid = false;
+    }
+    return areInputsValid;
+  };
+
+  setStartingDate = async (date: MaterialUiPickersDate, value: OptionalWithNull<string>): Promise<void> => {
+    if (value) {
       this.setState({
         loading: true,
       });
@@ -129,8 +224,8 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
     }
   };
 
-  setEndingDate = async (date: MaterialUiPickersDate, value: string | null | undefined): Promise<void> => {
-    if (typeof value === "string") {
+  setEndingDate = async (date: MaterialUiPickersDate, value: OptionalWithNull<string>): Promise<void> => {
+    if (value) {
       this.setState({
         loading: true,
       });

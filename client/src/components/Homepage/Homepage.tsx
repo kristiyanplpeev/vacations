@@ -16,6 +16,7 @@ import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
+import { DateUtil } from "common/DateUtil";
 import { IUserPTOWithCalcDays } from "common/types";
 import Error from "components/common/Error/Error";
 import { IPTOService } from "inversify/interfaces";
@@ -179,17 +180,12 @@ class Homepage extends Component<HomepageProps, HomepageState> {
 
   private async getUserPTOs() {
     const userPTOs = await this.PTOService.getUserPTOs();
-    const sortingFunc = (a: IUserPTOWithCalcDays, b: IUserPTOWithCalcDays) => {
-      const aa = a.from_date.split("-").join();
-      const bb = b.from_date.split("-").join();
-      return aa > bb ? -1 : aa < bb ? 1 : 0;
-    };
     const userFuturePTOs = userPTOs
-      .filter((el) => el.from_date > new Date().toISOString().slice(0, 10))
-      .sort(sortingFunc);
+      .filter((el) => el.from_date > DateUtil.todayStringified())
+      .sort(DateUtil.dateSorting);
     const userPastPTOs = userPTOs
-      .filter((el) => el.from_date <= new Date().toISOString().slice(0, 10))
-      .sort(sortingFunc);
+      .filter((el) => el.from_date <= DateUtil.todayStringified())
+      .sort(DateUtil.dateSorting);
 
     return {
       userFuturePTOs,

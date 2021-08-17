@@ -4,8 +4,8 @@ import { Button } from "@material-ui/core";
 import { mount } from "enzyme";
 import { BrowserRouter } from "react-router-dom";
 
-import { TextBox } from "common/types";
-import AdditionalInfo from "components/NewPTO/AdditionalInfo/AdditionalInfo";
+import { ITextBox } from "common/types";
+import PTOForm from "components/NewPTO/PTOForm/PTOForm";
 
 const handleCommentsChange = jest.fn();
 const handleApproversChange = jest.fn();
@@ -54,13 +54,13 @@ const getSelector = (value: string) => `[data-unit-test="${value}"]`;
 const getComponent = (
   startingDate: string,
   endingDate: string,
-  comment: TextBox,
-  approvers: TextBox,
+  comment: ITextBox,
+  approvers: ITextBox,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any => {
   return mount(
     <BrowserRouter>
-      <AdditionalInfo
+      <PTOForm
         handleApproversChange={handleApproversChange}
         handleCommentChange={handleCommentsChange}
         startingDate={startingDate}
@@ -75,7 +75,7 @@ const getComponent = (
 };
 
 // eslint-disable-next-line max-lines-per-function
-describe("AdditionalInfo", () => {
+describe("PTOForm", () => {
   it("Should render warning after clicking Add button with invalid PTO period", () => {
     // arrange
     const component = getComponent(

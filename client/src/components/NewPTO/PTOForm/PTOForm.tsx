@@ -12,68 +12,44 @@ import Typography from "@material-ui/core/Typography";
 import { Alert } from "@material-ui/lab";
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
-import { resolve } from "inversify-react";
 import { RouteComponentProps, withRouter } from "react-router";
 
-import { IPTO, TextBox } from "common/types";
-import Error from "components/common/Error/Error";
-import { IPTOService } from "inversify/interfaces";
-import "./AdditionalInfo.css";
-import { TYPES } from "inversify/types";
+import { ITextBox, OptionalWithNull } from "common/types";
+import "./PTOForm.css";
 
-type OptionalWithNull<T> = T | null | undefined;
-
-interface AdditionalInfoState {
-  warning: string;
-  commentInputInvalid: boolean;
-  approversInputInvalid: boolean;
-  successMessage: boolean;
+interface PTOFormProps extends RouteComponentProps {
   loading: boolean;
-  error: string;
-}
-
-interface AdditionalInfoProps extends RouteComponentProps {
   startingDate: string;
   endingDate: string;
-  comment: TextBox;
-  approvers: TextBox;
+  comment: ITextBox;
+  approvers: ITextBox;
+  warning: string;
+  successMessage: boolean;
+  addPTO: () => Promise<void>;
   handleCommentChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleApproversChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   setStartingDate: (date: MaterialUiPickersDate, value: OptionalWithNull<string>) => Promise<void>;
   setEndingDate: (date: MaterialUiPickersDate, value: OptionalWithNull<string>) => Promise<void>;
 }
 
-class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState> {
-  @resolve(TYPES.PTO) private PTOService!: IPTOService;
-
-  constructor(props: AdditionalInfoProps) {
+class PTOForm extends Component<PTOFormProps> {
+  constructor(props: PTOFormProps) {
     super(props);
-    this.state = {
-      warning: "",
-      commentInputInvalid: false,
-      approversInputInvalid: false,
-      successMessage: false,
-      loading: false,
-      error: "",
-    };
   }
   // eslint-disable-next-line max-lines-per-function
   render(): JSX.Element {
-    if (this.state.error) {
-      return <Error />;
-    }
     return (
       <Grid container spacing={5}>
         <Grid item xs={12}>
           <Card>
             <CardContent>
-              <Typography className="additional-info-header additional-info-card-content" variant="h5" component="h2">
+              <Typography className="pto-form-header card-content" variant="h5" component="h2">
                 Details
               </Typography>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <Grid item xs={12}>
                   <KeyboardDatePicker
-                    className="additional-info-datepicker additional-info-card-content"
+                    className="pto-form-datepicker card-content"
                     margin="normal"
                     label="From:"
                     format="yyyy/MM/dd"
@@ -86,7 +62,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                 </Grid>
                 <Grid item xs={12}>
                   <KeyboardDatePicker
-                    className="additional-info-datepicker additional-info-card-content"
+                    className="pto-form-datepicker card-content"
                     margin="normal"
                     label="To:"
                     format="yyyy/MM/dd"
@@ -100,8 +76,8 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
               </MuiPickersUtilsProvider>
               <Grid item xs={12}>
                 <TextField
-                  className="additional-info-text-fields additional-info-card-content"
-                  error={this.state.commentInputInvalid}
+                  className="pto-form-text-fields card-content"
+                  error={this.props.comment.textBoxInvalid}
                   id="outlined-multiline-static"
                   label="Comments"
                   value={this.props.comment.value}
@@ -113,8 +89,8 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
               </Grid>
               <Grid item xs={12}>
                 <TextField
-                  className="additional-info-text-fields additional-info-card-content"
-                  error={this.state.approversInputInvalid}
+                  className="pto-form-text-fields card-content"
+                  error={this.props.approvers.textBoxInvalid}
                   id="outlined-multiline-static"
                   label="Approvers"
                   value={this.props.approvers.value}
@@ -126,13 +102,9 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                 />
               </Grid>
               <Grid item xs={12}>
-                {this.state.warning && !this.state.successMessage ? (
-                  <Alert
-                    className="additional-info-warning additional-info-card-content"
-                    data-unit-test="warning-message"
-                    severity="warning"
-                  >
-                    {this.state.loading ? <CircularProgress /> : this.state.warning}
+                {this.props.warning && !this.props.successMessage ? (
+                  <Alert className="pto-form-warning card-content" data-unit-test="warning-message" severity="warning">
+                    {this.props.loading ? <CircularProgress /> : this.props.warning}
                   </Alert>
                 ) : null}
               </Grid>
@@ -140,7 +112,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                 <Grid item xs={2}></Grid>
                 <Grid item xs={4}>
                   <Button
-                    className="additional-info-buttons"
+                    className="pto-form-buttons"
                     variant="outlined"
                     color="primary"
                     onClick={() => this.props.history.push("/home")}
@@ -151,10 +123,10 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
                 <Grid item xs={4}>
                   <Button
                     data-unit-test="addPTO-button"
-                    className="additional-info-buttons"
+                    className="pto-form-buttons"
                     variant="outlined"
                     color="primary"
-                    onClick={this.addPTO}
+                    onClick={this.props.addPTO}
                   >
                     Add
                   </Button>
@@ -165,7 +137,7 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
           </Card>
         </Grid>
         <Snackbar
-          open={this.state.successMessage}
+          open={this.props.successMessage}
           onClose={() => this.props.history.push("/home")}
           autoHideDuration={2000}
         >
@@ -176,80 +148,6 @@ class AdditionalInfo extends Component<AdditionalInfoProps, AdditionalInfoState>
       </Grid>
     );
   }
-
-  addPTO = async (): Promise<void> => {
-    if (!this.areInputsValid()) return;
-    this.setState({
-      loading: true,
-    });
-    try {
-      const holidayInfo = this.holiday();
-      const warning = await this.PTOService.addPTO(holidayInfo);
-      if (warning && warning.warning) {
-        this.setState({
-          warning: warning.warning,
-        });
-      } else {
-        this.setState({
-          successMessage: true,
-        });
-      }
-    } catch (error) {
-      this.setState({
-        error: error.message,
-      });
-    }
-    this.setState({
-      loading: false,
-    });
-  };
-
-  private holiday(): IPTO {
-    const approversArr = this.props.approvers.value
-      .replace(/ /g, "")
-      .split(",")
-      .filter((elem) => elem.length > 0);
-
-    return {
-      startingDate: this.props.startingDate,
-      endingDate: this.props.endingDate,
-      comment: this.props.comment.value,
-      approvers: approversArr,
-    };
-  }
-
-  areInputsValid = (): boolean => {
-    let areInputsValid = true;
-    if (!this.props.comment.isValid) {
-      this.setState({
-        commentInputInvalid: true,
-        warning: this.props.comment.errorText,
-      });
-      areInputsValid = false;
-    } else {
-      this.setState({
-        commentInputInvalid: false,
-      });
-    }
-    if (!this.props.approvers.isValid) {
-      this.setState({
-        approversInputInvalid: true,
-        warning: this.props.approvers.errorText,
-      });
-      areInputsValid = false;
-    } else {
-      this.setState({
-        approversInputInvalid: false,
-      });
-    }
-    if (this.props.startingDate > this.props.endingDate) {
-      this.setState({
-        warning: "Starting date must not be after ending date",
-      });
-      areInputsValid = false;
-    }
-    return areInputsValid;
-  };
 }
 
-export default withRouter(AdditionalInfo);
+export default withRouter(PTOForm);

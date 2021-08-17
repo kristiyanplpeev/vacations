@@ -2,6 +2,7 @@ import React from "react";
 
 import { Page, Text, View, Document, StyleSheet, Image, Font } from "@react-pdf/renderer";
 
+import { DateUtil } from "common/DateUtil";
 import { IUserPTO, IUser } from "common/types";
 import font from "components/PTODetails/PDFDocu/roboto-medium-webfont.ttf";
 
@@ -141,7 +142,7 @@ const MyDocument = (props: MyDocumentProps): JSX.Element => (
         <Text style={styles.article}>Явяване в съда по чл. 157, т. 4 от КТ</Text>
       </View>
       <View style={styles.view}>
-        <Text style={styles.date}>Дата: {`${new Date().toISOString().slice(0, 10)}`}</Text>
+        <Text style={styles.date}>Дата: {`${DateUtil.todayStringified()}`}</Text>
         <View style={styles.viewCol}>
           <Text style={styles.employeeSignature}>Подпис на служителя:</Text>
           <Text style={styles.managerSignature}>Одобрение на мениджъра:</Text>

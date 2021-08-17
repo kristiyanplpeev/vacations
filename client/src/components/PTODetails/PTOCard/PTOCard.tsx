@@ -10,22 +10,22 @@ import Typography from "@material-ui/core/Typography";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import DescriptionIcon from "@material-ui/icons/Description";
 import EditIcon from "@material-ui/icons/Edit";
-import "./PTOBasicInfo.css";
+import "./PTOCard.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { RouteComponentProps, withRouter } from "react-router";
 
 import { IUserPTO, IUser } from "common/types";
 import MyDocument from "components/PTODetails/PDFDocu/AtscaleLeaveRequest";
 
-interface PTOBasicInfoProps extends RouteComponentProps {
+interface PTOCardProps extends RouteComponentProps {
   PTOInfo: IUserPTO;
   employee: IUser;
   approvers: Array<IUser>;
   workingDays: number;
 }
 
-class PTOBasicInfo extends Component<PTOBasicInfoProps> {
-  constructor(props: PTOBasicInfoProps) {
+class PTOCard extends Component<PTOCardProps> {
+  constructor(props: PTOCardProps) {
     super(props);
   }
 
@@ -34,64 +34,20 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
     return (
       <Card>
         <CardContent>
-          <Typography className="pto-basic-info-header" variant="h5" component="h2">
+          <Typography className="pto-card-header" variant="h5" component="h2">
             Details
           </Typography>
           {this.renderUser([this.props.employee], "Employee")}
           {this.renderInfoCard()}
           {this.renderUser(this.props.approvers, "Approvers")}
-          <Grid container spacing={3}>
-            <Grid item xs={4}>
-              <Button
-                className="pto-basic-info-buttons"
-                variant="outlined"
-                color="primary"
-                onClick={() => this.props.history.push("/home")}
-              >
-                <ArrowBackIosIcon /> Go Back
-              </Button>
-            </Grid>
-            <Grid item xs={4}>
-              <PDFDownloadLink
-                document={
-                  <MyDocument
-                    employee={this.props.employee}
-                    PTOInfo={this.props.PTOInfo}
-                    workingDays={this.props.workingDays}
-                  />
-                }
-                fileName={`${this.props.employee.firstName} ${this.props.employee.lastName} Vacation.pdf`}
-              >
-                <Button
-                  data-unit-test="addPTO-button"
-                  className="pto-basic-info-buttons"
-                  variant="outlined"
-                  color="primary"
-                  onClick={() => {}}
-                >
-                  <DescriptionIcon /> Generate pdf
-                </Button>
-              </PDFDownloadLink>
-            </Grid>
-            <Grid item xs={4}>
-              <Button
-                data-unit-test="addPTO-button"
-                className="pto-basic-info-buttons"
-                variant="outlined"
-                color="primary"
-                onClick={() => {}}
-              >
-                <EditIcon /> Edit
-              </Button>
-            </Grid>
-          </Grid>
+          {this.renderButtons()}
         </CardContent>
       </Card>
     );
   }
 
   renderInfoCard(): Array<JSX.Element> {
-    const statusCapitalized = this.stringCapitalized(this.props.PTOInfo.status);
+    const statusCapitalized = this.stringCapitalize(this.props.PTOInfo.status);
     const PTOInfo = {
       from: this.props.PTOInfo.from_date,
       to: this.props.PTOInfo.to_date,
@@ -100,10 +56,10 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
     };
     return Object.entries(PTOInfo).map((field) => {
       const [key, value] = field;
-      const keyCapitalized = this.stringCapitalized(key);
+      const keyCapitalized = this.stringCapitalize(key);
       return (
         <Grid item xs={12} key={key}>
-          <Card className="pto-basic-info-small-card">
+          <Card className="pto-card-small-card">
             <CardContent>
               <Grid container spacing={2}>
                 <Grid item xs={3}>
@@ -128,15 +84,15 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
     const userChips = users.map((user) => (
       <Chip
         key={user.id}
-        className="pto-basic-info-chip"
-        avatar={<Avatar className="pto-basic-info-chip-avatar" alt={user.firstName[0]} src={user.picture} />}
+        className="pto-card-chip"
+        avatar={<Avatar className="pto-card-chip-avatar" alt={user.firstName[0]} src={user.picture} />}
         label={user.email}
         variant="outlined"
       />
     ));
     return (
       <Grid item xs={12}>
-        <Card className="pto-basic-info-small-card">
+        <Card className="pto-card-small-card">
           <CardContent>
             <Grid container spacing={2}>
               <Grid item xs={3}>
@@ -154,7 +110,45 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
     );
   }
 
-  private stringCapitalized(string: string): string {
+  renderButtons(): JSX.Element {
+    return (
+      <Grid container spacing={3}>
+        <Grid item xs={4}>
+          <Button
+            className="pto-card-buttons"
+            variant="outlined"
+            color="primary"
+            onClick={() => this.props.history.push("/home")}
+          >
+            <ArrowBackIosIcon /> Go Back
+          </Button>
+        </Grid>
+        <Grid item xs={4}>
+          <PDFDownloadLink
+            document={
+              <MyDocument
+                employee={this.props.employee}
+                PTOInfo={this.props.PTOInfo}
+                workingDays={this.props.workingDays}
+              />
+            }
+            fileName={`${this.props.employee.firstName} ${this.props.employee.lastName} Vacation.pdf`}
+          >
+            <Button className="pto-card-buttons" variant="outlined" color="primary">
+              <DescriptionIcon /> Generate pdf
+            </Button>
+          </PDFDownloadLink>
+        </Grid>
+        <Grid item xs={4}>
+          <Button className="pto-card-buttons" variant="outlined" color="primary">
+            <EditIcon /> Edit
+          </Button>
+        </Grid>
+      </Grid>
+    );
+  }
+
+  private stringCapitalize(string: string): string {
     if (string.length > 0) {
       return string[0].toUpperCase() + string.substring(1);
     } else {
@@ -163,4 +157,4 @@ class PTOBasicInfo extends Component<PTOBasicInfoProps> {
   }
 }
 
-export default withRouter(PTOBasicInfo);
+export default withRouter(PTOCard);

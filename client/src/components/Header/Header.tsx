@@ -12,11 +12,9 @@ import { ApplicationState, UserInfoReducerState, AppActions } from "store/user/t
 
 interface HeaderProps {}
 
-interface HeaderState {}
-
 type Props = RouteComponentProps & LinkDispatchProps & LinkStateProps;
 
-class Header extends Component<Props, HeaderState> {
+class Header extends Component<Props> {
   render(): ReactNode {
     if (location.pathname === "/login") return null;
     return (
