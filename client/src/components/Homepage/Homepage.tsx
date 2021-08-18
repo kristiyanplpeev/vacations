@@ -57,6 +57,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         userPastPTOs: userPTOs.userPastPTOs,
       });
     } catch (error) {
+      console.log(error.message);
       this.setState({
         error: error.message,
       });

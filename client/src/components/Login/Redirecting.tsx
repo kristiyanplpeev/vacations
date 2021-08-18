@@ -5,15 +5,14 @@ import Backdrop from "@material-ui/core/Backdrop";
 import { resolve } from "inversify-react";
 import { connect } from "react-redux";
 import { RouteComponentProps } from "react-router-dom";
-import { bindActionCreators } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 
 import "reflect-metadata";
 import Error from "components/common/Error/Error";
-import { IUserService } from "inversify/interfaces";
+import { IAuthenticationActionCreator, IAuthService } from "inversify/interfaces";
+import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
-import { startLogInUser, startSetIsUserLoggedIn } from "store/user/action";
-import { AppActions, UserInfoTypes } from "store/user/types";
+import { AppActions, ApplicationState, IUserState } from "store/user/types";
 
 interface RedirectingProps {}
 
@@ -24,7 +23,7 @@ interface RedirectingState {
 type Props = RedirectingProps & RouteComponentProps & LinkDispatchProps & LinkStateProps;
 
 class Redirecting extends Component<Props, RedirectingState> {
-  @resolve(TYPES.UserLogger) usersService!: IUserService;
+  @resolve(TYPES.Auth) authService!: IAuthService;
 
   public constructor(props: Props) {
     super(props);
@@ -33,18 +32,21 @@ class Redirecting extends Component<Props, RedirectingState> {
     };
   }
 
-  componentDidMount = async (): Promise<void> => {
+  componentDidMount = (): void => {
     try {
-      const userInfo = await this.usersService.logInUser();
-      this.props.logInUser(userInfo);
-      this.props.setIsUserLoggedIn(true);
-      this.props.history.push("/");
+      this.props.logInUser();
     } catch (error) {
       this.setState({
         error: error.message,
       });
     }
   };
+
+  componentDidUpdate(): void {
+    if (this.props.userInfo.isAuthenticated) {
+      this.props.history.push("/home");
+    }
+  }
 
   render(): ReactNode {
     if (this.state.error) {
@@ -58,20 +60,26 @@ class Redirecting extends Component<Props, RedirectingState> {
   }
 }
 
-interface LinkStateProps {}
+interface LinkStateProps {
+  userInfo: IUserState;
+}
 interface LinkDispatchProps {
-  logInUser: (userInfoData: UserInfoTypes) => void;
-  setIsUserLoggedIn: (newState: boolean) => void;
+  logInUser: () => void;
 }
 
-const mapStateToProps = () => ({});
+const mapStateToProps = ({ userInfoReducer }: ApplicationState): LinkStateProps => {
+  return {
+    userInfo: userInfoReducer,
+  };
+};
 
-const mapDispatchToProps = (
-  dispatch: ThunkDispatch<any, any, AppActions>,
-  ownProps: RedirectingProps,
-): LinkDispatchProps => ({
-  logInUser: bindActionCreators(startLogInUser, dispatch),
-  setIsUserLoggedIn: bindActionCreators(startSetIsUserLoggedIn, dispatch),
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: ThunkDispatch<any, any, AppActions>): LinkDispatchProps => ({
+  // logInUser: bindActionCreators(logInUserDispatch, dispatch),
+  logInUser: async (): Promise<void> => {
+    const authAction = myContainer.get<IAuthenticationActionCreator>(TYPES.AuthAction);
+    dispatch(authAction.logInUserDispatch());
+  },
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Redirecting);

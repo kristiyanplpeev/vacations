@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Holiday } from '../model/holiday.entity';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -32,7 +32,7 @@ export class HolidaysService {
       });
       return constantHolidaysForCurrentYear;
     } catch (error) {
-      throw new Error('Invalid dates submitted.');
+      throw new BadRequestException('Invalid dates submitted.');
     }
   };
 
@@ -47,7 +47,7 @@ export class HolidaysService {
 
       return movableHolidays;
     } catch (error) {
-      throw new Error('Invalid dates submitted.');
+      throw new BadRequestException('Invalid dates submitted.');
     }
   };
 
@@ -104,36 +104,30 @@ export class HolidaysService {
   public async calculateDays(
     holidayPeriod: HolidayPeriodDto,
   ): Promise<HolidaysDaysStatus> {
-    try {
-      const holidayPeriodAsString = {
-        startingDate: holidayPeriod.startingDate.toString(),
-        endingDate: holidayPeriod.endingDate.toString(),
-      };
-      const datesBetween = DateUtil.getPeriodBetweenDates(
-        holidayPeriodAsString,
-      );
-      const constantHolidays = await this.getConstantHolidaysForTheCurrentYear(
-        holidayPeriodAsString,
-      );
+    const holidayPeriodAsString = {
+      startingDate: holidayPeriod.startingDate.toString(),
+      endingDate: holidayPeriod.endingDate.toString(),
+    };
+    const datesBetween = DateUtil.getPeriodBetweenDates(holidayPeriodAsString);
+    const constantHolidays = await this.getConstantHolidaysForTheCurrentYear(
+      holidayPeriodAsString,
+    );
 
-      const movableHolidays = await this.getMovableHolidaysForTheCurrentYear(
-        holidayPeriodAsString,
+    const movableHolidays = await this.getMovableHolidaysForTheCurrentYear(
+      holidayPeriodAsString,
+    );
+
+    const datesBetweenAsObj = datesBetween.map((el) => ({
+      date: el,
+      status: 'workday',
+    }));
+
+    const datesWithAllHolidaysAndWeekends =
+      this.getDatesWithAllHolidaysAndWeekends(
+        datesBetweenAsObj,
+        movableHolidays,
+        constantHolidays,
       );
-
-      const datesBetweenAsObj = datesBetween.map((el) => ({
-        date: el,
-        status: 'workday',
-      }));
-
-      const datesWithAllHolidaysAndWeekends =
-        this.getDatesWithAllHolidaysAndWeekends(
-          datesBetweenAsObj,
-          movableHolidays,
-          constantHolidays,
-        );
-      return datesWithAllHolidaysAndWeekends;
-    } catch (error) {
-      throw new Error(error.message);
-    }
+    return datesWithAllHolidaysAndWeekends;
   }
 }

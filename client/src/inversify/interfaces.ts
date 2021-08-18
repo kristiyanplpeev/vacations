@@ -1,11 +1,25 @@
-import { IPTOPeriod, HolidayDays, IUser, IPTO, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/types";
+import { Dispatch } from "redux";
 
-export interface IUserService {
-  logInUser(): Promise<IUser>;
+import { IPTOPeriod, HolidayDays, IPTO, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/types";
+import { AppActions, IUserDetails } from "store/user/types";
+
+export interface IAuthService {
+  logInUser(): Promise<IUserDetails>;
+  getToken(): string;
+  extractUser(token: string): IUserDetails;
 }
 
-export interface IHolidaysService {
+export interface IHolidayService {
   getDatesStatus({ startingDate, endingDate }: IPTOPeriod): Promise<HolidayDays>;
+}
+
+export interface IAuthenticationActionCreator {
+  logInUser(): Promise<AppActions>;
+  logOutUser(): AppActions;
+  checkIfUserIsLoggedIn(): AppActions;
+  logInUserDispatch(): (dispatch: Dispatch<AppActions>) => Promise<void>;
+  logOutUserDispatch(): (dispatch: Dispatch<AppActions>) => void;
+  checkIfUserIsLoggedInDispatch(): (dispatch: Dispatch<AppActions>) => void;
 }
 
 export interface IPTOService {

@@ -4,13 +4,12 @@ import { AppBar, Avatar, IconButton, Toolbar, Typography, Button } from "@materi
 import { connect } from "react-redux";
 import "./Header.css";
 import { RouteComponentProps, withRouter } from "react-router-dom";
-import { bindActionCreators } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 
-import { startLogOutUser, startSetIsUserLoggedIn } from "store/user/action";
-import { ApplicationState, UserInfoReducerState, AppActions } from "store/user/types";
-
-interface HeaderProps {}
+import { IAuthenticationActionCreator } from "inversify/interfaces";
+import { myContainer } from "inversify/inversify.config";
+import { TYPES } from "inversify/types";
+import { ApplicationState, IUserState, AppActions } from "store/user/types";
 
 type Props = RouteComponentProps & LinkDispatchProps & LinkStateProps;
 
@@ -26,9 +25,9 @@ class Header extends Component<Props> {
             </Button>
             <IconButton edge="start" className="header-menu-button" color="inherit" aria-label="menu"></IconButton>
             <Typography variant="h6" className="header-title">
-              {this.props.userInfo.firstName} {this.props.userInfo.lastName}
+              {this.props.userInfo.user.firstName} {this.props.userInfo.user.lastName}
             </Typography>
-            <Avatar alt="profile_pic" src={this.props.userInfo.picture} />
+            <Avatar alt="profile_pic" src={this.props.userInfo.user.picture} />
           </Toolbar>
         </AppBar>
       </div>
@@ -37,33 +36,30 @@ class Header extends Component<Props> {
 
   logout = (): void => {
     this.props.logOutUser();
-    this.props.setIsUserLoggedIn(false);
     localStorage.removeItem("token");
   };
 }
 
 interface LinkStateProps {
-  isUserLoggedIn: boolean;
-  userInfo: UserInfoReducerState;
+  userInfo: IUserState;
 }
 interface LinkDispatchProps {
   logOutUser: () => void;
-  setIsUserLoggedIn: (newState: boolean) => void;
 }
 
-const mapStateToProps = ({ isUserLoggedInReducer, userInfoReducer }: ApplicationState): LinkStateProps => {
+const mapStateToProps = ({ userInfoReducer }: ApplicationState): LinkStateProps => {
   return {
-    isUserLoggedIn: isUserLoggedInReducer,
     userInfo: userInfoReducer,
   };
 };
 
-const mapDispatchToProps = (
-  dispatch: ThunkDispatch<any, any, AppActions>,
-  ownProps: HeaderProps,
-): LinkDispatchProps => ({
-  logOutUser: bindActionCreators(startLogOutUser, dispatch),
-  setIsUserLoggedIn: bindActionCreators(startSetIsUserLoggedIn, dispatch),
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: ThunkDispatch<any, any, AppActions>): LinkDispatchProps => ({
+  // logOutUser: bindActionCreators(logOutUserDispatch, dispatch),
+  logOutUser: (): void => {
+    const authAction = myContainer.get<IAuthenticationActionCreator>(TYPES.AuthAction);
+    dispatch(authAction.logOutUserDispatch());
+  },
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Header));

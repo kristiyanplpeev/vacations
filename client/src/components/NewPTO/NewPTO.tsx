@@ -12,7 +12,7 @@ import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import Error from "components/common/Error/Error";
 import PTOForm from "components/NewPTO/PTOForm/PTOForm";
 import { IPTOService } from "inversify/interfaces";
-import { IHolidaysService } from "inversify/interfaces";
+import { IHolidayService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 import "./NewPTO.css";
 
@@ -26,12 +26,13 @@ interface NewPTOState {
   approvers: ITextBox;
   warning: string;
   error: boolean;
-  loading: boolean;
+  formLoading: boolean;
+  datesLoading: boolean;
   successMessage: boolean;
 }
 
 class NewPTO extends Component<NewPTOProps, NewPTOState> {
-  @resolve(TYPES.Holidays) holidaysService!: IHolidaysService;
+  @resolve(TYPES.Holidays) holidaysService!: IHolidayService;
   @resolve(TYPES.PTO) private PTOService!: IPTOService;
 
   constructor(props: NewPTOProps) {
@@ -40,7 +41,8 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
       startingDate: DateUtil.todayStringified(),
       endingDate: DateUtil.todayStringified(),
       holidayDaysStatus: [],
-      loading: false,
+      datesLoading: false,
+      formLoading: false,
       warning: "",
       comment: {
         value: "PTO",
@@ -72,7 +74,7 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
         <Grid container spacing={3}>
           <Grid item xs={6}>
             <PTOForm
-              loading={this.state.loading}
+              loading={this.state.formLoading}
               warning={this.state.warning}
               successMessage={this.state.successMessage}
               startingDate={this.state.startingDate}
@@ -87,7 +89,7 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
             />
           </Grid>
           <Grid item xs={6}>
-            <DatesCalculator holidayDaysStatus={this.state.holidayDaysStatus} loading={this.state.loading} />
+            <DatesCalculator holidayDaysStatus={this.state.holidayDaysStatus} loading={this.state.datesLoading} />
           </Grid>
         </Grid>
       </div>
@@ -99,7 +101,7 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
     endingDate: string = this.state.endingDate,
   ): Promise<void> => {
     this.setState({
-      loading: true,
+      datesLoading: true,
     });
     try {
       const holidayDaysStatus = await this.holidaysService.getDatesStatus({
@@ -109,20 +111,16 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
       this.setState({
         holidayDaysStatus: holidayDaysStatus,
       });
-    } catch (err) {
-      this.setState({
-        error: true,
-      });
-    }
+    } catch (err) {}
     this.setState({
-      loading: false,
+      datesLoading: false,
     });
   };
 
   addPTO = async (): Promise<void> => {
     if (!this.areInputsValid()) return;
     this.setState({
-      loading: true,
+      formLoading: true,
     });
     try {
       const PTODetails = this.getHoliday();
@@ -142,7 +140,7 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
       });
     }
     this.setState({
-      loading: false,
+      formLoading: false,
     });
   };
 
@@ -155,18 +153,6 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
       comment: this.state.comment.value,
       approvers: approversArr,
     };
-  }
-
-  private formatApprovers(approversValue: string): Array<string> {
-    return approversValue
-      .replace(/ /g, "")
-      .split(",")
-      .filter((elem) => elem.length > 0);
-  }
-
-  private isApproversValid(approversValue: string): boolean {
-    const approversArr = this.formatApprovers(approversValue);
-    return approversArr.every((el) => ValidationUtil.isEmail(el));
   }
 
   areInputsValid = (): boolean => {
@@ -202,24 +188,31 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
     return areInputsValid;
   };
 
+  private formatApprovers(approversValue: string): Array<string> {
+    return approversValue
+      .replace(/ /g, "")
+      .split(",")
+      .filter((elem) => elem.length > 0);
+  }
+
+  private isApproversValid(approversValue: string): boolean {
+    const approversArr = this.formatApprovers(approversValue);
+    return approversArr.every((el) => ValidationUtil.isEmail(el));
+  }
+
   setStartingDate = async (date: MaterialUiPickersDate, value: OptionalWithNull<string>): Promise<void> => {
     if (value) {
       this.setState({
-        loading: true,
+        datesLoading: true,
       });
-      try {
-        value = value.replaceAll("/", "-");
-        this.setState({
-          startingDate: value,
-        });
-        await this.getHolidayDaysStatus(value);
-      } catch (error) {
-        this.setState({
-          error: error.message,
-        });
-      }
+
+      value = value.replaceAll("/", "-");
       this.setState({
-        loading: false,
+        startingDate: value,
+      });
+      await this.getHolidayDaysStatus(value);
+      this.setState({
+        datesLoading: false,
       });
     }
   };
@@ -227,21 +220,17 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
   setEndingDate = async (date: MaterialUiPickersDate, value: OptionalWithNull<string>): Promise<void> => {
     if (value) {
       this.setState({
-        loading: true,
+        datesLoading: true,
       });
-      try {
-        value = value.replaceAll("/", "-");
-        this.setState({
-          endingDate: value,
-        });
-        await this.getHolidayDaysStatus(this.state.startingDate, value);
-      } catch (error) {
-        this.setState({
-          error: error.message,
-        });
-      }
+
+      value = value.replaceAll("/", "-");
       this.setState({
-        loading: false,
+        endingDate: value,
+      });
+      await this.getHolidayDaysStatus(this.state.startingDate, value);
+
+      this.setState({
+        datesLoading: false,
       });
     }
   };

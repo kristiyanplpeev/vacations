@@ -3,17 +3,21 @@ import { injectable } from "inversify";
 
 import { BASE_URL } from "common/constants";
 import { IPTOPeriod, HolidayDays } from "common/types";
-import { IHolidaysService } from "inversify/interfaces";
-import { getToken } from "providers/tokenManagment";
+import { IHolidayService, IAuthService } from "inversify/interfaces";
 import "reflect-metadata";
+// eslint-disable-next-line import/no-cycle
+import { myContainer } from "inversify/inversify.config";
+import { TYPES } from "inversify/types";
 
 @injectable()
-class HolidaysService implements IHolidaysService {
+class HolidayService implements IHolidayService {
+  private authService = myContainer.get<IAuthService>(TYPES.Auth);
+
   getDatesStatus = async ({ startingDate, endingDate }: IPTOPeriod): Promise<HolidayDays> => {
     const headers = {
       "Content-Type": "application/json",
       // eslint-disable-next-line prettier/prettier
-      Authorization: `Bearer ${getToken()}`,
+      Authorization: `Bearer ${this.authService.getToken()}`,
     };
     const data = {
       startingDate,
@@ -24,4 +28,4 @@ class HolidaysService implements IHolidaysService {
   };
 }
 
-export default HolidaysService;
+export default HolidayService;

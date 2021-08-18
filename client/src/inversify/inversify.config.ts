@@ -1,15 +1,17 @@
 import { Container } from "inversify";
 
-import { IHolidaysService, IPTOService, IUserService } from "inversify/interfaces";
+import { IHolidayService, IPTOService, IAuthService, IAuthenticationActionCreator } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
-import HolidaysService from "services/HolidaysService";
+import AuthService from "services/AuthService";
+import HolidayService from "services/HolidayService";
 import PTOService from "services/PTOService";
-import UserService from "services/UserService";
 import "reflect-metadata";
+import AuthenticationActionCreator from "store/user/ActionCreator";
 
 const myContainer = new Container();
-myContainer.bind<IUserService>(TYPES.UserLogger).to(UserService);
-myContainer.bind<IHolidaysService>(TYPES.Holidays).to(HolidaysService);
+myContainer.bind<IAuthService>(TYPES.Auth).to(AuthService);
+myContainer.bind<IHolidayService>(TYPES.Holidays).to(HolidayService);
 myContainer.bind<IPTOService>(TYPES.PTO).to(PTOService);
+myContainer.bind<IAuthenticationActionCreator>(TYPES.AuthAction).to(AuthenticationActionCreator);
 
 export { myContainer };

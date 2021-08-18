@@ -1,18 +1,4 @@
-export type UserInfoActionTypes = {
-  type: string;
-  payload: { id: string; googleId: string; email: string; firstName: string; lastName: string; picture: string } | null;
-};
-
-export type IsUserLoggedInActionTypes = {
-  type: string;
-  payload: boolean;
-};
-
-export type UserActionTypes = UserInfoActionTypes | IsUserLoggedInActionTypes;
-
-export type AppActions = UserActionTypes;
-
-export interface UserInfoReducerState {
+export interface IUserDetails {
   id: string;
   googleId: string;
   email: string;
@@ -21,16 +7,19 @@ export interface UserInfoReducerState {
   picture: string;
 }
 
-export type UserInfoTypes = {
-  id: string;
-  googleId: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  picture: string;
-};
+export interface IUserState {
+  isAuthenticated: boolean;
+  user: IUserDetails;
+}
+
+export interface IUserDetailsAction {
+  type: string;
+  payload: IUserState;
+}
+
+export type AppActions = IUserDetailsAction;
 
 export interface ApplicationState {
   isUserLoggedInReducer: boolean;
-  userInfoReducer: UserInfoReducerState;
+  userInfoReducer: IUserState;
 }
