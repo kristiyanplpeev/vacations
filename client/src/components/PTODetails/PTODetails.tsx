@@ -11,7 +11,7 @@ import { IUserPTO, IUser, HolidayDays } from "common/types";
 import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import Error from "components/common/Error/Error";
 import PTOCard from "components/PTODetails/PTOCard/PTOCard";
-import { IHolidayService, IPTOService } from "inversify/interfaces";
+import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
 interface PTODetailsMatchProps {
@@ -31,7 +31,6 @@ interface PTODetailsState {
 }
 
 class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
-  @resolve(TYPES.Holidays) holidaysService!: IHolidayService;
   @resolve(TYPES.PTO) private PTOService!: IPTOService;
 
   constructor(props: PTODetailsProps) {
@@ -112,7 +111,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
             )}
           </Grid>
           <Grid item xs={6}>
-            <DatesCalculator loading={this.state.loading} holidayDaysStatus={this.state.eachDayStatus} />
+            <DatesCalculator startingDate={this.state.PTOInfo.from_date} endingDate={this.state.PTOInfo.to_date} />
           </Grid>
         </Grid>
       </div>

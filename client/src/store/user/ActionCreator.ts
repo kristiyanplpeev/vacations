@@ -34,8 +34,9 @@ class AuthenticationActionCreator implements IAuthenticationActionCreator {
 
   checkIfUserIsLoggedIn = (): AppActions => {
     const userDetails = this.authService.extractUser(this.authService.getToken());
+    const isAuthenticated = !!this.authService.getToken();
     const payload = {
-      isAuthenticated: true,
+      isAuthenticated,
       user: userDetails,
     };
     return {

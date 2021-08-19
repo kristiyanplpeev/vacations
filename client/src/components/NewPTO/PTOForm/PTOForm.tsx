@@ -12,29 +12,55 @@ import Typography from "@material-ui/core/Typography";
 import { Alert } from "@material-ui/lab";
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
+import { resolve } from "inversify-react";
 import { RouteComponentProps, withRouter } from "react-router";
 
-import { ITextBox, OptionalWithNull } from "common/types";
+import { IPTO, ITextBox, OptionalWithNull } from "common/types";
+import { ValidationUtil } from "common/ValidationUtil";
 import "./PTOForm.css";
+import { IPTOService } from "inversify/interfaces";
+import { TYPES } from "inversify/types";
 
-interface PTOFormProps extends RouteComponentProps {
-  loading: boolean;
-  startingDate: string;
-  endingDate: string;
+interface PTOFormState {
   comment: ITextBox;
   approvers: ITextBox;
   warning: string;
   successMessage: boolean;
-  addPTO: () => Promise<void>;
-  handleCommentChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  handleApproversChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  setStartingDate: (date: MaterialUiPickersDate, value: OptionalWithNull<string>) => Promise<void>;
-  setEndingDate: (date: MaterialUiPickersDate, value: OptionalWithNull<string>) => Promise<void>;
+  loading: boolean;
 }
 
-class PTOForm extends Component<PTOFormProps> {
+interface PTOFormProps extends RouteComponentProps {
+  startingDate: string;
+  endingDate: string;
+  setStartingDate: (date: MaterialUiPickersDate, value: OptionalWithNull<string>) => Promise<void>;
+  setEndingDate: (date: MaterialUiPickersDate, value: OptionalWithNull<string>) => Promise<void>;
+  setError: (errorState: boolean) => void;
+}
+
+export class PTOForm extends Component<PTOFormProps, PTOFormState> {
+  @resolve(TYPES.PTO) private PTOService!: IPTOService;
+
   constructor(props: PTOFormProps) {
     super(props);
+    this.state = {
+      loading: false,
+      warning: "",
+      successMessage: false,
+      comment: {
+        value: "PTO",
+        isValid: true,
+        validate: (value) => value.length >= 1 && value.length <= 1000,
+        errorText: "Comment is mandatory.",
+        textBoxInvalid: false,
+      },
+      approvers: {
+        value: "",
+        isValid: false,
+        validate: (value) => value.length > 0 && this.isApproversValid(value),
+        errorText: "One or more approvers separated with comma must be provided.",
+        textBoxInvalid: false,
+      },
+    };
   }
 
   render(): JSX.Element {
@@ -97,11 +123,11 @@ class PTOForm extends Component<PTOFormProps> {
         <Grid item xs={12}>
           <TextField
             className="pto-form-text-fields card-content"
-            error={this.props.comment.textBoxInvalid}
+            error={this.state.comment.textBoxInvalid}
             id="outlined-multiline-static"
             label="Comments"
-            value={this.props.comment.value}
-            onChange={this.props.handleCommentChange}
+            value={this.state.comment.value}
+            onChange={this.handleCommentChange}
             multiline
             rows={4}
             variant="outlined"
@@ -111,11 +137,11 @@ class PTOForm extends Component<PTOFormProps> {
           <TextField
             data-unit-test="approvers-input"
             className="pto-form-text-fields card-content"
-            error={this.props.approvers.textBoxInvalid}
+            error={this.state.approvers.textBoxInvalid}
             id="outlined-multiline-static"
             label="Approvers"
-            value={this.props.approvers.value}
-            onChange={this.props.handleApproversChange}
+            value={this.state.approvers.value}
+            onChange={this.handleApproversChange}
             placeholder="comma separated emails of the approvers"
             multiline
             rows={4}
@@ -129,9 +155,9 @@ class PTOForm extends Component<PTOFormProps> {
   renderWarning(): JSX.Element {
     return (
       <Grid item xs={12}>
-        {this.props.warning && !this.props.successMessage ? (
+        {this.state.warning && !this.state.successMessage ? (
           <Alert className="pto-form-warning card-content" data-unit-test="warning-message" severity="warning">
-            {this.props.loading ? <CircularProgress /> : this.props.warning}
+            {this.state.loading ? <CircularProgress /> : this.state.warning}
           </Alert>
         ) : null}
       </Grid>
@@ -158,7 +184,7 @@ class PTOForm extends Component<PTOFormProps> {
             className="pto-form-buttons"
             variant="outlined"
             color="primary"
-            onClick={this.props.addPTO}
+            onClick={this.addPTO}
           >
             Add
           </Button>
@@ -171,7 +197,7 @@ class PTOForm extends Component<PTOFormProps> {
   renderSnackbar(): JSX.Element {
     return (
       <Snackbar
-        open={this.props.successMessage}
+        open={this.state.successMessage}
         onClose={() => this.props.history.push("/home")}
         autoHideDuration={2000}
       >
@@ -181,6 +207,107 @@ class PTOForm extends Component<PTOFormProps> {
       </Snackbar>
     );
   }
+
+  addPTO = async (): Promise<void> => {
+    if (!this.areInputsValid()) return;
+    this.setState({
+      loading: true,
+    });
+    try {
+      const PTODetails = this.getHoliday();
+      const warning = await this.PTOService.addPTO(PTODetails);
+      if (warning && warning.warning) {
+        this.setState({
+          warning: warning.warning,
+        });
+      } else {
+        this.setState({
+          successMessage: true,
+        });
+      }
+    } catch (error) {
+      this.props.setError(true);
+    }
+    this.setState({
+      loading: false,
+    });
+  };
+
+  private getHoliday(): IPTO {
+    const approversArr = this.formatApprovers(this.state.approvers.value);
+
+    return {
+      startingDate: this.props.startingDate,
+      endingDate: this.props.endingDate,
+      comment: this.state.comment.value,
+      approvers: approversArr,
+    };
+  }
+
+  areInputsValid = (): boolean => {
+    let areInputsValid = true;
+    if (!this.state.comment.isValid) {
+      this.setState({
+        comment: { ...this.state.comment, textBoxInvalid: true },
+        warning: this.state.comment.errorText,
+      });
+      areInputsValid = false;
+    } else {
+      this.setState({
+        comment: { ...this.state.comment, textBoxInvalid: false },
+      });
+    }
+    if (!this.state.approvers.isValid) {
+      this.setState({
+        approvers: { ...this.state.approvers, textBoxInvalid: true },
+        warning: this.state.approvers.errorText,
+      });
+      areInputsValid = false;
+    } else {
+      this.setState({
+        approvers: { ...this.state.approvers, textBoxInvalid: false },
+      });
+    }
+    if (this.props.startingDate > this.props.endingDate) {
+      this.setState({
+        warning: "Starting date must not be after ending date",
+      });
+      areInputsValid = false;
+    }
+    return areInputsValid;
+  };
+
+  private formatApprovers(approversValue: string): Array<string> {
+    return approversValue
+      .replace(/ /g, "")
+      .split(",")
+      .filter((elem) => elem.length > 0);
+  }
+
+  private isApproversValid(approversValue: string): boolean {
+    const approversArr = this.formatApprovers(approversValue);
+    return approversArr.every((el) => ValidationUtil.isEmail(el));
+  }
+
+  handleCommentChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    this.setState({
+      comment: {
+        ...this.state.comment,
+        value: event.target.value,
+        isValid: this.state.comment.validate(event.target.value),
+      },
+    });
+  };
+
+  handleApproversChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    this.setState({
+      approvers: {
+        ...this.state.approvers,
+        value: event.target.value,
+        isValid: this.state.approvers.validate(event.target.value),
+      },
+    });
+  };
 }
 
 export default withRouter(PTOForm);

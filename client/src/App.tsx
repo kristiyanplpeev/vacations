@@ -39,9 +39,7 @@ class App extends Component<AppProps, AppState> {
   }
 
   componentDidMount(): void {
-    if (!!this.authService.getToken()) {
-      this.props.checkUser();
-    }
+    this.props.checkUser();
     this.setState({
       allowRender: true,
     });

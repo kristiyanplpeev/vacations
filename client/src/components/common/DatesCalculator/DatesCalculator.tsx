@@ -13,10 +13,13 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Typography from "@material-ui/core/Typography";
 import InfoIcon from "@material-ui/icons/Info";
+import { resolve } from "inversify-react";
 
 import { dayStatus } from "common/constants";
 import { HolidayDays } from "common/types";
 import "./DatesCalculator.css";
+import { IHolidayService } from "inversify/interfaces";
+import { TYPES } from "inversify/types";
 
 type calcVacation = {
   nonWorkingDays: Array<string>;
@@ -26,11 +29,12 @@ type calcVacation = {
 };
 
 interface DatesCalculatorProps {
-  holidayDaysStatus: HolidayDays;
-  loading: boolean;
+  startingDate: string;
+  endingDate: string;
 }
 
 interface DatesCalculatorState {
+  loading: boolean;
   weekdays: number;
   freeDays: number;
   freeDaysStatuses: string;
@@ -39,9 +43,12 @@ interface DatesCalculatorState {
 }
 
 class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorState> {
+  @resolve(TYPES.Holidays) holidaysService!: IHolidayService;
+
   constructor(props: DatesCalculatorProps) {
     super(props);
     this.state = {
+      loading: false,
       weekdays: 0,
       freeDays: 0,
       freeDaysStatuses: "",
@@ -50,31 +57,21 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
     };
   }
 
-  componentDidUpdate = (): void => {
-    if (this.props.holidayDaysStatus && this.props.holidayDaysStatus.length !== this.state.totalDays) {
-      const calculatedVacationDays = this.calculateVacationDays();
-
-      this.setState({
-        weekdays: calculatedVacationDays.numberOfWorkingDays,
-        freeDays: calculatedVacationDays.numberOfNonWorkingDays,
-        freeDaysStatuses:
-          calculatedVacationDays.nonWorkingDays.length !== 0
-            ? calculatedVacationDays.nonWorkingDays.join("\r\n")
-            : "There are no free days in that period",
-        totalDays: calculatedVacationDays.totalVacationDays,
-      });
+  async componentDidUpdate(prevProps: DatesCalculatorProps): Promise<void> {
+    if (prevProps.startingDate !== this.props.startingDate || prevProps.endingDate !== this.props.endingDate) {
+      await this.getHolidayDaysStatus();
     }
-  };
+  }
 
   // eslint-disable-next-line max-lines-per-function
   render(): JSX.Element {
-    if (this.props.loading) {
+    if (this.state.loading) {
       return <CircularProgress />;
     }
     return (
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          {this.props.holidayDaysStatus.length !== 0 && (
+          {this.state.totalDays !== 0 && (
             <TableContainer className="dates-calculator-table" component={Paper}>
               <Table className={"table"} aria-label="simple table">
                 <TableHead>
@@ -146,15 +143,42 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
     );
   }
 
-  private calculateVacationDays(): calcVacation {
-    const nonWorkingDays = this.props.holidayDaysStatus
+  getHolidayDaysStatus = async (
+    startingDate: string = this.props.startingDate,
+    endingDate: string = this.props.endingDate,
+  ): Promise<void> => {
+    try {
+      this.setState({
+        loading: true,
+      });
+      const holidayDaysStatus = await this.holidaysService.getDatesStatus({
+        startingDate,
+        endingDate,
+      });
+      const calculatedVacationDays = this.calculateVacationDays(holidayDaysStatus);
+
+      this.setState({
+        weekdays: calculatedVacationDays.numberOfWorkingDays,
+        freeDays: calculatedVacationDays.numberOfNonWorkingDays,
+        freeDaysStatuses:
+          calculatedVacationDays.nonWorkingDays.length !== 0
+            ? calculatedVacationDays.nonWorkingDays.join("\r\n")
+            : "There are no free days in that period",
+        totalDays: calculatedVacationDays.totalVacationDays,
+        loading: false,
+      });
+    } catch (err) {}
+  };
+
+  private calculateVacationDays(daysStatuses: HolidayDays): calcVacation {
+    const nonWorkingDays = daysStatuses
       .filter((el) => el.status !== dayStatus.workday)
       .map((element) => {
         const formattedDate = element.date.replace(/[-]/g, ".");
         return `${formattedDate} - ${element.status}`;
       });
     const numberOfNonWorkingDays = nonWorkingDays.length;
-    const totalVacationDays = this.props.holidayDaysStatus.length;
+    const totalVacationDays = daysStatuses.length;
     const numberOfWorkingDays = totalVacationDays - numberOfNonWorkingDays;
 
     return {

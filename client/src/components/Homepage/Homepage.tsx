@@ -102,25 +102,35 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     return (
       <div>
         {this.renderAddPTOButton()}
-        <TableContainer component={Paper}>
-          <Table aria-label="simple table">
-            <TableHead>{this.renderTableHeaderAndFooter()}</TableHead>
-            <TableBody>{this.state.userFuturePTOs.map(this.mappingFunc)}</TableBody>
-          </Table>
-        </TableContainer>
+        {this.renderHeaderAndFooter(true)}
         {this.renderPTOsSeparator()}
-        <TableContainer component={Paper}>
-          <Table aria-label="simple table">
-            <TableBody>{this.state.userPastPTOs.map(this.mappingFunc)}</TableBody>
-            <TableFooter className="homepage-table-footer">{this.renderTableHeaderAndFooter()}</TableFooter>
-          </Table>
-        </TableContainer>
+        {this.renderHeaderAndFooter(false)}
         {this.renderAddPTOButton()}
       </div>
     );
   }
 
-  renderTableHeaderAndFooter(): JSX.Element {
+  renderHeaderAndFooter(header: boolean): JSX.Element {
+    return (
+      <TableContainer component={Paper}>
+        <Table aria-label="simple table">
+          {header ? (
+            <>
+              <TableHead>{this.renderTableHeaderAndFooterCells()}</TableHead>
+              <TableBody>{this.state.userFuturePTOs.map(this.mappingFunc)}</TableBody>
+            </>
+          ) : (
+            <>
+              <TableBody>{this.state.userPastPTOs.map(this.mappingFunc)}</TableBody>
+              <TableFooter className="homepage-table-footer">{this.renderTableHeaderAndFooterCells()}</TableFooter>
+            </>
+          )}
+        </Table>
+      </TableContainer>
+    );
+  }
+
+  renderTableHeaderAndFooterCells(): JSX.Element {
     return (
       <TableRow>
         <TableCell width="10%">
