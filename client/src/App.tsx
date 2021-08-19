@@ -59,6 +59,12 @@ class App extends Component<AppProps, AppState> {
               <PrivateRoute path="/home" exact isAuthenticated={this.props.user.isAuthenticated} component={Homepage} />
               <PrivateRoute path="/new" exact isAuthenticated={this.props.user.isAuthenticated} component={NewPTO} />
               <PrivateRoute
+                path="/edit/:id"
+                exact
+                isAuthenticated={this.props.user.isAuthenticated}
+                component={NewPTO}
+              />
+              <PrivateRoute
                 path="/pto/:id"
                 exact
                 isAuthenticated={this.props.user.isAuthenticated}

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 import { Container } from "inversify";
 
 import { IHolidayService, IPTOService, IAuthService, IAuthenticationActionCreator } from "inversify/interfaces";

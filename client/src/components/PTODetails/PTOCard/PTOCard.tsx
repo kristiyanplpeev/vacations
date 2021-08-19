@@ -110,6 +110,7 @@ class PTOCard extends Component<PTOCardProps> {
     );
   }
 
+  // eslint-disable-next-line max-lines-per-function
   renderButtons(): JSX.Element {
     return (
       <Grid container spacing={3}>
@@ -140,7 +141,12 @@ class PTOCard extends Component<PTOCardProps> {
           </PDFDownloadLink>
         </Grid>
         <Grid item xs={4}>
-          <Button className="pto-card-buttons" variant="outlined" color="primary">
+          <Button
+            className="pto-card-buttons"
+            onClick={() => this.props.history.push(`/edit/${this.props.PTOInfo.id}`)}
+            variant="outlined"
+            color="primary"
+          >
             <EditIcon /> Edit
           </Button>
         </Grid>

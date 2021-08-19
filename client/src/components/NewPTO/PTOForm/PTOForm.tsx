@@ -11,29 +11,32 @@ import Snackbar from "@material-ui/core/Snackbar";
 import Typography from "@material-ui/core/Typography";
 import { Alert } from "@material-ui/lab";
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
-import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, withRouter } from "react-router";
 
-import { IPTO, ITextBox, OptionalWithNull } from "common/types";
+import { IPTO, ITextBox, IUser, OptionalWithNull } from "common/types";
 import { ValidationUtil } from "common/ValidationUtil";
 import "./PTOForm.css";
 import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
+interface PTOFormMatchProps {
+  id: string;
+}
 interface PTOFormState {
   comment: ITextBox;
   approvers: ITextBox;
   warning: string;
   successMessage: boolean;
   loading: boolean;
+  loadingEditMode: boolean;
 }
 
-interface PTOFormProps extends RouteComponentProps {
+interface PTOFormProps extends RouteComponentProps<PTOFormMatchProps> {
   startingDate: string;
   endingDate: string;
-  setStartingDate: (date: MaterialUiPickersDate, value: OptionalWithNull<string>) => Promise<void>;
-  setEndingDate: (date: MaterialUiPickersDate, value: OptionalWithNull<string>) => Promise<void>;
+  setStartingDate: (date: Date | null, value: OptionalWithNull<string>) => Promise<void>;
+  setEndingDate: (date: Date | null, value: OptionalWithNull<string>) => Promise<void>;
   setError: (errorState: boolean) => void;
 }
 
@@ -44,6 +47,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
     super(props);
     this.state = {
       loading: false,
+      loadingEditMode: false,
       warning: "",
       successMessage: false,
       comment: {
@@ -63,7 +67,31 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
     };
   }
 
+  async componentDidMount(): Promise<void> {
+    if (this.editMode()) {
+      this.setState({
+        loadingEditMode: true,
+      });
+      try {
+        const PTODetailed = await this.PTOService.PTODetailed(this.props.match.params.id);
+        const approversValue = this.getApproversAsString(PTODetailed.approvers);
+        this.props.setStartingDate(new Date(PTODetailed.from_date), PTODetailed.from_date);
+        this.props.setEndingDate(new Date(PTODetailed.to_date), PTODetailed.to_date);
+        this.setState({
+          comment: { ...this.state.comment, value: PTODetailed.comment },
+          approvers: { ...this.state.approvers, value: approversValue },
+          loadingEditMode: false,
+        });
+      } catch (error) {
+        this.props.setError(true);
+      }
+    }
+  }
+
   render(): JSX.Element {
+    if (this.state.loadingEditMode) {
+      return <CircularProgress />;
+    }
     return (
       <Grid container spacing={5}>
         <Grid item xs={12}>
@@ -164,6 +192,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
     );
   }
 
+  // eslint-disable-next-line max-lines-per-function
   renderButtons(): JSX.Element {
     return (
       <Grid container spacing={3}>
@@ -179,15 +208,21 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
           </Button>
         </Grid>
         <Grid item xs={4}>
-          <Button
-            data-unit-test="addPTO-button"
-            className="pto-form-buttons"
-            variant="outlined"
-            color="primary"
-            onClick={this.addPTO}
-          >
-            Add
-          </Button>
+          {this.editMode() ? (
+            <Button className="pto-form-buttons" variant="outlined" color="primary" onClick={this.addPTO}>
+              Save
+            </Button>
+          ) : (
+            <Button
+              data-unit-test="addPTO-button"
+              className="pto-form-buttons"
+              variant="outlined"
+              color="primary"
+              onClick={this.addPTO}
+            >
+              Add
+            </Button>
+          )}
         </Grid>
         <Grid item xs={2}></Grid>
       </Grid>
@@ -287,6 +322,19 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
   private isApproversValid(approversValue: string): boolean {
     const approversArr = this.formatApprovers(approversValue);
     return approversArr.every((el) => ValidationUtil.isEmail(el));
+  }
+
+  private editMode(): boolean {
+    return this.props.match.path === "/edit/:id";
+  }
+
+  private getApproversAsString(approvers: Array<IUser>): string {
+    return approvers.reduce((acc, el, index) => {
+      if (index === 0) {
+        return el.email;
+      }
+      return `${acc}, ${el.email}`;
+    }, "");
   }
 
   handleCommentChange = (event: React.ChangeEvent<HTMLInputElement>): void => {

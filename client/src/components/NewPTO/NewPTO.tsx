@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 
 import Grid from "@material-ui/core/Grid";
-import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 
 import { DateUtil } from "common/DateUtil";
 import { OptionalWithNull } from "common/types";
@@ -52,8 +51,8 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
       </div>
     );
   }
-
-  setStartingDate = async (date: MaterialUiPickersDate, value: OptionalWithNull<string>): Promise<void> => {
+  //Date | null type is mandatory because of MaterialUI
+  setStartingDate = async (date: Date | null, value: OptionalWithNull<string>): Promise<void> => {
     if (value) {
       value = value.replaceAll("/", "-");
       this.setState({
@@ -62,7 +61,7 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
     }
   };
 
-  setEndingDate = async (date: MaterialUiPickersDate, value: OptionalWithNull<string>): Promise<void> => {
+  setEndingDate = async (date: Date | null, value: OptionalWithNull<string>): Promise<void> => {
     if (value) {
       value = value.replaceAll("/", "-");
       this.setState({
