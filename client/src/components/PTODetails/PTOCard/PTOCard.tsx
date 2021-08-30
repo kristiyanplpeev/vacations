@@ -6,6 +6,7 @@ import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import Chip from "@material-ui/core/Chip";
 import Grid from "@material-ui/core/Grid";
+import Popover from "@material-ui/core/Popover";
 import Typography from "@material-ui/core/Typography";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import DescriptionIcon from "@material-ui/icons/Description";
@@ -14,6 +15,7 @@ import "./PTOCard.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { RouteComponentProps, withRouter } from "react-router";
 
+import { PTOStatus } from "common/constants";
 import { IUserPTO, IUser } from "common/types";
 import MyDocument from "components/PTODetails/PDFDocu/AtscaleLeaveRequest";
 
@@ -24,9 +26,18 @@ interface PTOCardProps extends RouteComponentProps {
   workingDays: number;
 }
 
-class PTOCard extends Component<PTOCardProps> {
+interface PTOCardState {
+  anchorEl: any;
+  disableEditButton: boolean;
+}
+
+class PTOCard extends Component<PTOCardProps, PTOCardState> {
   constructor(props: PTOCardProps) {
     super(props);
+    this.state = {
+      anchorEl: null,
+      disableEditButton: false,
+    };
   }
 
   // eslint-disable-next-line max-lines-per-function
@@ -143,15 +154,55 @@ class PTOCard extends Component<PTOCardProps> {
         <Grid item xs={4}>
           <Button
             className="pto-card-buttons"
-            onClick={() => this.props.history.push(`/edit/${this.props.PTOInfo.id}`)}
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) => this.handleEditClick(event)}
             variant="outlined"
             color="primary"
+            disabled={this.state.disableEditButton}
           >
             <EditIcon /> Edit
           </Button>
+          {this.renderPopover()}
         </Grid>
       </Grid>
     );
+  }
+
+  renderPopover(): JSX.Element {
+    return (
+      <Popover
+        id="mouse-over-popover"
+        open={Boolean(this.state.anchorEl)}
+        anchorEl={this.state.anchorEl}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        onClose={() => this.handlePopoverClose()}
+        disableRestoreFocus
+      >
+        <Typography className="dates-calculator-popover-text">Approved or rejected PTOs can&#39;t be edited</Typography>
+      </Popover>
+    );
+  }
+
+  handleEditClick(event: React.MouseEvent<HTMLButtonElement>): void {
+    if (this.props.PTOInfo.status === PTOStatus.requested) {
+      this.props.history.push(`/edit/${this.props.PTOInfo.id}`);
+    } else {
+      this.setState({
+        anchorEl: event.currentTarget,
+        disableEditButton: true,
+      });
+    }
+  }
+  handlePopoverClose(): void {
+    this.setState({
+      anchorEl: null,
+    });
   }
 
   private stringCapitalize(string: string): string {

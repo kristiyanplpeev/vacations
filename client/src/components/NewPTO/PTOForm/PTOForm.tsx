@@ -7,6 +7,7 @@ import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Grid from "@material-ui/core/Grid";
+import Modal from "@material-ui/core/Modal";
 import Snackbar from "@material-ui/core/Snackbar";
 import Typography from "@material-ui/core/Typography";
 import { Alert } from "@material-ui/lab";
@@ -14,6 +15,7 @@ import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/picker
 import { resolve } from "inversify-react";
 import { RouteComponentProps, withRouter } from "react-router";
 
+import { errMessage } from "common/constants";
 import { IPTO, ITextBox, IUser, OptionalWithNull } from "common/types";
 import { ValidationUtil } from "common/ValidationUtil";
 import "./PTOForm.css";
@@ -28,6 +30,7 @@ interface PTOFormState {
   approvers: ITextBox;
   warning: string;
   successMessage: boolean;
+  showModal: string;
   loading: boolean;
   loadingEditMode: boolean;
 }
@@ -38,6 +41,7 @@ interface PTOFormProps extends RouteComponentProps<PTOFormMatchProps> {
   setStartingDate: (date: Date | null, value: OptionalWithNull<string>) => Promise<void>;
   setEndingDate: (date: Date | null, value: OptionalWithNull<string>) => Promise<void>;
   setError: (errorState: boolean) => void;
+  editMode: () => boolean;
 }
 
 export class PTOForm extends Component<PTOFormProps, PTOFormState> {
@@ -50,6 +54,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       loadingEditMode: false,
       warning: "",
       successMessage: false,
+      showModal: "",
       comment: {
         value: "PTO",
         isValid: true,
@@ -67,13 +72,14 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
     };
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   async componentDidMount(): Promise<void> {
-    if (this.editMode()) {
+    if (this.props.editMode()) {
       this.setState({
         loadingEditMode: true,
       });
       try {
-        const PTODetailed = await this.PTOService.PTODetailed(this.props.match.params.id);
+        const PTODetailed = await this.PTOService.getRequestedPTOById(this.props.match.params.id);
         const approversValue = this.getApproversAsString(PTODetailed.approvers);
         this.props.setStartingDate(new Date(PTODetailed.from_date), PTODetailed.from_date);
         this.props.setEndingDate(new Date(PTODetailed.to_date), PTODetailed.to_date);
@@ -83,8 +89,17 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
           loadingEditMode: false,
         });
       } catch (error) {
-        this.props.setError(true);
+        if (error.message === "Something went wrong.") {
+          this.props.setError(true);
+        } else {
+          this.setState({
+            showModal: error.message,
+          });
+        }
       }
+      this.setState({
+        loadingEditMode: false,
+      });
     }
   }
 
@@ -108,7 +123,23 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
           </Card>
         </Grid>
         {this.renderSnackbar()}
+        {this.renderModal()}
       </Grid>
+    );
+  }
+
+  renderModal(): JSX.Element {
+    return (
+      <Modal
+        open={!!this.state.showModal}
+        onClose={() => this.handleModalClose()}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <Typography className="error-modal" variant="subtitle1" gutterBottom>
+          {this.state.showModal}
+        </Typography>
+      </Modal>
     );
   }
 
@@ -208,8 +239,8 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
           </Button>
         </Grid>
         <Grid item xs={4}>
-          {this.editMode() ? (
-            <Button className="pto-form-buttons" variant="outlined" color="primary" onClick={this.addPTO}>
+          {this.props.editMode() ? (
+            <Button className="pto-form-buttons" variant="outlined" color="primary" onClick={this.editPTO}>
               Save
             </Button>
           ) : (
@@ -268,6 +299,32 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
     });
   };
 
+  editPTO = async (): Promise<void> => {
+    try {
+      this.setState({
+        loading: true,
+      });
+      const PTOId = this.props.match.params.id;
+      const PTO = { ...this.getHoliday(), id: PTOId };
+
+      await this.PTOService.editPTO(PTO);
+      this.setState({
+        successMessage: true,
+      });
+    } catch (error) {
+      if (error.message === errMessage) {
+        this.props.setError(true);
+      } else {
+        this.setState({
+          warning: error.message,
+        });
+      }
+    }
+    this.setState({
+      loading: false,
+    });
+  };
+
   private getHoliday(): IPTO {
     const approversArr = this.formatApprovers(this.state.approvers.value);
 
@@ -277,6 +334,13 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       comment: this.state.comment.value,
       approvers: approversArr,
     };
+  }
+
+  handleModalClose(): void {
+    this.setState({
+      showModal: "",
+    });
+    this.props.history.push("/home");
   }
 
   areInputsValid = (): boolean => {
@@ -322,10 +386,6 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
   private isApproversValid(approversValue: string): boolean {
     const approversArr = this.formatApprovers(approversValue);
     return approversArr.every((el) => ValidationUtil.isEmail(el));
-  }
-
-  private editMode(): boolean {
-    return this.props.match.path === "/edit/:id";
   }
 
   private getApproversAsString(approvers: Array<IUser>): string {

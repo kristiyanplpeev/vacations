@@ -7,14 +7,6 @@
   text-align: center;
 }
 
-.homepage-button-text:hover {
-  cursor: pointer;
-}
-
-.homepage-view-pto-button:hover {
-  cursor: pointer;
-}
-
 .homepage-message-wrapper {
   display: flex;
   justify-content: center;

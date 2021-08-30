@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import { Button } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Paper from "@material-ui/core/Paper";
+import Popover from "@material-ui/core/Popover";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -16,6 +17,7 @@ import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
+import { PTOStatus } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import { IUserPTOWithCalcDays } from "common/types";
 import Error from "components/common/Error/Error";
@@ -29,6 +31,7 @@ interface HomepageState {
   error: string;
   userPastPTOs: Array<IUserPTOWithCalcDays>;
   userFuturePTOs: Array<IUserPTOWithCalcDays>;
+  anchorEl: any;
 }
 
 class Homepage extends Component<HomepageProps, HomepageState> {
@@ -41,6 +44,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       error: "",
       userPastPTOs: [],
       userFuturePTOs: [],
+      anchorEl: null,
     };
   }
 
@@ -81,6 +85,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         {this.state.userFuturePTOs.length === 0 && this.state.userPastPTOs.length === 0
           ? this.renderNoPTOsView()
           : this.renderPTOsTable()}
+        {this.renderPopover()}
       </div>
     );
   }
@@ -142,12 +147,13 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         <TableCell width="10%" align="left">
           <b>To</b>
         </TableCell>
-        <TableCell width="10%" align="left">
+        <TableCell width="8%" align="left">
           <b>PTO days</b>
         </TableCell>
-        <TableCell width="10%" align="left">
+        <TableCell width="8%" align="left">
           <b>Total days</b>
         </TableCell>
+        <TableCell width="5%" align="left"></TableCell>
         <TableCell width="5%" align="left"></TableCell>
         <TableCell width="30%" align="left">
           <b>Comment</b>
@@ -177,16 +183,49 @@ class Homepage extends Component<HomepageProps, HomepageState> {
           </Typography>
           <SentimentSatisfiedSharpIcon fontSize="large" />
         </div>
-        <Button
-          className="homepage-button-text"
-          onClick={() => this.props.history.push("/new")}
-          variant="outlined"
-          color="primary"
-        >
+        <Button onClick={() => this.props.history.push("/new")} variant="outlined" color="primary">
           REQUEST VACATION
         </Button>
       </div>
     );
+  }
+
+  renderPopover(): JSX.Element {
+    return (
+      <Popover
+        id="mouse-over-popover"
+        open={Boolean(this.state.anchorEl)}
+        anchorEl={this.state.anchorEl}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        onClose={() => this.handlePopoverClose()}
+        disableRestoreFocus
+      >
+        <Typography className="dates-calculator-popover-text">Approved or rejected PTOs can&#39;t be edited</Typography>
+      </Popover>
+    );
+  }
+
+  handleEditClick(event: React.MouseEvent<HTMLButtonElement>, currentPTOStatus: string, currentPTOId: string): void {
+    if (currentPTOStatus === PTOStatus.requested) {
+      this.props.history.push(`/edit/${currentPTOId}`);
+    } else {
+      this.setState({
+        anchorEl: event.currentTarget,
+      });
+    }
+  }
+
+  handlePopoverClose(): void {
+    this.setState({
+      anchorEl: null,
+    });
   }
 
   private async getUserPTOs() {
@@ -213,19 +252,24 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       <TableCell width="10%" align="left">
         {el.to_date}
       </TableCell>
-      <TableCell width="10%" align="left">
+      <TableCell width="8%" align="left">
         {el.PTODays}
       </TableCell>
-      <TableCell width="10%" align="left">
+      <TableCell width="8%" align="left">
         {el.totalDays}
       </TableCell>
-      <TableCell
-        className="homepage-view-pto-button"
-        width="5%"
-        align="left"
-        onClick={() => this.props.history.push(`/pto/${el.id}`)}
-      >
-        view
+      <TableCell width="5%" align="left">
+        <Button color="primary" onClick={() => this.props.history.push(`/pto/${el.id}`)}>
+          view
+        </Button>
+      </TableCell>
+      <TableCell width="5%" align="left">
+        <Button
+          color="primary"
+          onClick={(event: React.MouseEvent<HTMLButtonElement>) => this.handleEditClick(event, el.status, el.id)}
+        >
+          edit
+        </Button>
       </TableCell>
       <TableCell width="30%" align="left">
         {el.comment}

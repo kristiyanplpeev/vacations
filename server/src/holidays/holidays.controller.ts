@@ -10,7 +10,11 @@ import {
 import { HolidaysService } from './holidays.service';
 import { PTOsService } from './pto.service';
 import { JwtAuthGuard } from '../google/guards';
-import { HolidayInfoDto, HolidayPeriodDto } from './dto/holidays.dto';
+import {
+  EditPTODto,
+  HolidayInfoDto,
+  HolidayPeriodDto,
+} from './dto/holidays.dto';
 import { HolidaysDaysStatus, PTOFullInfo } from 'src/holidays/types';
 import { QueryFail } from 'src/utils/types';
 import { PTO } from 'src/model/pto.entity';
@@ -50,5 +54,17 @@ export class HolidaysController {
   @UseGuards(JwtAuthGuard)
   public async getPTOById(@Param('id') id: string): Promise<PTOFullInfo> {
     return await this.PTOService.getPTOById(id);
+  }
+
+  @Get('details/:id')
+  @UseGuards(JwtAuthGuard)
+  public async getRequestedPTOById(@Param('id') id: string): Promise<PTO> {
+    return await this.PTOService.getRequestedPTOById(id);
+  }
+
+  @Post('edit')
+  @UseGuards(JwtAuthGuard)
+  public async editPTO(@Body() body: EditPTODto, @Req() req): Promise<PTO> {
+    return await this.PTOService.editPTO(body, req.user);
   }
 }

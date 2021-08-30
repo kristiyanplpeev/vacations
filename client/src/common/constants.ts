@@ -5,11 +5,19 @@ export const dayStatus = {
   weekend: "weekend",
 };
 
+export const PTOStatus = {
+  approved: "approved",
+  requested: "requested",
+  rejected: "rejected",
+};
+
 export const user = {
   login: "LOGIN_USER",
   logout: "LOGOUT_USER",
   check: "CHECK_USER",
 };
+
+export const errMessage = "Something went wrong.";
 
 export const emptyUser = {
   id: "",
