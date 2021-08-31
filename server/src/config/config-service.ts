@@ -1,5 +1,12 @@
 // src/config/config.service.ts
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import {
+  postgresHost,
+  postgresPort,
+  postgresUser,
+  postgresPass,
+  postgresDB,
+} from '../common/constants';
 
 require('dotenv').config();
 
@@ -33,11 +40,11 @@ class ConfigService {
     return {
       type: 'postgres',
 
-      host: this.getValue('POSTGRES_HOST'),
-      port: parseInt(this.getValue('POSTGRES_PORT')),
-      username: this.getValue('POSTGRES_USER'),
-      password: this.getValue('POSTGRES_PASSWORD'),
-      database: this.getValue('POSTGRES_DATABASE'),
+      host: this.getValue(postgresHost),
+      port: parseInt(this.getValue(postgresPort)),
+      username: this.getValue(postgresUser),
+      password: this.getValue(postgresPass),
+      database: this.getValue(postgresDB),
 
       entities: ['**/*.entity{.ts,.js}'],
 
@@ -55,11 +62,11 @@ class ConfigService {
 }
 
 const configService = new ConfigService(process.env).ensureValues([
-  'POSTGRES_HOST',
-  'POSTGRES_PORT',
-  'POSTGRES_USER',
-  'POSTGRES_PASSWORD',
-  'POSTGRES_DATABASE',
+  postgresHost,
+  postgresPort,
+  postgresUser,
+  postgresPass,
+  postgresDB,
 ]);
 
 export { configService };

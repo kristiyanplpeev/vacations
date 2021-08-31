@@ -183,15 +183,13 @@ describe('HolidaysController', () => {
         startingDate: '2021-08-12',
         endingDate: '2021-08-11',
       };
-      const spy = jest.spyOn(controller, 'calculateHolidayPeriod');
+      expect.hasAssertions();
 
       try {
         //act
         await controller.calculateHolidayPeriod(dto);
-
-        //assert
-        expect(spy).toHaveBeenCalled();
       } catch (error) {
+        //assert
         expect(error).toBeInstanceOf(BadRequestException);
       }
     });
@@ -212,16 +210,15 @@ describe('HolidaysController', () => {
     });
     it('should return error message', async () => {
       //arrange
-      const spy = jest.spyOn(controller, 'postHoliday');
+      expect.hasAssertions();
+
       try {
         //act
         await controller.postHoliday(mockHolidayInfoInvalid, {
           user: 'mock',
         });
-
-        //assert
-        expect(spy).toHaveBeenCalled();
       } catch (error) {
+        //assert
         expect(error).toBeInstanceOf(BadRequestException);
       }
     });

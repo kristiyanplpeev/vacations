@@ -3,9 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../model/user.entity';
 import { Repository } from 'typeorm';
 import { AuthenticationProvider } from './auth';
-import { UserDetails } from '../utils/types';
+import { UserDetails } from './utils/interfaces';
 import { JwtService } from '@nestjs/jwt';
-import { Token } from 'src/google/utils/types';
+import { Token } from 'src/google/utils/interfaces';
 
 @Injectable()
 export class GoogleService implements AuthenticationProvider {

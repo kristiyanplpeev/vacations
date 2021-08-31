@@ -3,11 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PTO } from '../model/pto.entity';
 import { User } from '../model/user.entity';
 import { Repository } from 'typeorm';
-import { PTOInfo } from '../utils/types';
 import { EditPTODto, HolidayInfoDto } from './dto/holidays.dto';
-import { PTOFullInfo } from 'src/holidays/types';
 import { HolidaysService } from './holidays.service';
-import { PTODetails } from 'src/google/utils/types';
+import {
+  PTODetails,
+  PTODetailsWithTotalDays,
+  PTODetailsWithEachDay,
+} from './interfaces';
+import { DayStatus, PTOStatus, UserRelations } from '../common/constants';
 
 @Injectable()
 export class PTOsService {
@@ -24,10 +27,10 @@ export class PTOsService {
       return await this.userRepo.findOne({ email: el });
     });
     const approversResolved = await Promise.all(approversProm);
-    const approoversValidation = approversResolved.indexOf(undefined);
-    if (approoversValidation >= 0) {
+    const approversValidation = approversResolved.indexOf(undefined);
+    if (approversValidation >= 0) {
       throw new BadRequestException(
-        `User with email ${approvers[approoversValidation]} does not exist.`,
+        `User with email ${approvers[approversValidation]} does not exist.`,
       );
     }
     return approversResolved;
@@ -44,7 +47,7 @@ export class PTOsService {
       from_date: holidayInfo.startingDate.toString(),
       to_date: holidayInfo.endingDate.toString(),
       comment: holidayInfo.comment,
-      status: 'requested',
+      status: PTOStatus.requested,
       employee,
       approvers,
     });
@@ -69,7 +72,7 @@ export class PTOsService {
     let isThereAWorkdayInSubmittedPeriod = false;
 
     for (let i = 0; i < vacationDays.length; i++) {
-      if (vacationDays[i].status === 'workday') {
+      if (vacationDays[i].status === DayStatus.workday) {
         isThereAWorkdayInSubmittedPeriod = true;
         break;
       }
@@ -82,8 +85,8 @@ export class PTOsService {
 
     const allEmployeeHolidays = await this.PTORepo.find({
       where: [
-        { employee: user.id, status: 'requested' },
-        { employee: user.id, status: 'approved' },
+        { employee: user.id, status: PTOStatus.requested },
+        { employee: user.id, status: PTOStatus.approved },
       ],
     });
 
@@ -117,7 +120,9 @@ export class PTOsService {
     return await this.saveHolidayIntoPTO(holidayInfo, user);
   }
 
-  public async getUserPTOs(user: User): Promise<Array<PTOInfo>> {
+  public async getUserPTOs(
+    user: User,
+  ): Promise<Array<PTODetailsWithTotalDays>> {
     const userHolidays = await this.PTORepo.find({
       where: { employee: user.id },
     });
@@ -129,7 +134,7 @@ export class PTOsService {
       });
       if (Array.isArray(eachDayStatus)) {
         const workDays = eachDayStatus.filter(
-          (elem) => elem.status === 'workday',
+          (elem) => elem.status === DayStatus.workday,
         );
         return {
           ...el,
@@ -147,11 +152,11 @@ export class PTOsService {
   private async getPTOFullInfo(PTOId: string): Promise<PTO> {
     return await this.PTORepo.findOne({
       where: { id: PTOId },
-      relations: ['employee', 'approvers'],
+      relations: [UserRelations.employee, UserRelations.approvers],
     });
   }
 
-  public async getPTOById(PTOId: string): Promise<PTOFullInfo> {
+  public async getPTOById(PTOId: string): Promise<PTODetailsWithEachDay> {
     const PTOInfo = await this.getPTOFullInfo(PTOId);
     const eachDayStatus = await this.holidaysService.calculateDays({
       startingDate: PTOInfo.from_date,
@@ -163,7 +168,7 @@ export class PTOsService {
 
   public async getRequestedPTOById(PTOId: string): Promise<PTO> {
     const PTODetails = await this.getPTOFullInfo(PTOId);
-    if (PTODetails.status !== 'requested') {
+    if (PTODetails.status !== PTOStatus.requested) {
       throw new BadRequestException(
         `You can't edit approved or rejected PTOs.`,
       );

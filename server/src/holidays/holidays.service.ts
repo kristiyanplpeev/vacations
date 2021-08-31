@@ -3,8 +3,9 @@ import { Holiday } from '../model/holiday.entity';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HolidayPeriodDto } from './dto/holidays.dto';
-import { HolidayPeriod, HolidaysDaysStatus } from 'src/holidays/types';
-import DateUtil from '../utils/Utils';
+import { HolidayPeriod, HolidaysDaysStatus } from './interfaces';
+import DateUtil from '../utils/DateUtil';
+import { DayStatus } from '../common/constants';
 
 @Injectable()
 export class HolidaysService {
@@ -52,19 +53,13 @@ export class HolidaysService {
   };
 
   getDatesWithAllHolidaysAndWeekends = (
-    datesBetweenAsObj: Array<{
-      date: string;
-      status: string;
-    }>,
+    days: HolidaysDaysStatus,
     movableHolidays: Array<Holiday>,
     constantHolidays: Array<Holiday>,
-  ): Array<{
-    date: string;
-    status: string;
-  }> => {
-    const datesWithWeekends = datesBetweenAsObj.map((el) => {
+  ): HolidaysDaysStatus => {
+    const datesWithWeekends = days.map((el) => {
       if (new Date(el.date).getDay() == 6 || new Date(el.date).getDay() == 0) {
-        el.status = 'weekend';
+        el.status = DayStatus.weekend;
       }
       return el;
     });
@@ -77,15 +72,15 @@ export class HolidaysService {
       return [...acc, el];
     }, []);
 
-    const datesWirhAllHolidaysAndWeekends = constantHolidays.reduce(
+    const datesWithAllHolidaysAndWeekends = constantHolidays.reduce(
       (dates, constantHoliday) => {
         for (let i = 0; i < dates.length; i++) {
           if (constantHoliday.date == dates[i].date) {
-            if (dates[i].status === 'workday') {
+            if (dates[i].status === DayStatus.workday) {
               dates[i].status = constantHoliday.comment;
             } else {
               for (let j = i; j < dates.length; j++) {
-                if (dates[j].status === 'workday') {
+                if (dates[j].status === DayStatus.workday) {
                   dates[j].status = `${constantHoliday.comment} (in lieu)`;
                   break;
                 }
@@ -98,7 +93,7 @@ export class HolidaysService {
       datesWithMovableHolidays,
     );
 
-    return datesWirhAllHolidaysAndWeekends;
+    return datesWithAllHolidaysAndWeekends;
   };
 
   public async calculateDays(
@@ -119,7 +114,7 @@ export class HolidaysService {
 
     const datesBetweenAsObj = datesBetween.map((el) => ({
       date: el,
-      status: 'workday',
+      status: DayStatus.workday,
     }));
 
     const datesWithAllHolidaysAndWeekends =
