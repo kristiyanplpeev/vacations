@@ -31,7 +31,7 @@ interface HomepageState {
   error: string;
   userPastPTOs: Array<IUserPTOWithCalcDays>;
   userFuturePTOs: Array<IUserPTOWithCalcDays>;
-  anchorEl: any;
+  anchorEl: HTMLButtonElement | null;
 }
 
 class Homepage extends Component<HomepageProps, HomepageState> {

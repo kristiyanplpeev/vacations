@@ -27,7 +27,7 @@ interface PTOCardProps extends RouteComponentProps {
 }
 
 interface PTOCardState {
-  anchorEl: any;
+  anchorEl: HTMLButtonElement | null;
   disableEditButton: boolean;
 }
 

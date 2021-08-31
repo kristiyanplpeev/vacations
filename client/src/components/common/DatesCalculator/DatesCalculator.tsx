@@ -39,7 +39,7 @@ interface DatesCalculatorState {
   freeDays: number;
   freeDaysStatuses: string;
   totalDays: number;
-  anchorEl: any;
+  anchorEl: HTMLButtonElement | null;
 }
 
 class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorState> {

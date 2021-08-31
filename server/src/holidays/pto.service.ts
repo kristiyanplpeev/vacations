@@ -181,7 +181,7 @@ export class PTOsService {
     const approvers = await this.validateApprovers(PTOEdited.approvers);
     const PTO = await this.PTORepo.findOne({
       where: { id: PTOEdited.id },
-      relations: ['approvers'],
+      relations: [UserRelations.approvers],
     });
     PTO.from_date = PTOEdited.startingDate;
     PTO.to_date = PTOEdited.endingDate;
