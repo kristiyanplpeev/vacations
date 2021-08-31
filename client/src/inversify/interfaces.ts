@@ -1,29 +1,29 @@
-import {
-  IHolidayInfo,
-  HolidayDaysInfoType,
-  UserInfoType,
-  IHolidayFullInfo,
-  UserHolidayType,
-  PTOFullInfo,
-} from "common/types";
+import { Dispatch } from "redux";
 
-export interface IUserService {
-  logInUserRequest(): Promise<UserInfoType>;
+import { IPTOPeriod, HolidayDays, IPTO, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/types";
+import { AppActions, IUserDetails } from "store/user/types";
+
+export interface IAuthService {
+  logInUser(): Promise<IUserDetails>;
+  getToken(): string;
+  extractUser(token: string): IUserDetails;
 }
 
-export interface IHolidaysService {
-  getHolidayInfoRequest({ startingDate, endingDate }: IHolidayInfo): Promise<HolidayDaysInfoType>;
-  addPTORequest({
-    startingDate,
-    endingDate,
-    comment,
-    approvers,
-  }: IHolidayFullInfo): Promise<void | { warning: string }>;
-  userPTOsRequest(): Promise<Array<UserHolidayType>>;
-  PTODetailedRequest(PTOId: string): Promise<PTOFullInfo>;
+export interface IHolidayService {
+  getDatesStatus({ startingDate, endingDate }: IPTOPeriod): Promise<HolidayDays>;
 }
 
-export interface INewPTO {}
-export interface IRedirecting {
-  componentDidMount(): Promise<void>;
+export interface IAuthenticationActionCreator {
+  logInUser(): Promise<AppActions>;
+  logOutUser(): AppActions;
+  checkIfUserIsLoggedIn(): AppActions;
+  logInUserDispatch(): (dispatch: Dispatch<AppActions>) => Promise<void>;
+  logOutUserDispatch(): (dispatch: Dispatch<AppActions>) => void;
+  checkIfUserIsLoggedInDispatch(): (dispatch: Dispatch<AppActions>) => void;
+}
+
+export interface IPTOService {
+  addPTO({ startingDate, endingDate, comment, approvers }: IPTO): Promise<void | { warning: string }>;
+  getUserPTOs(): Promise<Array<IUserPTOWithCalcDays>>;
+  PTODetailed(PTOId: string): Promise<IUserPTOFullDetails>;
 }

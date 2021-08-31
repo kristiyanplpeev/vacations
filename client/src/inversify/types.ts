@@ -1,7 +1,8 @@
 const TYPES = {
-  UserLogger: Symbol.for("UserLogger"),
-  Redirecter: Symbol.for("Redirecter"),
+  Auth: Symbol.for("Auth"),
   Holidays: Symbol.for("Holidays"),
+  PTO: Symbol.for("PTO"),
+  AuthAction: Symbol.for("AuthAction"),
 };
 
 export { TYPES };

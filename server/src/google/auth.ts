@@ -1,6 +1,6 @@
-import { Token } from 'src/google/utils/types';
+import { Token } from 'src/google/utils/interfaces';
 import { User } from '../model/user.entity';
-import { UserDetails } from '../utils/types';
+import { UserDetails } from './utils/interfaces';
 
 export interface AuthenticationProvider {
   validateUser(details: UserDetails): Promise<UserDetails>;

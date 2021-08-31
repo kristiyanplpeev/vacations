@@ -5,36 +5,29 @@ import {
   Param,
   Post,
   Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { HolidaysService } from './holidays.service';
+import { PTOsService } from './pto.service';
 import { JwtAuthGuard } from '../google/guards';
 import { HolidayInfoDto, HolidayPeriodDto } from './dto/holidays.dto';
-import { HolidaysDaysStatus, PTOFullInfo } from 'src/holidays/types';
-import { QueryFail } from 'src/utils/types';
+import { HolidaysDaysStatus, PTODetailsWithEachDay } from './interfaces';
 import { PTO } from 'src/model/pto.entity';
+import { PTODetailsWithTotalDays } from './interfaces';
 
 @Controller('holidays')
 export class HolidaysController {
-  constructor(private readonly holidaysService: HolidaysService) {}
+  constructor(
+    private readonly holidaysService: HolidaysService,
+    private readonly PTOService: PTOsService,
+  ) {}
 
   @Post('calc')
   @UseGuards(JwtAuthGuard)
   public async calculateHolidayPeriod(
     @Body() body: HolidayPeriodDto,
-    @Res() res,
-  ): Promise<HolidaysDaysStatus | QueryFail> {
-    try {
-      const vacationDays = await this.holidaysService.calculateDays(body);
-      return res.status(200).send(vacationDays);
-    } catch (error) {
-      return res.status(400).send({
-        statusCode: 400,
-        message: error.message,
-        error: 'Bad Request',
-      });
-    }
+  ): Promise<HolidaysDaysStatus> {
+    return await this.holidaysService.calculateDays(body);
   }
 
   @Post()
@@ -42,50 +35,23 @@ export class HolidaysController {
   public async postHoliday(
     @Body() body: HolidayInfoDto,
     @Req() req,
-    @Res() res,
-  ): Promise<PTO | QueryFail> {
-    try {
-      const newHoliday = await this.holidaysService.postHoliday(body, req.user);
-      return res.status(200).send(newHoliday);
-    } catch (error) {
-      return res.status(400).send({
-        statusCode: 400,
-        message: error.message,
-        error: 'Bad Request',
-      });
-    }
+  ): Promise<PTO> {
+    return await this.PTOService.postPTO(body, req.user);
   }
 
   @Get('users')
   @UseGuards(JwtAuthGuard)
-  public async getUserPTOs(@Req() req, @Res() res): Promise<void> {
-    try {
-      const userPTOs = await this.holidaysService.getUserPTOs(req.user);
-      return res.status(200).send(userPTOs);
-    } catch (error) {
-      return res.status(400).send({
-        statusCode: 400,
-        message: error.message,
-        error: 'Bad Request',
-      });
-    }
+  public async getUserPTOs(
+    @Req() req,
+  ): Promise<Array<PTODetailsWithTotalDays>> {
+    return await this.PTOService.getUserPTOs(req.user);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   public async getPTOById(
     @Param('id') id: string,
-    @Res() res,
-  ): Promise<PTOFullInfo | QueryFail> {
-    try {
-      const PTOInfo = await this.holidaysService.getPTOById(id);
-      return res.status(200).send(PTOInfo);
-    } catch (error) {
-      return res.status(400).send({
-        statusCode: 400,
-        message: error.message,
-        error: 'Bad Request',
-      });
-    }
+  ): Promise<PTODetailsWithEachDay> {
+    return await this.PTOService.getPTOById(id);
   }
 }

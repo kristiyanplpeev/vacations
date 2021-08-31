@@ -1,37 +1,19 @@
-import { extractUser, getToken } from "providers/tokenManagment";
+import { noLoggedUser, user } from "common/constants";
 
-import { UserInfoActionTypes, UserInfoReducerState, UserInfoTypes, IsUserLoggedInActionTypes } from "./types";
+import { IUserDetailsAction, IUserState } from "./types";
 
-const initialUserInfoState = extractUser(getToken());
+const initialUserState = noLoggedUser;
 
-const initualUserStatusState = !!getToken();
-
-export const userInfoReducer = (
-  state: UserInfoReducerState = initialUserInfoState,
-  action: UserInfoActionTypes,
-): UserInfoTypes | null => {
+export const userInfoReducer = (state: IUserState = initialUserState, action: IUserDetailsAction): IUserState => {
   switch (action.type) {
-    case "LOGIN_USER": {
+    case user.login: {
       return action.payload;
     }
-    case "LOGOUT USER": {
-      return { id: "", googleId: "", email: "", firstName: "", lastName: "", picture: "" };
-    }
-    default:
-      return state;
-  }
-};
-
-export const isUserLoggedInReducer = (
-  state: boolean = initualUserStatusState,
-  action: IsUserLoggedInActionTypes,
-): boolean => {
-  switch (action.type) {
-    case "LOGIN": {
+    case user.check: {
       return action.payload;
     }
-    case "LOGOUT": {
-      return action.payload;
+    case user.logout: {
+      return noLoggedUser;
     }
     default:
       return state;

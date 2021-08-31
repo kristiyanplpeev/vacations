@@ -3,7 +3,7 @@
   width: 70%;
 }
 
-.homapage-header {
+.homepage-header {
   text-align: center;
 }
 
@@ -11,7 +11,7 @@
   cursor: pointer;
 }
 
-.homepage-viewpto-button:hover {
+.homepage-view-pto-button:hover {
   cursor: pointer;
 }
 
@@ -26,7 +26,7 @@
   line-height: 1.5;
 }
 
-.homapage-addpto-button.MuiButtonBase-root {
+.homepage-add-pto-button.MuiButtonBase-root {
   margin: 2% 0%;
   float: left;
 }

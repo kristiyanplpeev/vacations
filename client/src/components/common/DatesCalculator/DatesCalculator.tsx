@@ -13,10 +13,13 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Typography from "@material-ui/core/Typography";
 import InfoIcon from "@material-ui/icons/Info";
+import { resolve } from "inversify-react";
 
 import { dayStatus } from "common/constants";
-import { HolidayDaysInfoType } from "common/types";
+import { HolidayDays } from "common/types";
 import "./DatesCalculator.css";
+import { IHolidayService } from "inversify/interfaces";
+import { TYPES } from "inversify/types";
 
 type calcVacation = {
   nonWorkingDays: Array<string>;
@@ -26,11 +29,12 @@ type calcVacation = {
 };
 
 interface DatesCalculatorProps {
-  holidayDaysStatus: HolidayDaysInfoType;
-  loading: boolean;
+  startingDate: string;
+  endingDate: string;
 }
 
 interface DatesCalculatorState {
+  loading: boolean;
   weekdays: number;
   freeDays: number;
   freeDaysStatuses: string;
@@ -39,9 +43,12 @@ interface DatesCalculatorState {
 }
 
 class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorState> {
+  @resolve(TYPES.Holidays) holidaysService!: IHolidayService;
+
   constructor(props: DatesCalculatorProps) {
     super(props);
     this.state = {
+      loading: false,
       weekdays: 0,
       freeDays: 0,
       freeDaysStatuses: "",
@@ -50,32 +57,22 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
     };
   }
 
-  componentDidUpdate = (): void => {
-    if (this.props.holidayDaysStatus && this.props.holidayDaysStatus.length !== this.state.totalDays) {
-      const calculatedVacationDays = this.calculateVacationDays();
-
-      this.setState({
-        weekdays: calculatedVacationDays.numberOfWorkingDays,
-        freeDays: calculatedVacationDays.numberOfNonWorkingDays,
-        freeDaysStatuses:
-          calculatedVacationDays.nonWorkingDays.length !== 0
-            ? calculatedVacationDays.nonWorkingDays.join("\r\n")
-            : "There are no free days in that period",
-        totalDays: calculatedVacationDays.totalVacationDays,
-      });
+  async componentDidUpdate(prevProps: DatesCalculatorProps): Promise<void> {
+    if (prevProps.startingDate !== this.props.startingDate || prevProps.endingDate !== this.props.endingDate) {
+      await this.getHolidayDaysStatus();
     }
-  };
+  }
 
   // eslint-disable-next-line max-lines-per-function
   render(): JSX.Element {
-    if (this.props.loading) {
+    if (this.state.loading) {
       return <CircularProgress />;
     }
     return (
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          {this.props.holidayDaysStatus.length !== 0 && (
-            <TableContainer className="datescalculator-table" component={Paper}>
+          {this.state.totalDays !== 0 && (
+            <TableContainer className="dates-calculator-table" component={Paper}>
               <Table className={"table"} aria-label="simple table">
                 <TableHead>
                   <TableRow>
@@ -88,13 +85,13 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
                 </TableHead>
                 <TableBody>
                   <TableRow key={"1"}>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       Non- working days:
                     </TableCell>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       {this.state.freeDays}
                     </TableCell>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       <InfoIcon
                         aria-owns={!!this.state.anchorEl ? "mouse-over-popover" : undefined}
                         aria-haspopup="true"
@@ -102,7 +99,7 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
                         onMouseLeave={this.handlePopoverClose}
                       />
                       <Popover
-                        className="datescalculator-popover"
+                        className="dates-calculator-popover"
                         id="mouse-over-popover"
                         open={Boolean(this.state.anchorEl)}
                         anchorEl={this.state.anchorEl}
@@ -117,23 +114,23 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
                         onClose={this.handlePopoverClose}
                         disableRestoreFocus
                       >
-                        <Typography className="datescalculator-popover-text">{this.state.freeDaysStatuses}</Typography>
+                        <Typography className="dates-calculator-popover-text">{this.state.freeDaysStatuses}</Typography>
                       </Popover>
                     </TableCell>
                   </TableRow>
                   <TableRow key={"2"}>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       Working days:
                     </TableCell>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       {this.state.weekdays}
                     </TableCell>
                   </TableRow>
                   <TableRow key={"3"}>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       Total:
                     </TableCell>
-                    <TableCell className="datescalculator-tablecell" align="left">
+                    <TableCell className="dates-calculator-table-cell" align="left">
                       {this.state.totalDays}
                     </TableCell>
                   </TableRow>
@@ -146,15 +143,42 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
     );
   }
 
-  private calculateVacationDays(): calcVacation {
-    const nonWorkingDays = this.props.holidayDaysStatus
+  getHolidayDaysStatus = async (
+    startingDate: string = this.props.startingDate,
+    endingDate: string = this.props.endingDate,
+  ): Promise<void> => {
+    try {
+      this.setState({
+        loading: true,
+      });
+      const holidayDaysStatus = await this.holidaysService.getDatesStatus({
+        startingDate,
+        endingDate,
+      });
+      const calculatedVacationDays = this.calculateVacationDays(holidayDaysStatus);
+
+      this.setState({
+        weekdays: calculatedVacationDays.numberOfWorkingDays,
+        freeDays: calculatedVacationDays.numberOfNonWorkingDays,
+        freeDaysStatuses:
+          calculatedVacationDays.nonWorkingDays.length !== 0
+            ? calculatedVacationDays.nonWorkingDays.join("\r\n")
+            : "There are no free days in that period",
+        totalDays: calculatedVacationDays.totalVacationDays,
+        loading: false,
+      });
+    } catch (err) {}
+  };
+
+  private calculateVacationDays(daysStatuses: HolidayDays): calcVacation {
+    const nonWorkingDays = daysStatuses
       .filter((el) => el.status !== dayStatus.workday)
       .map((element) => {
         const formattedDate = element.date.replace(/[-]/g, ".");
         return `${formattedDate} - ${element.status}`;
       });
     const numberOfNonWorkingDays = nonWorkingDays.length;
-    const totalVacationDays = this.props.holidayDaysStatus.length;
+    const totalVacationDays = daysStatuses.length;
     const numberOfWorkingDays = totalVacationDays - numberOfNonWorkingDays;
 
     return {

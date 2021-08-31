@@ -6,12 +6,12 @@ import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
 import "./PTODetails.css";
-import AppError from "common/AppError/AppError";
 import { dayStatus } from "common/constants";
-import DatesCalculator from "common/DatesCalculator/DatesCalculator";
-import { UserHolidayBasicInfoType, UserInfoType, HolidayDaysInfoType } from "common/types";
-import PTOBasicInfo from "components/PTODetails/PTOBasicInfo/PTOBasicInfo";
-import { IHolidaysService } from "inversify/interfaces";
+import { IUserPTO, IUser, HolidayDays } from "common/types";
+import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
+import Error from "components/common/Error/Error";
+import PTOCard from "components/PTODetails/PTOCard/PTOCard";
+import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
 interface PTODetailsMatchProps {
@@ -23,15 +23,15 @@ interface PTODetailsProps extends RouteComponentProps<PTODetailsMatchProps> {}
 interface PTODetailsState {
   error: string;
   loading: boolean;
-  PTOInfo: UserHolidayBasicInfoType;
-  employee: UserInfoType;
-  approvers: Array<UserInfoType>;
-  eachDayStatus: HolidayDaysInfoType;
+  PTOInfo: IUserPTO;
+  employee: IUser;
+  approvers: Array<IUser>;
+  eachDayStatus: HolidayDays;
   workingDays: number;
 }
 
 class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
-  @resolve(TYPES.Holidays) holidaysService!: IHolidaysService;
+  @resolve(TYPES.PTO) private PTOService!: IPTOService;
 
   constructor(props: PTODetailsProps) {
     super(props);
@@ -65,7 +65,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
         loading: true,
       });
       const PTOId = this.props.match.params.id;
-      const PTOFullInfo = await this.holidaysService.PTODetailedRequest(PTOId);
+      const PTOFullInfo = await this.PTOService.PTODetailed(PTOId);
       const workingDays = this.calculateWorkingDays(PTOFullInfo.eachDayStatus);
 
       this.setState({
@@ -83,7 +83,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
       });
     } catch (error) {
       this.setState({
-        error: error.response.data.message,
+        error: error.message,
       });
     }
     this.setState({
@@ -92,7 +92,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
   }
   render(): JSX.Element {
     if (this.state.error) {
-      return <AppError message={this.state.error} />;
+      return <Error />;
     }
     return (
       <div className="pto-details-container">
@@ -102,7 +102,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
             {this.state.loading ? (
               <CircularProgress />
             ) : (
-              <PTOBasicInfo
+              <PTOCard
                 employee={this.state.employee}
                 approvers={this.state.approvers}
                 PTOInfo={this.state.PTOInfo}
@@ -111,14 +111,14 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
             )}
           </Grid>
           <Grid item xs={6}>
-            <DatesCalculator loading={this.state.loading} holidayDaysStatus={this.state.eachDayStatus} />
+            <DatesCalculator startingDate={this.state.PTOInfo.from_date} endingDate={this.state.PTOInfo.to_date} />
           </Grid>
         </Grid>
       </div>
     );
   }
 
-  private calculateWorkingDays(daysStatuses: HolidayDaysInfoType): number {
+  private calculateWorkingDays(daysStatuses: HolidayDays): number {
     return daysStatuses.filter((el) => el.status === dayStatus.workday).length;
   }
 }

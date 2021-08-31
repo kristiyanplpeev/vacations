@@ -1,24 +1,24 @@
-.ptobasicinfo-small-card {
+.pto-card-small-card {
     margin: 2%;
     text-align: left;
 }
 
-.ptobasicinfo-header.MuiTypography-root {
+.pto-card-header.MuiTypography-root {
     margin: 0% 5%;
     text-align: left;
 }
 
-.ptobasicinfo-chip.MuiChip-root {
+.pto-card-chip.MuiChip-root {
     margin-bottom: 2%;
     font-size: 1.25rem;
     border: none;
 }
 
-div.ptobasicinfo-chip-avatar.MuiAvatar-root{
+div.pto-card-chip-avatar.MuiAvatar-root{
     width: 36px;
     height: 36px;
 }
 
-.ptobasicinfo-buttons.MuiButtonBase-root {
+.pto-card-buttons.MuiButtonBase-root {
     margin: 4% auto;
 }

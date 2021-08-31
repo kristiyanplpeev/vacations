@@ -1,15 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HolidaysService } from './holidays.service';
 import { HolidaysController } from './holidays.controller';
+import { PTOsService } from './pto.service';
+import { BadRequestException } from '@nestjs/common';
 
 describe('HolidaysController', () => {
   let controller: HolidaysController;
-
-  const response = {
-    send: (body?: any) => body,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    status: (code: number) => response,
-  };
 
   const mockHolidayPeriod = [
     {
@@ -46,11 +42,6 @@ describe('HolidaysController', () => {
     status: 'requested',
     employee: 'kristiyan.peev@atscale.com',
     approvers: ['kristiyan.peev@atscale.com'],
-  };
-  const mockErrorMessage = {
-    statusCode: 400,
-    message: 'There is an error.',
-    error: 'Bad Request',
   };
   const mockedUser = {
     id: '749da264-0641-4d80-b6be-fe1c38ae2f93',
@@ -119,19 +110,26 @@ describe('HolidaysController', () => {
   const mockHolidaysService = {
     calculateDays: jest.fn((body) => {
       if (body.startingDate > body.endingDate) {
-        throw new Error('There is an error.');
+        throw new BadRequestException(
+          'The first date must not be after the last date!',
+        );
       } else {
         return mockHolidayPeriod;
       }
     }),
-    postHoliday: jest.fn((body) => {
+  };
+
+  const mockPTOsService = {
+    postPTO: jest.fn((body) => {
       if (body.startingDate > body.endingDate) {
-        throw new Error('There is an error.');
+        throw new BadRequestException(
+          'The first date must not be after the last date!',
+        );
       } else {
         return mockHolidayInfoResponse;
       }
     }),
-    getUserPTOs: jest.fn((user) => {
+    getUserPTOs: jest.fn(() => {
       return mockEmployeeHolidaysCalc;
     }),
     getPTOById: jest.fn(() => mockPTOInfo),
@@ -140,10 +138,12 @@ describe('HolidaysController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [HolidaysController],
-      providers: [HolidaysService],
+      providers: [HolidaysService, PTOsService],
     })
       .overrideProvider(HolidaysService)
       .useValue(mockHolidaysService)
+      .overrideProvider(PTOsService)
+      .useValue(mockPTOsService)
       .compile();
 
     controller = module.get<HolidaysController>(HolidaysController);
@@ -166,7 +166,7 @@ describe('HolidaysController', () => {
       const spy = jest.spyOn(controller, 'calculateHolidayPeriod');
 
       //act
-      const result = await controller.calculateHolidayPeriod(dto, response);
+      const result = await controller.calculateHolidayPeriod(dto);
 
       //assert
       expect(spy).toHaveBeenCalled();
@@ -178,14 +178,15 @@ describe('HolidaysController', () => {
         startingDate: '2021-08-12',
         endingDate: '2021-08-11',
       };
-      const spy = jest.spyOn(controller, 'calculateHolidayPeriod');
+      expect.hasAssertions();
 
-      //act
-      const result = await controller.calculateHolidayPeriod(dto, response);
-
-      //assert
-      expect(spy).toHaveBeenCalled();
-      expect(result).toEqual(mockErrorMessage);
+      try {
+        //act
+        await controller.calculateHolidayPeriod(dto);
+      } catch (error) {
+        //assert
+        expect(error).toBeInstanceOf(BadRequestException);
+      }
     });
   });
   describe('postHoliday', () => {
@@ -194,11 +195,9 @@ describe('HolidaysController', () => {
       const spy = jest.spyOn(controller, 'postHoliday');
 
       //act
-      const result = await controller.postHoliday(
-        mockHolidayInfo,
-        { user: 'mock' },
-        response,
-      );
+      const result = await controller.postHoliday(mockHolidayInfo, {
+        user: 'mock',
+      });
 
       //assert
       expect(spy).toHaveBeenCalled();
@@ -206,18 +205,17 @@ describe('HolidaysController', () => {
     });
     it('should return error message', async () => {
       //arrange
-      const spy = jest.spyOn(controller, 'postHoliday');
+      expect.hasAssertions();
 
-      //act
-      const result = await controller.postHoliday(
-        mockHolidayInfoInvalid,
-        { user: 'mock' },
-        response,
-      );
-
-      //assert
-      expect(spy).toHaveBeenCalled();
-      expect(result).toEqual(mockErrorMessage);
+      try {
+        //act
+        await controller.postHoliday(mockHolidayInfoInvalid, {
+          user: 'mock',
+        });
+      } catch (error) {
+        //assert
+        expect(error).toBeInstanceOf(BadRequestException);
+      }
     });
   });
   describe('getUserPTOs', () => {
@@ -226,10 +224,7 @@ describe('HolidaysController', () => {
       const spy = jest.spyOn(controller, 'getUserPTOs');
 
       //act
-      const result = await controller.getUserPTOs(
-        { user: mockedUser },
-        response,
-      );
+      const result = await controller.getUserPTOs({ user: mockedUser });
 
       //assert
       expect(spy).toHaveBeenCalled();
@@ -244,7 +239,6 @@ describe('HolidaysController', () => {
         //act
         const result = await controller.getPTOById(
           '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
-          response,
         );
 
         //assert

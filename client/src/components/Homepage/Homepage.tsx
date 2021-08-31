@@ -16,9 +16,10 @@ import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
-import AppError from "common/AppError/AppError";
-import { UserHolidayType } from "common/types";
-import { IHolidaysService } from "inversify/interfaces";
+import { DateUtil } from "common/DateUtil";
+import { IUserPTOWithCalcDays } from "common/types";
+import Error from "components/common/Error/Error";
+import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
 interface HomepageProps extends RouteComponentProps {}
@@ -26,12 +27,12 @@ interface HomepageProps extends RouteComponentProps {}
 interface HomepageState {
   loading: boolean;
   error: string;
-  userPastPTOs: Array<UserHolidayType>;
-  userFuturePTOs: Array<UserHolidayType>;
+  userPastPTOs: Array<IUserPTOWithCalcDays>;
+  userFuturePTOs: Array<IUserPTOWithCalcDays>;
 }
 
 class Homepage extends Component<HomepageProps, HomepageState> {
-  @resolve(TYPES.Holidays) private holidaysService!: IHolidaysService;
+  @resolve(TYPES.PTO) private PTOService!: IPTOService;
 
   constructor(props: HomepageProps) {
     super(props);
@@ -56,6 +57,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         userPastPTOs: userPTOs.userPastPTOs,
       });
     } catch (error) {
+      console.log(error.message);
       this.setState({
         error: error.message,
       });
@@ -68,14 +70,14 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   // eslint-disable-next-line max-lines-per-function
   render(): JSX.Element {
     if (this.state.error) {
-      return <AppError message={this.state.error} />;
+      return <Error />;
     }
     if (this.state.loading) {
       return <CircularProgress />;
     }
     return (
       <div className="homepage-root">
-        <h1 className="homapage-header">Paid Time Off</h1>
+        <h1 className="homepage-header">Paid Time Off</h1>
         {this.state.userFuturePTOs.length === 0 && this.state.userPastPTOs.length === 0
           ? this.renderNoPTOsView()
           : this.renderPTOsTable()}
@@ -86,7 +88,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   renderAddPTOButton(): JSX.Element {
     return (
       <Button
-        className="homapage-addpto-button"
+        className="homepage-add-pto-button"
         onClick={() => this.props.history.push("/new")}
         variant="outlined"
         color="primary"
@@ -100,25 +102,35 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     return (
       <div>
         {this.renderAddPTOButton()}
-        <TableContainer component={Paper}>
-          <Table aria-label="simple table">
-            <TableHead>{this.renderTableHeaderAndFooter()}</TableHead>
-            <TableBody>{this.state.userFuturePTOs.map(this.mappingFunc)}</TableBody>
-          </Table>
-        </TableContainer>
+        {this.renderHeaderAndFooter(true)}
         {this.renderPTOsSeparator()}
-        <TableContainer component={Paper}>
-          <Table aria-label="simple table">
-            <TableBody>{this.state.userPastPTOs.map(this.mappingFunc)}</TableBody>
-            <TableFooter className="homepage-table-footer">{this.renderTableHeaderAndFooter()}</TableFooter>
-          </Table>
-        </TableContainer>
+        {this.renderHeaderAndFooter(false)}
         {this.renderAddPTOButton()}
       </div>
     );
   }
 
-  renderTableHeaderAndFooter(): JSX.Element {
+  renderHeaderAndFooter(header: boolean): JSX.Element {
+    return (
+      <TableContainer component={Paper}>
+        <Table aria-label="simple table">
+          {header ? (
+            <>
+              <TableHead>{this.renderTableHeaderAndFooterCells()}</TableHead>
+              <TableBody>{this.state.userFuturePTOs.map(this.mappingFunc)}</TableBody>
+            </>
+          ) : (
+            <>
+              <TableBody>{this.state.userPastPTOs.map(this.mappingFunc)}</TableBody>
+              <TableFooter className="homepage-table-footer">{this.renderTableHeaderAndFooterCells()}</TableFooter>
+            </>
+          )}
+        </Table>
+      </TableContainer>
+    );
+  }
+
+  renderTableHeaderAndFooterCells(): JSX.Element {
     return (
       <TableRow>
         <TableCell width="10%">
@@ -178,18 +190,13 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   }
 
   private async getUserPTOs() {
-    const userPTOs = await this.holidaysService.userPTOsRequest();
-    const sortingFunc = (a: UserHolidayType, b: UserHolidayType) => {
-      const aa = a.from_date.split("-").join();
-      const bb = b.from_date.split("-").join();
-      return aa > bb ? -1 : aa < bb ? 1 : 0;
-    };
+    const userPTOs = await this.PTOService.getUserPTOs();
     const userFuturePTOs = userPTOs
-      .filter((el) => el.from_date > new Date().toISOString().slice(0, 10))
-      .sort(sortingFunc);
+      .filter((el) => el.from_date > DateUtil.todayStringified())
+      .sort(DateUtil.dateSorting);
     const userPastPTOs = userPTOs
-      .filter((el) => el.from_date <= new Date().toISOString().slice(0, 10))
-      .sort(sortingFunc);
+      .filter((el) => el.from_date <= DateUtil.todayStringified())
+      .sort(DateUtil.dateSorting);
 
     return {
       userFuturePTOs,
@@ -197,7 +204,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     };
   }
 
-  private mappingFunc = (el: UserHolidayType): JSX.Element => (
+  private mappingFunc = (el: IUserPTOWithCalcDays): JSX.Element => (
     <TableRow hover key={el.id}>
       <TableCell width="10%">{el.status}</TableCell>
       <TableCell width="10%" align="left">
@@ -213,7 +220,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         {el.totalDays}
       </TableCell>
       <TableCell
-        className="homepage-viewpto-button"
+        className="homepage-view-pto-button"
         width="5%"
         align="left"
         onClick={() => this.props.history.push(`/pto/${el.id}`)}

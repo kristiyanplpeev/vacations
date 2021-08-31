@@ -1,11 +1,7 @@
 import React, { Component, ReactNode } from "react";
-import "./AppError.css";
+import "./Error.css";
 
-interface AppErrorProps {
-  message: string;
-}
-
-class AppError extends Component<AppErrorProps> {
+class Error extends Component {
   render(): ReactNode {
     return (
       <div className="app-error">
@@ -15,4 +11,4 @@ class AppError extends Component<AppErrorProps> {
   }
 }
 
-export default AppError;
+export default Error;

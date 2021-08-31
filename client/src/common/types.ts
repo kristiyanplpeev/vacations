@@ -1,6 +1,4 @@
-import { UserInfo } from "os";
-
-export type UserInfoType = {
+export type IUser = {
   id: string;
   googleId: string;
   email: string;
@@ -9,54 +7,47 @@ export type UserInfoType = {
   picture: string;
 };
 
-export interface IHolidayInfo {
+export interface IPTOPeriod {
   startingDate: string;
   endingDate: string;
 }
 
-export interface IHolidayFullInfo extends IHolidayInfo {
+export interface IPTO extends IPTOPeriod {
   comment: string;
   approvers: Array<string>;
 }
 
-export type HolidayDaysInfoType = Array<{ date: string; status: string }>;
+export type HolidayDays = Array<{ date: string; status: string }>;
 
-export type TextFieldType = {
+export interface ITextBox {
   value: string;
   isValid: boolean;
   validate: (value: string) => boolean;
   errorText: string;
-};
+  textBoxInvalid: boolean;
+}
 
-export type UserHolidayBasicInfoType = {
+export interface IUserPTO {
   id: string;
   from_date: string;
   to_date: string;
   comment: string;
   status: string;
-};
+}
 
-export type UserHolidayType = {
-  id: string;
-  from_date: string;
-  to_date: string;
-  comment: string;
-  status: string;
+export interface IUserPTOWithCalcDays extends IUserPTO {
   PTODays: number;
   totalDays: number;
-};
+}
 
-export type ErrorType = {
+export interface IUserPTOFullDetails extends IUserPTO {
+  employee: IUser;
+  approvers: Array<IUser>;
+  eachDayStatus: HolidayDays;
+}
+
+export interface Error {
   error: string;
-};
+}
 
-export type PTOFullInfo = {
-  id: string;
-  from_date: string;
-  to_date: string;
-  comment: string;
-  status: string;
-  employee: UserInfoType;
-  approvers: Array<UserInfoType>;
-  eachDayStatus: HolidayDaysInfoType;
-};
+export type OptionalWithNull<T> = T | null | undefined;
