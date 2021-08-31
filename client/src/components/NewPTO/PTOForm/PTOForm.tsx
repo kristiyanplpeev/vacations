@@ -86,10 +86,9 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
         this.setState({
           comment: { ...this.state.comment, value: PTODetailed.comment },
           approvers: { ...this.state.approvers, value: approversValue },
-          loadingEditMode: false,
         });
       } catch (error) {
-        if (error.message === "Something went wrong.") {
+        if (error.message === errMessage) {
           this.props.setError(true);
         } else {
           this.setState({
