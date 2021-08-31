@@ -3,7 +3,10 @@ import { HolidaysService } from './holidays.service';
 import { HolidaysController } from './holidays.controller';
 import { PTOsService } from './pto.service';
 import { BadRequestException } from '@nestjs/common';
-import { doesNotMatch } from 'assert';
+import {
+  mockEditedHoliday,
+  mockSavedHoliday,
+} from '../common/holidaysMockedData';
 
 describe('HolidaysController', () => {
   let controller: HolidaysController;
@@ -43,11 +46,6 @@ describe('HolidaysController', () => {
     status: 'requested',
     employee: 'kristiyan.peev@atscale.com',
     approvers: ['kristiyan.peev@atscale.com'],
-  };
-  const mockErrorMessage = {
-    statusCode: 400,
-    message: 'There is an error.',
-    error: 'Bad Request',
   };
   const mockedUser = {
     id: '749da264-0641-4d80-b6be-fe1c38ae2f93',
@@ -139,6 +137,7 @@ describe('HolidaysController', () => {
       return mockEmployeeHolidaysCalc;
     }),
     getPTOById: jest.fn(() => mockPTOInfo),
+    editPTO: jest.fn(() => mockSavedHoliday),
   };
 
   beforeEach(async () => {
@@ -253,6 +252,22 @@ describe('HolidaysController', () => {
         //assert
         expect(spy).toHaveBeenCalled();
         expect(result).toEqual(mockPTOInfo);
+      });
+    });
+
+    describe('editPTO', () => {
+      it('should return detailed edited PTO information', async () => {
+        //arrange
+        const spy = jest.spyOn(controller, 'editPTO');
+
+        //act
+        const result = await controller.editPTO(mockEditedHoliday, {
+          user: mockedUser,
+        });
+
+        //assert
+        expect(spy).toHaveBeenCalled();
+        expect(result).toEqual(mockSavedHoliday);
       });
     });
   });

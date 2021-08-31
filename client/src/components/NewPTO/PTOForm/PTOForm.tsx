@@ -22,7 +22,7 @@ import "./PTOForm.css";
 import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
-interface PTOFormMatchProps {
+export interface PTOFormMatchProps {
   id: string;
 }
 interface PTOFormState {

@@ -184,6 +184,14 @@ export const mockSavedHoliday = {
   id: '89b04b55-f047-4ce1-87f2-21f849ccd398',
 };
 
+export const mockEditedHoliday = {
+  startingDate: '2021-08-05',
+  endingDate: '2021-08-05',
+  comment: 'PTO',
+  approvers: ['kristiyan.peev@atscale.com'],
+  id: '89b04b55-f047-4ce1-87f2-21f849ccd398',
+};
+
 export const mockedUser = {
   id: '749da264-0641-4d80-b6be-fe1c38ae2f93',
   googleId: '106956791077954804246',
