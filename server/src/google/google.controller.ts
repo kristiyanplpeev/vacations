@@ -1,9 +1,9 @@
 import { Controller, Get, Req, UseGuards, Redirect } from '@nestjs/common';
 import { GoogleService } from './google.service';
 import { AuthenticatedGuard, GoogleAuthGuard } from './guards';
-import { UserDetails } from 'src/utils/types';
+import { UserDetails } from './utils/interfaces';
 import { CLIENT_URL } from '../common/constants';
-import { Token } from 'src/google/utils/types';
+import { Token } from 'src/google/utils/interfaces';
 
 @Controller('auth')
 export class GoogleController {

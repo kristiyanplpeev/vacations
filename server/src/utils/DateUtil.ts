@@ -1,4 +1,4 @@
-import { HolidayPeriod } from '../holidays/types';
+import { HolidayPeriod } from '../holidays/interfaces';
 
 class DateUtil {
   static getPeriodBetweenDates = ({

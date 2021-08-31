@@ -3,7 +3,6 @@ import { HolidaysService } from './holidays.service';
 import { HolidaysController } from './holidays.controller';
 import { PTOsService } from './pto.service';
 import { BadRequestException } from '@nestjs/common';
-import { doesNotMatch } from 'assert';
 
 describe('HolidaysController', () => {
   let controller: HolidaysController;
@@ -43,11 +42,6 @@ describe('HolidaysController', () => {
     status: 'requested',
     employee: 'kristiyan.peev@atscale.com',
     approvers: ['kristiyan.peev@atscale.com'],
-  };
-  const mockErrorMessage = {
-    statusCode: 400,
-    message: 'There is an error.',
-    error: 'Bad Request',
   };
   const mockedUser = {
     id: '749da264-0641-4d80-b6be-fe1c38ae2f93',
@@ -184,15 +178,13 @@ describe('HolidaysController', () => {
         startingDate: '2021-08-12',
         endingDate: '2021-08-11',
       };
-      const spy = jest.spyOn(controller, 'calculateHolidayPeriod');
+      expect.hasAssertions();
 
       try {
         //act
         await controller.calculateHolidayPeriod(dto);
-
-        //assert
-        expect(spy).toHaveBeenCalled();
       } catch (error) {
+        //assert
         expect(error).toBeInstanceOf(BadRequestException);
       }
     });
@@ -213,16 +205,15 @@ describe('HolidaysController', () => {
     });
     it('should return error message', async () => {
       //arrange
-      const spy = jest.spyOn(controller, 'postHoliday');
+      expect.hasAssertions();
+
       try {
         //act
         await controller.postHoliday(mockHolidayInfoInvalid, {
           user: 'mock',
         });
-
-        //assert
-        expect(spy).toHaveBeenCalled();
       } catch (error) {
+        //assert
         expect(error).toBeInstanceOf(BadRequestException);
       }
     });

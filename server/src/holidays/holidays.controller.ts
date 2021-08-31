@@ -11,10 +11,9 @@ import { HolidaysService } from './holidays.service';
 import { PTOsService } from './pto.service';
 import { JwtAuthGuard } from '../google/guards';
 import { HolidayInfoDto, HolidayPeriodDto } from './dto/holidays.dto';
-import { HolidaysDaysStatus, PTOFullInfo } from 'src/holidays/types';
-import { QueryFail } from 'src/utils/types';
+import { HolidaysDaysStatus, PTODetailsWithEachDay } from './interfaces';
 import { PTO } from 'src/model/pto.entity';
-import { PTOInfo } from '../utils/types';
+import { PTODetailsWithTotalDays } from './interfaces';
 
 @Controller('holidays')
 export class HolidaysController {
@@ -27,7 +26,7 @@ export class HolidaysController {
   @UseGuards(JwtAuthGuard)
   public async calculateHolidayPeriod(
     @Body() body: HolidayPeriodDto,
-  ): Promise<HolidaysDaysStatus | QueryFail> {
+  ): Promise<HolidaysDaysStatus> {
     return await this.holidaysService.calculateDays(body);
   }
 
@@ -42,13 +41,17 @@ export class HolidaysController {
 
   @Get('users')
   @UseGuards(JwtAuthGuard)
-  public async getUserPTOs(@Req() req): Promise<Array<PTOInfo>> {
+  public async getUserPTOs(
+    @Req() req,
+  ): Promise<Array<PTODetailsWithTotalDays>> {
     return await this.PTOService.getUserPTOs(req.user);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  public async getPTOById(@Param('id') id: string): Promise<PTOFullInfo> {
+  public async getPTOById(
+    @Param('id') id: string,
+  ): Promise<PTODetailsWithEachDay> {
     return await this.PTOService.getPTOById(id);
   }
 }
