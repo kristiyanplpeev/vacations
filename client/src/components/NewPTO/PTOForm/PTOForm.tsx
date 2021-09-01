@@ -12,7 +12,7 @@ import Typography from "@material-ui/core/Typography";
 import { Alert } from "@material-ui/lab";
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import { resolve } from "inversify-react";
-import { RouteComponentProps, withRouter } from "react-router";
+import { RouteComponentProps, StaticContext, withRouter } from "react-router";
 
 import { errMessage } from "common/constants";
 import { IPTO, ITextBox, IUser, OptionalWithNull } from "common/types";
@@ -28,12 +28,12 @@ interface PTOFormState {
   comment: ITextBox;
   approvers: ITextBox;
   warning: string;
-  showModal: string;
+  modalError: string;
   loading: boolean;
   loadingEditMode: boolean;
 }
 
-interface PTOFormProps extends RouteComponentProps<PTOFormMatchProps> {
+interface PTOFormProps extends RouteComponentProps<PTOFormMatchProps, StaticContext, { showSnackbar: boolean }> {
   startingDate: string;
   endingDate: string;
   setStartingDate: (date: Date | null, value: OptionalWithNull<string>) => Promise<void>;
@@ -51,7 +51,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       loading: false,
       loadingEditMode: false,
       warning: "",
-      showModal: "",
+      modalError: "",
       comment: {
         value: "PTO",
         isValid: true,
@@ -89,7 +89,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
           this.props.setError(true);
         } else {
           this.setState({
-            showModal: error.message,
+            modalError: error.message,
           });
         }
       }
@@ -126,14 +126,14 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
   renderModal(): JSX.Element {
     return (
       <Modal
-        open={!!this.state.showModal}
+        open={!!this.state.modalError}
         onClose={() => this.handleModalClose()}
         aria-labelledby="simple-modal-title"
         aria-describedby="simple-modal-description"
       >
         <div className="error-modal">
           <Typography variant="subtitle1" gutterBottom>
-            {this.state.showModal}
+            {this.state.modalError}
           </Typography>
           <Button onClick={() => this.handleModalClose()} className="error-modal-button" variant="outlined">
             OK
@@ -275,7 +275,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
         });
         this.setApproversInputError(warning.warning);
       } else {
-        this.props.history.push({ pathname: "/home", state: true });
+        this.props.history.push({ pathname: "/home", state: { showSnackbar: true } });
       }
     } catch (error) {
       this.props.setError(true);
@@ -292,7 +292,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       const PTO = { ...this.getHoliday(), id: PTOId };
 
       await this.PTOService.editPTO(PTO);
-      this.props.history.push({ pathname: "/home", state: true });
+      this.props.history.push({ pathname: "/home", state: { showSnackbar: true } });
     } catch (error) {
       if (error.message === errMessage) {
         this.props.setError(true);
@@ -319,7 +319,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
 
   handleModalClose(): void {
     this.setState({
-      showModal: "",
+      modalError: "",
     });
     this.props.history.push("/home");
   }

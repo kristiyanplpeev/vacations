@@ -17,7 +17,7 @@ import SentimentSatisfiedSharpIcon from "@material-ui/icons/SentimentSatisfiedSh
 import { Alert } from "@material-ui/lab";
 import "./Homepage.css";
 import { resolve } from "inversify-react";
-import { RouteComponentProps } from "react-router";
+import { RouteComponentProps, StaticContext } from "react-router";
 
 import { PTOStatus } from "common/constants";
 import { DateUtil } from "common/DateUtil";
@@ -26,12 +26,7 @@ import Error from "components/common/Error/Error";
 import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
-const snackbarState = {
-  open: "open",
-  close: "close",
-};
-
-interface HomepageProps extends RouteComponentProps {}
+interface HomepageProps extends RouteComponentProps<null, StaticContext, { showSnackbar: boolean }> {}
 
 interface HomepageState {
   loading: boolean;
@@ -59,7 +54,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   async componentDidMount(): Promise<void> {
-    this.manageSnackbar(snackbarState.open);
+    this.openSnackbar(true);
     this.setState({
       loading: true,
     });
@@ -268,11 +263,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
 
   renderSnackbar(): JSX.Element {
     return (
-      <Snackbar
-        open={this.state.successMessage}
-        onClose={() => this.manageSnackbar(snackbarState.close)}
-        autoHideDuration={2000}
-      >
+      <Snackbar open={this.state.successMessage} onClose={() => this.openSnackbar(false)} autoHideDuration={2000}>
         <Alert severity="success">Your PTO has been successfully submitted!</Alert>
       </Snackbar>
     );
@@ -296,13 +287,13 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     });
   }
 
-  private manageSnackbar(action: string): void {
-    if (this.props.location.state && action === snackbarState.open) {
+  private openSnackbar(isOpen: boolean): void {
+    if (this.props.location.state?.showSnackbar && isOpen === true) {
       this.setState({
         successMessage: true,
       });
       this.props.history.replace("/home");
-    } else if (action === snackbarState.close) {
+    } else if (isOpen === false) {
       this.setState({
         successMessage: false,
       });
