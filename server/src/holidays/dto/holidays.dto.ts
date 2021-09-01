@@ -33,3 +33,8 @@ export class HolidayInfoDto extends HolidayPeriodDto {
   )
   approvers: Array<string>;
 }
+
+export class EditPTODto extends HolidayInfoDto {
+  @IsString()
+  id: string;
+}

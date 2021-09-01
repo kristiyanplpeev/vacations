@@ -7,14 +7,6 @@
   text-align: center;
 }
 
-.homepage-button-text:hover {
-  cursor: pointer;
-}
-
-.homepage-view-pto-button:hover {
-  cursor: pointer;
-}
-
 .homepage-message-wrapper {
   display: flex;
   justify-content: center;
@@ -33,6 +25,14 @@
 
 .homepage-table-footer.MuiTableCell-footer {
   line-height: 1.5rem;
+}
+
+.homepage-popover {
+  pointer-events: none;
+}
+
+.homepage-button-wrapper.MuiButton-root:hover {
+  background-color: transparent;
 }
 
 .or-spacer {

@@ -8,6 +8,7 @@ import { PTOForm } from "components/NewPTO/PTOForm/PTOForm";
 const setError = jest.fn();
 const setStartingDate = jest.fn();
 const setEndingDate = jest.fn();
+const editMode = jest.fn();
 
 const mockedProps = {
   startingDate: "2021-05-21",
@@ -60,6 +61,7 @@ const getComponent = (
       setStartingDate={setStartingDate}
       setEndingDate={setEndingDate}
       setError={setError}
+      editMode={editMode}
       {...RouteComponentPropsMock}
     />,
   );

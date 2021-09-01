@@ -1,6 +1,6 @@
 import { Dispatch } from "redux";
 
-import { IPTOPeriod, HolidayDays, IPTO, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/types";
+import { IPTOPeriod, HolidayDays, IPTO, IUserPTOWithCalcDays, IUserPTOFullDetails, IPTOWithId } from "common/types";
 import { AppActions, IUserDetails } from "store/user/types";
 
 export interface IAuthService {
@@ -26,4 +26,6 @@ export interface IPTOService {
   addPTO({ startingDate, endingDate, comment, approvers }: IPTO): Promise<void | { warning: string }>;
   getUserPTOs(): Promise<Array<IUserPTOWithCalcDays>>;
   PTODetailed(PTOId: string): Promise<IUserPTOFullDetails>;
+  getRequestedPTOById(PTOId: string): Promise<IUserPTOFullDetails>;
+  editPTO({ startingDate, endingDate, comment, approvers, id }: IPTOWithId): Promise<void>;
 }

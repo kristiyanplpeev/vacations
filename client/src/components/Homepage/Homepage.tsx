@@ -3,6 +3,8 @@ import React, { Component } from "react";
 import { Button } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Paper from "@material-ui/core/Paper";
+import Popover from "@material-ui/core/Popover";
+import Snackbar from "@material-ui/core/Snackbar";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -12,23 +14,27 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Typography from "@material-ui/core/Typography";
 import SentimentSatisfiedSharpIcon from "@material-ui/icons/SentimentSatisfiedSharp";
+import { Alert } from "@material-ui/lab";
 import "./Homepage.css";
 import { resolve } from "inversify-react";
-import { RouteComponentProps } from "react-router";
+import { RouteComponentProps, StaticContext } from "react-router";
 
+import { PTOStatus } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import { IUserPTOWithCalcDays } from "common/types";
 import Error from "components/common/Error/Error";
 import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
-interface HomepageProps extends RouteComponentProps {}
+interface HomepageProps extends RouteComponentProps<null, StaticContext, { showSnackbar: boolean }> {}
 
 interface HomepageState {
   loading: boolean;
   error: string;
+  successMessage: boolean;
   userPastPTOs: Array<IUserPTOWithCalcDays>;
   userFuturePTOs: Array<IUserPTOWithCalcDays>;
+  anchorEl: HTMLButtonElement | null;
 }
 
 class Homepage extends Component<HomepageProps, HomepageState> {
@@ -39,13 +45,16 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     this.state = {
       loading: false,
       error: "",
+      successMessage: false,
       userPastPTOs: [],
       userFuturePTOs: [],
+      anchorEl: null,
     };
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   async componentDidMount(): Promise<void> {
+    this.openSnackbar(true);
     this.setState({
       loading: true,
     });
@@ -57,7 +66,6 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         userPastPTOs: userPTOs.userPastPTOs,
       });
     } catch (error) {
-      console.log(error.message);
       this.setState({
         error: error.message,
       });
@@ -81,6 +89,8 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         {this.state.userFuturePTOs.length === 0 && this.state.userPastPTOs.length === 0
           ? this.renderNoPTOsView()
           : this.renderPTOsTable()}
+        {this.renderPopover()}
+        {this.renderSnackbar()}
       </div>
     );
   }
@@ -142,12 +152,13 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         <TableCell width="10%" align="left">
           <b>To</b>
         </TableCell>
-        <TableCell width="10%" align="left">
+        <TableCell width="8%" align="left">
           <b>PTO days</b>
         </TableCell>
-        <TableCell width="10%" align="left">
+        <TableCell width="8%" align="left">
           <b>Total days</b>
         </TableCell>
+        <TableCell width="5%" align="left"></TableCell>
         <TableCell width="5%" align="left"></TableCell>
         <TableCell width="30%" align="left">
           <b>Comment</b>
@@ -177,16 +188,116 @@ class Homepage extends Component<HomepageProps, HomepageState> {
           </Typography>
           <SentimentSatisfiedSharpIcon fontSize="large" />
         </div>
-        <Button
-          className="homepage-button-text"
-          onClick={() => this.props.history.push("/new")}
-          variant="outlined"
-          color="primary"
-        >
+        <Button onClick={() => this.props.history.push("/new")} variant="outlined" color="primary">
           REQUEST VACATION
         </Button>
       </div>
     );
+  }
+
+  renderPopover(): JSX.Element {
+    return (
+      <Popover
+        className="homepage-popover"
+        id="mouse-over-popover"
+        open={Boolean(this.state.anchorEl)}
+        anchorEl={this.state.anchorEl}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        onClose={() => this.handlePopoverClose()}
+        disableRestoreFocus
+      >
+        <Typography className="dates-calculator-popover-text">Approved or rejected PTOs can&#39;t be edited</Typography>
+      </Popover>
+    );
+  }
+
+  // eslint-disable-next-line max-lines-per-function
+  private mappingFunc = (el: IUserPTOWithCalcDays): JSX.Element => (
+    <TableRow hover key={el.id}>
+      <TableCell width="10%">{el.status}</TableCell>
+      <TableCell width="10%" align="left">
+        {el.from_date}
+      </TableCell>
+      <TableCell width="10%" align="left">
+        {el.to_date}
+      </TableCell>
+      <TableCell width="8%" align="left">
+        {el.PTODays}
+      </TableCell>
+      <TableCell width="8%" align="left">
+        {el.totalDays}
+      </TableCell>
+      <TableCell width="5%" align="left">
+        <Button color="primary" onClick={() => this.props.history.push(`/pto/${el.id}`)}>
+          view
+        </Button>
+      </TableCell>
+      <TableCell width="5%" align="left">
+        <Button
+          onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => this.handleEditHover(event, el.status)}
+          onMouseLeave={() => this.handlePopoverClose()}
+          className="homepage-button-wrapper"
+          disableRipple
+        >
+          <Button
+            color="primary"
+            onClick={() => this.handleEditClick(el.id)}
+            disabled={el.status !== PTOStatus.requested}
+          >
+            edit
+          </Button>
+        </Button>
+      </TableCell>
+      <TableCell width="30%" align="left">
+        {el.comment}
+      </TableCell>
+    </TableRow>
+  );
+
+  renderSnackbar(): JSX.Element {
+    return (
+      <Snackbar open={this.state.successMessage} onClose={() => this.openSnackbar(false)} autoHideDuration={2000}>
+        <Alert severity="success">Your PTO has been successfully submitted!</Alert>
+      </Snackbar>
+    );
+  }
+
+  handleEditHover(event: React.MouseEvent<HTMLButtonElement>, currentPTOStatus: string): void {
+    if (currentPTOStatus !== PTOStatus.requested) {
+      this.setState({
+        anchorEl: event.currentTarget,
+      });
+    }
+  }
+
+  handleEditClick(currentPTOId: string): void {
+    this.props.history.push(`/edit/${currentPTOId}`);
+  }
+
+  handlePopoverClose(): void {
+    this.setState({
+      anchorEl: null,
+    });
+  }
+
+  private openSnackbar(isOpen: boolean): void {
+    if (this.props.location.state?.showSnackbar && isOpen) {
+      this.setState({
+        successMessage: true,
+      });
+      this.props.history.replace("/home");
+    } else if (!isOpen) {
+      this.setState({
+        successMessage: false,
+      });
+    }
   }
 
   private async getUserPTOs() {
@@ -203,35 +314,6 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       userPastPTOs,
     };
   }
-
-  private mappingFunc = (el: IUserPTOWithCalcDays): JSX.Element => (
-    <TableRow hover key={el.id}>
-      <TableCell width="10%">{el.status}</TableCell>
-      <TableCell width="10%" align="left">
-        {el.from_date}
-      </TableCell>
-      <TableCell width="10%" align="left">
-        {el.to_date}
-      </TableCell>
-      <TableCell width="10%" align="left">
-        {el.PTODays}
-      </TableCell>
-      <TableCell width="10%" align="left">
-        {el.totalDays}
-      </TableCell>
-      <TableCell
-        className="homepage-view-pto-button"
-        width="5%"
-        align="left"
-        onClick={() => this.props.history.push(`/pto/${el.id}`)}
-      >
-        view
-      </TableCell>
-      <TableCell width="30%" align="left">
-        {el.comment}
-      </TableCell>
-    </TableRow>
-  );
 }
 
 export default Homepage;

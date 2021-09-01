@@ -17,6 +17,10 @@ export interface IPTO extends IPTOPeriod {
   approvers: Array<string>;
 }
 
+export interface IPTOWithId extends IPTO {
+  id: string;
+}
+
 export type HolidayDays = Array<{ date: string; status: string }>;
 
 export interface ITextBox {

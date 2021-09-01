@@ -3,6 +3,10 @@ import { HolidaysService } from './holidays.service';
 import { HolidaysController } from './holidays.controller';
 import { PTOsService } from './pto.service';
 import { BadRequestException } from '@nestjs/common';
+import {
+  mockEditedHoliday,
+  mockSavedHoliday,
+} from '../common/holidaysMockedData';
 
 describe('HolidaysController', () => {
   let controller: HolidaysController;
@@ -133,6 +137,7 @@ describe('HolidaysController', () => {
       return mockEmployeeHolidaysCalc;
     }),
     getPTOById: jest.fn(() => mockPTOInfo),
+    editPTO: jest.fn(() => mockSavedHoliday),
   };
 
   beforeEach(async () => {
@@ -244,6 +249,22 @@ describe('HolidaysController', () => {
         //assert
         expect(spy).toHaveBeenCalled();
         expect(result).toEqual(mockPTOInfo);
+      });
+    });
+
+    describe('editPTO', () => {
+      it('should return detailed edited PTO information', async () => {
+        //arrange
+        const spy = jest.spyOn(controller, 'editPTO');
+
+        //act
+        const result = await controller.editPTO(mockEditedHoliday, {
+          user: mockedUser,
+        });
+
+        //assert
+        expect(spy).toHaveBeenCalled();
+        expect(result).toEqual(mockSavedHoliday);
       });
     });
   });

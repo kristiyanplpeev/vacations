@@ -1,8 +1,8 @@
 import axios from "axios";
 import { injectable } from "inversify";
 
-import { BASE_URL } from "common/constants";
-import { IPTO, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/types";
+import { BASE_URL, errMessage } from "common/constants";
+import { IPTO, IPTOWithId, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/types";
 import { IPTOService, IAuthService } from "inversify/interfaces";
 import "reflect-metadata";
 // eslint-disable-next-line import/no-cycle
@@ -31,7 +31,31 @@ class PTOService implements IPTOService {
       if (error.response) {
         return { warning: error.response.data.message };
       } else {
-        throw new Error("Something went wrong.");
+        throw new Error(errMessage);
+      }
+    }
+  };
+
+  editPTO = async ({ startingDate, endingDate, comment, approvers, id }: IPTOWithId): Promise<void> => {
+    const headers = {
+      "Content-Type": "application/json",
+      // eslint-disable-next-line prettier/prettier
+      Authorization: `Bearer ${this.authService.getToken()}`,
+    };
+    const data = {
+      id,
+      startingDate,
+      endingDate,
+      comment,
+      approvers,
+    };
+    try {
+      await axios.post(`${BASE_URL}holidays/edit`, data, { headers });
+    } catch (error) {
+      if (error.response) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error(errMessage);
       }
     }
   };
@@ -52,6 +76,22 @@ class PTOService implements IPTOService {
     };
 
     return (await axios.get(`${BASE_URL}holidays/${PTOId}`, { headers })).data;
+  };
+
+  getRequestedPTOById = async (PTOId: string): Promise<IUserPTOFullDetails> => {
+    const headers = {
+      // eslint-disable-next-line prettier/prettier
+      Authorization: `Bearer ${this.authService.getToken()}`,
+    };
+    try {
+      return (await axios.get(`${BASE_URL}holidays/details/${PTOId}`, { headers })).data;
+    } catch (error) {
+      if (error.response) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error(errMessage);
+      }
+    }
   };
 }
 

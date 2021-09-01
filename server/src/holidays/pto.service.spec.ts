@@ -8,6 +8,7 @@ import { HolidaysController } from './holidays.controller';
 import { HolidaysService } from './holidays.service';
 import {
   mockSavedHoliday,
+  mockEditedHoliday,
   mockEmployeeHolidays,
   mockPTOInfo,
   mockApprovers,
@@ -163,6 +164,20 @@ describe('PTOService', () => {
       //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual({ ...mockPTOInfo, eachDayStatus });
+    });
+  });
+
+  describe('editPTO', () => {
+    it('should return detailed edited PTO information', async () => {
+      //arrange
+      const spy = jest.spyOn(service, 'editPTO');
+
+      //act
+      const result = await service.editPTO(mockEditedHoliday, mockedUser);
+
+      //assert
+      expect(spy).toHaveBeenCalled();
+      expect(result).toEqual(mockSavedHoliday);
     });
   });
 });

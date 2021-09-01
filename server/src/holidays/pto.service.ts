@@ -3,10 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PTO } from '../model/pto.entity';
 import { User } from '../model/user.entity';
 import { Repository } from 'typeorm';
-import { PTODetailsWithTotalDays } from './interfaces';
-import { HolidayInfoDto } from './dto/holidays.dto';
-import { PTODetailsWithEachDay } from './interfaces';
+import { EditPTODto, HolidayInfoDto } from './dto/holidays.dto';
 import { HolidaysService } from './holidays.service';
+import {
+  PTODetails,
+  PTODetailsWithTotalDays,
+  PTODetailsWithEachDay,
+} from './interfaces';
 import { DayStatus, PTOStatus, UserRelations } from '../common/constants';
 
 @Injectable()
@@ -17,20 +20,27 @@ export class PTOsService {
     private readonly holidaysService: HolidaysService,
   ) {}
 
+  private async validateApprovers(
+    approvers: Array<string>,
+  ): Promise<Array<User>> {
+    const approversProm = approvers.map(async (el) => {
+      return await this.userRepo.findOne({ email: el });
+    });
+    const approversResolved = await Promise.all(approversProm);
+    const approversValidation = approversResolved.indexOf(undefined);
+    if (approversValidation >= 0) {
+      throw new BadRequestException(
+        `User with email ${approvers[approversValidation]} does not exist.`,
+      );
+    }
+    return approversResolved;
+  }
+
   saveHolidayIntoPTO = async (
     holidayInfo: HolidayInfoDto,
     user: User,
   ): Promise<PTO> => {
-    const approversProm = holidayInfo.approvers.map(async (el) => {
-      return await this.userRepo.findOne({ email: el });
-    });
-    const approvers = await Promise.all(approversProm);
-    const approversValidation = approvers.indexOf(undefined);
-    if (approversValidation >= 0) {
-      throw new BadRequestException(
-        `User with email ${holidayInfo.approvers[approversValidation]} does not exist.`,
-      );
-    }
+    const approvers = await this.validateApprovers(holidayInfo.approvers);
 
     const employee = this.userRepo.create(user);
     const newHoliday = this.PTORepo.create({
@@ -45,7 +55,7 @@ export class PTOsService {
   };
 
   validatePTOPeriod = async (
-    holidayInfo: HolidayInfoDto,
+    holidayInfo: PTODetails,
     user: User,
   ): Promise<void> => {
     if (holidayInfo.startingDate > holidayInfo.endingDate) {
@@ -73,12 +83,17 @@ export class PTOsService {
       );
     }
 
-    const employeeHolidays = await this.PTORepo.find({
+    const allEmployeeHolidays = await this.PTORepo.find({
       where: [
         { employee: user.id, status: PTOStatus.requested },
         { employee: user.id, status: PTOStatus.approved },
       ],
     });
+
+    //remove currently edited PTO from the validation
+    const employeeHolidays = allEmployeeHolidays.filter(
+      (el) => el.id !== holidayInfo.id,
+    );
 
     let overlapIndex = -1;
 
@@ -95,7 +110,7 @@ export class PTOsService {
     }
     if (overlapIndex >= 0) {
       throw new BadRequestException(
-        `The period you submitted is overlaping with another vacation from ${employeeHolidays[overlapIndex].from_date} to ${employeeHolidays[overlapIndex].to_date}`,
+        `The period you submitted is overlapping with another vacation from ${employeeHolidays[overlapIndex].from_date} to ${employeeHolidays[overlapIndex].to_date}`,
       );
     }
   };
@@ -149,5 +164,30 @@ export class PTOsService {
     });
     const PTOInfoWithEachDayStatus = { ...PTOInfo, eachDayStatus };
     return PTOInfoWithEachDayStatus;
+  }
+
+  public async getRequestedPTOById(PTOId: string): Promise<PTO> {
+    const PTODetails = await this.getPTOFullInfo(PTOId);
+    if (PTODetails.status !== PTOStatus.requested) {
+      throw new BadRequestException(
+        `You can't edit approved or rejected PTOs.`,
+      );
+    }
+    return PTODetails;
+  }
+
+  public async editPTO(PTOEdited: EditPTODto, user: User): Promise<PTO> {
+    await this.validatePTOPeriod(PTOEdited, user);
+    const approvers = await this.validateApprovers(PTOEdited.approvers);
+    const PTO = await this.PTORepo.findOne({
+      where: { id: PTOEdited.id },
+      relations: [UserRelations.approvers],
+    });
+    PTO.from_date = PTOEdited.startingDate;
+    PTO.to_date = PTOEdited.endingDate;
+    PTO.comment = PTOEdited.comment;
+    PTO.approvers = approvers;
+
+    return this.PTORepo.save(PTO);
   }
 }

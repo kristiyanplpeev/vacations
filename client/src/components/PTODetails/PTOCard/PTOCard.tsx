@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 
+import { Popover } from "@material-ui/core";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
@@ -14,6 +15,7 @@ import "./PTOCard.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { RouteComponentProps, withRouter } from "react-router";
 
+import { PTOStatus } from "common/constants";
 import { IUserPTO, IUser } from "common/types";
 import MyDocument from "components/PTODetails/PDFDocu/AtscaleLeaveRequest";
 
@@ -24,9 +26,16 @@ interface PTOCardProps extends RouteComponentProps {
   workingDays: number;
 }
 
-class PTOCard extends Component<PTOCardProps> {
+interface PTOCardState {
+  anchorEl: HTMLButtonElement | null;
+}
+
+class PTOCard extends Component<PTOCardProps, PTOCardState> {
   constructor(props: PTOCardProps) {
     super(props);
+    this.state = {
+      anchorEl: null,
+    };
   }
 
   // eslint-disable-next-line max-lines-per-function
@@ -60,7 +69,7 @@ class PTOCard extends Component<PTOCardProps> {
       return (
         <Grid item xs={12} key={key}>
           <Card className="pto-card-small-card">
-            <CardContent>
+            <CardContent className="pto-card-content">
               <Grid container spacing={2}>
                 <Grid item xs={3}>
                   <Typography variant="h6" gutterBottom>
@@ -93,7 +102,7 @@ class PTOCard extends Component<PTOCardProps> {
     return (
       <Grid item xs={12}>
         <Card className="pto-card-small-card">
-          <CardContent>
+          <CardContent className="pto-card-content">
             <Grid container spacing={2}>
               <Grid item xs={3}>
                 <Typography variant="h6" gutterBottom>
@@ -110,6 +119,7 @@ class PTOCard extends Component<PTOCardProps> {
     );
   }
 
+  // eslint-disable-next-line max-lines-per-function
   renderButtons(): JSX.Element {
     return (
       <Grid container spacing={3}>
@@ -140,12 +150,67 @@ class PTOCard extends Component<PTOCardProps> {
           </PDFDownloadLink>
         </Grid>
         <Grid item xs={4}>
-          <Button className="pto-card-buttons" variant="outlined" color="primary">
-            <EditIcon /> Edit
+          <Button
+            onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => this.handleEditHover(event)}
+            onMouseLeave={() => this.handlePopoverClose()}
+            className="pto-card-button-wrapper"
+            disableRipple
+          >
+            <Button
+              className="pto-card-buttons"
+              onClick={() => this.handleEditClick()}
+              variant="outlined"
+              color="primary"
+              disabled={this.props.PTOInfo.status !== PTOStatus.requested}
+            >
+              <EditIcon /> Edit
+            </Button>
           </Button>
+          {this.renderPopover()}
         </Grid>
       </Grid>
     );
+  }
+
+  renderPopover(): JSX.Element {
+    return (
+      <Popover
+        className="pto-card-popover"
+        id="mouse-over-popover"
+        open={Boolean(this.state.anchorEl)}
+        anchorEl={this.state.anchorEl}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        onClose={() => this.handlePopoverClose()}
+        disableRestoreFocus
+      >
+        <Typography className="dates-calculator-popover-text">Approved or rejected PTOs can&#39;t be edited</Typography>
+      </Popover>
+    );
+  }
+
+  handleEditHover(event: React.MouseEvent<HTMLButtonElement>): void {
+    if (this.props.PTOInfo.status !== PTOStatus.requested) {
+      this.setState({
+        anchorEl: event.currentTarget,
+      });
+    }
+  }
+
+  handleEditClick(): void {
+    this.props.history.push(`/edit/${this.props.PTOInfo.id}`);
+  }
+
+  handlePopoverClose(): void {
+    this.setState({
+      anchorEl: null,
+    });
   }
 
   private stringCapitalize(string: string): string {

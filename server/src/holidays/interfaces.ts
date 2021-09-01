@@ -8,6 +8,14 @@ export interface HolidayPeriod {
 
 export type HolidaysDaysStatus = Array<{ date: string; status: string }>;
 
+export interface PTODetails {
+  id?: string;
+  startingDate: string;
+  endingDate: string;
+  comment: string;
+  approvers: Array<string>;
+}
+
 export interface PTODetailsWithEachDay {
   id: string;
   from_date: string;

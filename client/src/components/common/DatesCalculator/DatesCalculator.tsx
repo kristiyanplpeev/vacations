@@ -39,7 +39,7 @@ interface DatesCalculatorState {
   freeDays: number;
   freeDaysStatuses: string;
   totalDays: number;
-  anchorEl: any;
+  anchorEl: HTMLButtonElement | null;
 }
 
 class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorState> {
@@ -81,6 +81,8 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
                         Summary
                       </Typography>
                     </TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -125,6 +127,7 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
                     <TableCell className="dates-calculator-table-cell" align="left">
                       {this.state.weekdays}
                     </TableCell>
+                    <TableCell></TableCell>
                   </TableRow>
                   <TableRow key={"3"}>
                     <TableCell className="dates-calculator-table-cell" align="left">
@@ -133,6 +136,7 @@ class DatesCalculator extends Component<DatesCalculatorProps, DatesCalculatorSta
                     <TableCell className="dates-calculator-table-cell" align="left">
                       {this.state.totalDays}
                     </TableCell>
+                    <TableCell></TableCell>
                   </TableRow>
                 </TableBody>
               </Table>

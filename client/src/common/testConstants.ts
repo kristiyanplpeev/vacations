@@ -1,6 +1,8 @@
 import { RouteComponentProps } from "react-router";
 
-export const RouteComponentPropsMock: RouteComponentProps = {
+import { PTOFormMatchProps } from "components/NewPTO/PTOForm/PTOForm";
+
+export const RouteComponentPropsMock: RouteComponentProps<PTOFormMatchProps> = {
   history: {
     action: "PUSH",
     block: jest.fn(),
