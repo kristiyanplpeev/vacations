@@ -108,7 +108,7 @@ interface MyDocumentProps {
 const MyDocument = (props: MyDocumentProps): JSX.Element => (
   <Document>
     <Page size="A4" style={styles.page}>
-      <Image src={process.env.PUBLIC_URL + "/atscale-logo.png"} />
+      <Image style={styles.image} src={process.env.PUBLIC_URL + "/atscale-logo.png"} />
       <Text style={styles.title}>ЗАЯВЛЕНИЕ ЗА ПОЛЗВАНЕ НА ОТПУСК</Text>
       <Text style={styles.underTitle}>от</Text>
       <Text style={styles.names}>{`Имена: ${props.employee.firstName} ${props.employee.lastName}`}</Text>

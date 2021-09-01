@@ -8,7 +8,6 @@ import CardContent from "@material-ui/core/CardContent";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import Modal from "@material-ui/core/Modal";
-import Snackbar from "@material-ui/core/Snackbar";
 import Typography from "@material-ui/core/Typography";
 import { Alert } from "@material-ui/lab";
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
@@ -29,7 +28,6 @@ interface PTOFormState {
   comment: ITextBox;
   approvers: ITextBox;
   warning: string;
-  successMessage: boolean;
   showModal: string;
   loading: boolean;
   loadingEditMode: boolean;
@@ -53,7 +51,6 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       loading: false,
       loadingEditMode: false,
       warning: "",
-      successMessage: false,
       showModal: "",
       comment: {
         value: "PTO",
@@ -85,7 +82,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
         this.props.setEndingDate(new Date(PTODetailed.to_date), PTODetailed.to_date);
         this.setState({
           comment: { ...this.state.comment, value: PTODetailed.comment },
-          approvers: { ...this.state.approvers, value: approversValue },
+          approvers: { ...this.state.approvers, value: approversValue, isValid: true },
         });
       } catch (error) {
         if (error.message === errMessage) {
@@ -109,7 +106,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
     return (
       <Grid container spacing={5}>
         <Grid item xs={12}>
-          <Card>
+          <Card className="pto-form-paper">
             <CardContent>
               <Typography className="pto-form-header card-content" variant="h5" component="h2">
                 Details
@@ -121,7 +118,6 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
             </CardContent>
           </Card>
         </Grid>
-        {this.renderSnackbar()}
         {this.renderModal()}
       </Grid>
     );
@@ -135,9 +131,14 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
         aria-labelledby="simple-modal-title"
         aria-describedby="simple-modal-description"
       >
-        <Typography className="error-modal" variant="subtitle1" gutterBottom>
-          {this.state.showModal}
-        </Typography>
+        <div className="error-modal">
+          <Typography variant="subtitle1" gutterBottom>
+            {this.state.showModal}
+          </Typography>
+          <Button onClick={() => this.handleModalClose()} className="error-modal-button" variant="outlined">
+            OK
+          </Button>
+        </div>
       </Modal>
     );
   }
@@ -213,11 +214,11 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
   renderWarning(): JSX.Element {
     return (
       <Grid item xs={12}>
-        {this.state.warning && !this.state.successMessage ? (
-          <Alert className="pto-form-warning card-content" data-unit-test="warning-message" severity="warning">
+        {this.state.warning && (
+          <Alert className="pto-form-warning card-content" data-unit-test="warning-message" severity="error">
             {this.state.loading ? <CircularProgress /> : this.state.warning}
           </Alert>
-        ) : null}
+        )}
       </Grid>
     );
   }
@@ -259,20 +260,6 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
     );
   }
 
-  renderSnackbar(): JSX.Element {
-    return (
-      <Snackbar
-        open={this.state.successMessage}
-        onClose={() => this.props.history.push("/home")}
-        autoHideDuration={2000}
-      >
-        <Alert onClose={() => this.props.history.push("/home")} severity="success">
-          Your PTO has been successfully submitted!
-        </Alert>
-      </Snackbar>
-    );
-  }
-
   addPTO = async (): Promise<void> => {
     if (!this.areInputsValid()) return;
     this.setState({
@@ -284,21 +271,19 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       if (warning && warning.warning) {
         this.setState({
           warning: warning.warning,
+          loading: false,
         });
+        this.setApproversInputError(warning.warning);
       } else {
-        this.setState({
-          successMessage: true,
-        });
+        this.props.history.push({ pathname: "/home", state: true });
       }
     } catch (error) {
       this.props.setError(true);
     }
-    this.setState({
-      loading: false,
-    });
   };
 
   editPTO = async (): Promise<void> => {
+    if (!this.areInputsValid()) return;
     try {
       this.setState({
         loading: true,
@@ -307,21 +292,18 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       const PTO = { ...this.getHoliday(), id: PTOId };
 
       await this.PTOService.editPTO(PTO);
-      this.setState({
-        successMessage: true,
-      });
+      this.props.history.push({ pathname: "/home", state: true });
     } catch (error) {
       if (error.message === errMessage) {
         this.props.setError(true);
       } else {
         this.setState({
           warning: error.message,
+          loading: false,
         });
+        this.setApproversInputError(error.message);
       }
     }
-    this.setState({
-      loading: false,
-    });
   };
 
   private getHoliday(): IPTO {
@@ -343,13 +325,13 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
   }
 
   areInputsValid = (): boolean => {
-    let areInputsValid = true;
     if (!this.state.comment.isValid) {
       this.setState({
         comment: { ...this.state.comment, textBoxInvalid: true },
+        approvers: { ...this.state.approvers, textBoxInvalid: false },
         warning: this.state.comment.errorText,
       });
-      areInputsValid = false;
+      return false;
     } else {
       this.setState({
         comment: { ...this.state.comment, textBoxInvalid: false },
@@ -360,7 +342,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
         approvers: { ...this.state.approvers, textBoxInvalid: true },
         warning: this.state.approvers.errorText,
       });
-      areInputsValid = false;
+      return false;
     } else {
       this.setState({
         approvers: { ...this.state.approvers, textBoxInvalid: false },
@@ -370,10 +352,18 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       this.setState({
         warning: "Starting date must not be after ending date",
       });
-      areInputsValid = false;
+      return false;
     }
-    return areInputsValid;
+    return true;
   };
+
+  private setApproversInputError(warning: string): void {
+    if (warning.includes("@")) {
+      this.setState({
+        approvers: { ...this.state.approvers, textBoxInvalid: true },
+      });
+    }
+  }
 
   private formatApprovers(approversValue: string): Array<string> {
     return approversValue

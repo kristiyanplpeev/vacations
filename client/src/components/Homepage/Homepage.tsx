@@ -4,6 +4,7 @@ import { Button } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Paper from "@material-ui/core/Paper";
 import Popover from "@material-ui/core/Popover";
+import Snackbar from "@material-ui/core/Snackbar";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -13,6 +14,7 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Typography from "@material-ui/core/Typography";
 import SentimentSatisfiedSharpIcon from "@material-ui/icons/SentimentSatisfiedSharp";
+import { Alert } from "@material-ui/lab";
 import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
@@ -24,11 +26,17 @@ import Error from "components/common/Error/Error";
 import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
+const snackbarState = {
+  open: "open",
+  close: "close",
+};
+
 interface HomepageProps extends RouteComponentProps {}
 
 interface HomepageState {
   loading: boolean;
   error: string;
+  successMessage: boolean;
   userPastPTOs: Array<IUserPTOWithCalcDays>;
   userFuturePTOs: Array<IUserPTOWithCalcDays>;
   anchorEl: HTMLButtonElement | null;
@@ -42,6 +50,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     this.state = {
       loading: false,
       error: "",
+      successMessage: false,
       userPastPTOs: [],
       userFuturePTOs: [],
       anchorEl: null,
@@ -50,6 +59,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   async componentDidMount(): Promise<void> {
+    this.manageSnackbar(snackbarState.open);
     this.setState({
       loading: true,
     });
@@ -61,7 +71,6 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         userPastPTOs: userPTOs.userPastPTOs,
       });
     } catch (error) {
-      console.log(error.message);
       this.setState({
         error: error.message,
       });
@@ -86,6 +95,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
           ? this.renderNoPTOsView()
           : this.renderPTOsTable()}
         {this.renderPopover()}
+        {this.renderSnackbar()}
       </div>
     );
   }
@@ -193,6 +203,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   renderPopover(): JSX.Element {
     return (
       <Popover
+        className="homepage-popover"
         id="mouse-over-popover"
         open={Boolean(this.state.anchorEl)}
         anchorEl={this.state.anchorEl}
@@ -212,37 +223,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  handleEditClick(event: React.MouseEvent<HTMLButtonElement>, currentPTOStatus: string, currentPTOId: string): void {
-    if (currentPTOStatus === PTOStatus.requested) {
-      this.props.history.push(`/edit/${currentPTOId}`);
-    } else {
-      this.setState({
-        anchorEl: event.currentTarget,
-      });
-    }
-  }
-
-  handlePopoverClose(): void {
-    this.setState({
-      anchorEl: null,
-    });
-  }
-
-  private async getUserPTOs() {
-    const userPTOs = await this.PTOService.getUserPTOs();
-    const userFuturePTOs = userPTOs
-      .filter((el) => el.from_date > DateUtil.todayStringified())
-      .sort(DateUtil.dateSorting);
-    const userPastPTOs = userPTOs
-      .filter((el) => el.from_date <= DateUtil.todayStringified())
-      .sort(DateUtil.dateSorting);
-
-    return {
-      userFuturePTOs,
-      userPastPTOs,
-    };
-  }
-
+  // eslint-disable-next-line max-lines-per-function
   private mappingFunc = (el: IUserPTOWithCalcDays): JSX.Element => (
     <TableRow hover key={el.id}>
       <TableCell width="10%">{el.status}</TableCell>
@@ -265,10 +246,18 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       </TableCell>
       <TableCell width="5%" align="left">
         <Button
-          color="primary"
-          onClick={(event: React.MouseEvent<HTMLButtonElement>) => this.handleEditClick(event, el.status, el.id)}
+          onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => this.handleEditHover(event, el.status)}
+          onMouseLeave={() => this.handlePopoverClose()}
+          className="homepage-button-wrapper"
+          disableRipple
         >
-          edit
+          <Button
+            color="primary"
+            onClick={() => this.handleEditClick(el.id)}
+            disabled={el.status !== PTOStatus.requested}
+          >
+            edit
+          </Button>
         </Button>
       </TableCell>
       <TableCell width="30%" align="left">
@@ -276,6 +265,64 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       </TableCell>
     </TableRow>
   );
+
+  renderSnackbar(): JSX.Element {
+    return (
+      <Snackbar
+        open={this.state.successMessage}
+        onClose={() => this.manageSnackbar(snackbarState.close)}
+        autoHideDuration={2000}
+      >
+        <Alert severity="success">Your PTO has been successfully submitted!</Alert>
+      </Snackbar>
+    );
+  }
+
+  handleEditHover(event: React.MouseEvent<HTMLButtonElement>, currentPTOStatus: string): void {
+    if (currentPTOStatus !== PTOStatus.requested) {
+      this.setState({
+        anchorEl: event.currentTarget,
+      });
+    }
+  }
+
+  handleEditClick(currentPTOId: string): void {
+    this.props.history.push(`/edit/${currentPTOId}`);
+  }
+
+  handlePopoverClose(): void {
+    this.setState({
+      anchorEl: null,
+    });
+  }
+
+  private manageSnackbar(action: string): void {
+    if (this.props.location.state && action === snackbarState.open) {
+      this.setState({
+        successMessage: true,
+      });
+      this.props.history.replace("/home");
+    } else if (action === snackbarState.close) {
+      this.setState({
+        successMessage: false,
+      });
+    }
+  }
+
+  private async getUserPTOs() {
+    const userPTOs = await this.PTOService.getUserPTOs();
+    const userFuturePTOs = userPTOs
+      .filter((el) => el.from_date > DateUtil.todayStringified())
+      .sort(DateUtil.dateSorting);
+    const userPastPTOs = userPTOs
+      .filter((el) => el.from_date <= DateUtil.todayStringified())
+      .sort(DateUtil.dateSorting);
+
+    return {
+      userFuturePTOs,
+      userPastPTOs,
+    };
+  }
 }
 
 export default Homepage;

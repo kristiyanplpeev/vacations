@@ -28,7 +28,6 @@ interface PTOCardProps extends RouteComponentProps {
 
 interface PTOCardState {
   anchorEl: HTMLButtonElement | null;
-  disableEditButton: boolean;
 }
 
 class PTOCard extends Component<PTOCardProps, PTOCardState> {
@@ -36,7 +35,6 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
     super(props);
     this.state = {
       anchorEl: null,
-      disableEditButton: false,
     };
   }
 
@@ -71,7 +69,7 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
       return (
         <Grid item xs={12} key={key}>
           <Card className="pto-card-small-card">
-            <CardContent>
+            <CardContent className="pto-card-content">
               <Grid container spacing={2}>
                 <Grid item xs={3}>
                   <Typography variant="h6" gutterBottom>
@@ -104,7 +102,7 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
     return (
       <Grid item xs={12}>
         <Card className="pto-card-small-card">
-          <CardContent>
+          <CardContent className="pto-card-content">
             <Grid container spacing={2}>
               <Grid item xs={3}>
                 <Typography variant="h6" gutterBottom>
@@ -153,13 +151,20 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
         </Grid>
         <Grid item xs={4}>
           <Button
-            className="pto-card-buttons"
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) => this.handleEditClick(event)}
-            variant="outlined"
-            color="primary"
-            disabled={this.state.disableEditButton}
+            onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => this.handleEditHover(event)}
+            onMouseLeave={() => this.handlePopoverClose()}
+            className="pto-card-button-wrapper"
+            disableRipple
           >
-            <EditIcon /> Edit
+            <Button
+              className="pto-card-buttons"
+              onClick={() => this.handleEditClick()}
+              variant="outlined"
+              color="primary"
+              disabled={this.props.PTOInfo.status !== PTOStatus.requested}
+            >
+              <EditIcon /> Edit
+            </Button>
           </Button>
           {this.renderPopover()}
         </Grid>
@@ -170,6 +175,7 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
   renderPopover(): JSX.Element {
     return (
       <Popover
+        className="pto-card-popover"
         id="mouse-over-popover"
         open={Boolean(this.state.anchorEl)}
         anchorEl={this.state.anchorEl}
@@ -189,16 +195,18 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
     );
   }
 
-  handleEditClick(event: React.MouseEvent<HTMLButtonElement>): void {
-    if (this.props.PTOInfo.status === PTOStatus.requested) {
-      this.props.history.push(`/edit/${this.props.PTOInfo.id}`);
-    } else {
+  handleEditHover(event: React.MouseEvent<HTMLButtonElement>): void {
+    if (this.props.PTOInfo.status !== PTOStatus.requested) {
       this.setState({
         anchorEl: event.currentTarget,
-        disableEditButton: true,
       });
     }
   }
+
+  handleEditClick(): void {
+    this.props.history.push(`/edit/${this.props.PTOInfo.id}`);
+  }
+
   handlePopoverClose(): void {
     this.setState({
       anchorEl: null,
