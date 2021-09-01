@@ -288,12 +288,12 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   }
 
   private openSnackbar(isOpen: boolean): void {
-    if (this.props.location.state?.showSnackbar && isOpen === true) {
+    if (this.props.location.state?.showSnackbar && isOpen) {
       this.setState({
         successMessage: true,
       });
       this.props.history.replace("/home");
-    } else if (isOpen === false) {
+    } else if (!isOpen) {
       this.setState({
         successMessage: false,
       });
