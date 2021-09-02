@@ -3,7 +3,7 @@ import React from "react";
 import { Page, Text, View, Document, StyleSheet, Image, Font } from "@react-pdf/renderer";
 
 import { DateUtil } from "common/DateUtil";
-import { IUserPTO, IUser } from "common/types";
+import { IUserPTO, IUser } from "common/interfaces";
 import font from "components/PTODetails/PDFDocu/roboto-medium-webfont.ttf";
 
 // Create styles

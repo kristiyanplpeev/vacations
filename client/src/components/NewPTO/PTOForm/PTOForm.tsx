@@ -15,7 +15,7 @@ import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext, withRouter } from "react-router";
 
 import { errMessage } from "common/constants";
-import { IPTO, ITextBox, IUser, OptionalWithNull } from "common/types";
+import { IPTO, ITextBox, IUser, OptionalWithNull } from "common/interfaces";
 import { ValidationUtil } from "common/ValidationUtil";
 import "./PTOForm.css";
 import { IPTOService } from "inversify/interfaces";

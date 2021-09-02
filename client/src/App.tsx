@@ -6,11 +6,14 @@ import { connect } from "react-redux";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 
+import AdminPanel from "components/AdminPanel/AdminPanel";
+import AdminUsers from "components/AdminUsers/AdminUsers";
 import Header from "components/Header/Header";
 import Homepage from "components/Homepage/Homepage";
 import NewPTO from "components/NewPTO/NewPTO";
 import PTODetails from "components/PTODetails/PTODetails";
-import { IAuthenticationActionCreator, IAuthService } from "inversify/interfaces";
+import SideBar from "components/SideBar/SideBar";
+import { IAuthenticationActionCreator } from "inversify/interfaces";
 import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
 import PrivateRoute from "providers/PrivateRoute";
@@ -29,8 +32,6 @@ interface AppState {
 }
 
 class App extends Component<AppProps, AppState> {
-  private authService = myContainer.get<IAuthService>(TYPES.Auth);
-
   constructor(props: AppProps) {
     super(props);
     this.state = {
@@ -45,6 +46,7 @@ class App extends Component<AppProps, AppState> {
     });
   }
 
+  // eslint-disable-next-line max-lines-per-function
   render(): ReactNode {
     if (!this.state.allowRender) return null;
     return (
@@ -52,6 +54,7 @@ class App extends Component<AppProps, AppState> {
         <BrowserRouter>
           <Provider container={myContainer}>
             <Header />
+            <SideBar />
             <Switch>
               <Redirect path="/" exact to="/home" />
               <Route path="/login" component={Login} />
@@ -69,6 +72,18 @@ class App extends Component<AppProps, AppState> {
                 exact
                 isAuthenticated={this.props.user.isAuthenticated}
                 component={PTODetails}
+              />
+              <PrivateRoute
+                path="/admin"
+                exact
+                isAuthenticated={this.props.user.isAuthenticated}
+                component={AdminPanel}
+              />
+              <PrivateRoute
+                path="/admin/users"
+                exact
+                isAuthenticated={this.props.user.isAuthenticated}
+                component={AdminUsers}
               />
             </Switch>
           </Provider>

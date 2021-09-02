@@ -2,6 +2,13 @@
     flex-grow: 1;
 }
 
-.header-title {
+.header-title.MuiTypography-root {
     flex-grow: 1;
+    text-align: right;
+    margin-right: 1%;
+}
+
+.app-bar.MuiAppBar-root {
+    position: relative;
+    z-index: 9999;
 }

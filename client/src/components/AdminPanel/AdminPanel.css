@@ -1,0 +1,12 @@
+.admin-panel-button.MuiButtonBase-root {
+    margin: 3% 4%;
+    width: 18%;
+}
+
+.admin-panel-title.MuiTypography-root {
+    margin-top: 3%;
+}
+
+.admin-panel-container {
+    margin-left: 240px;
+}

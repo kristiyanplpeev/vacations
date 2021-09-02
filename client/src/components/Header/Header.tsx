@@ -18,10 +18,19 @@ class Header extends Component<Props> {
     if (location.pathname === "/login") return null;
     return (
       <div className="header-root">
-        <AppBar position="static">
+        <AppBar className="app-bar" position="static">
           <Toolbar>
             <Button onClick={() => this.logout()} color="inherit">
               LOGOUT
+            </Button>
+            <Button onClick={() => this.props.history.push("/home")} color="inherit">
+              My PTOs
+            </Button>
+            <Button onClick={() => {}} color="inherit">
+              Team PTOs
+            </Button>
+            <Button onClick={() => this.props.history.push("/admin")} color="inherit">
+              Admin
             </Button>
             <IconButton edge="start" className="header-menu-button" color="inherit" aria-label="menu"></IconButton>
             <Typography variant="h6" className="header-title">

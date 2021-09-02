@@ -16,7 +16,7 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import { RouteComponentProps, withRouter } from "react-router";
 
 import { PTOStatus } from "common/constants";
-import { IUserPTO, IUser } from "common/types";
+import { IUserPTO, IUser } from "common/interfaces";
 import MyDocument from "components/PTODetails/PDFDocu/AtscaleLeaveRequest";
 
 interface PTOCardProps extends RouteComponentProps {

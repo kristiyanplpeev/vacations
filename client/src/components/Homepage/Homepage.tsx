@@ -21,7 +21,7 @@ import { RouteComponentProps, StaticContext } from "react-router";
 
 import { PTOStatus } from "common/constants";
 import { DateUtil } from "common/DateUtil";
-import { IUserPTOWithCalcDays } from "common/types";
+import { IUserPTOWithCalcDays } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";

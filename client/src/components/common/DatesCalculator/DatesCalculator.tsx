@@ -16,7 +16,7 @@ import InfoIcon from "@material-ui/icons/Info";
 import { resolve } from "inversify-react";
 
 import { dayStatus } from "common/constants";
-import { HolidayDays } from "common/types";
+import { HolidayDays } from "common/interfaces";
 import "./DatesCalculator.css";
 import { IHolidayService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";

@@ -7,7 +7,7 @@ import { RouteComponentProps } from "react-router";
 
 import "./PTODetails.css";
 import { dayStatus } from "common/constants";
-import { IUserPTO, IUser, HolidayDays } from "common/types";
+import { IUserPTO, IUser, HolidayDays } from "common/interfaces";
 import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import Error from "components/common/Error/Error";
 import PTOCard from "components/PTODetails/PTOCard/PTOCard";
