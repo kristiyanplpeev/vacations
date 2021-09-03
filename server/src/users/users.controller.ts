@@ -1,7 +1,7 @@
 import { Controller, UseGuards, Get } from '@nestjs/common';
-import { User } from 'src/model/user.entity';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../google/guards';
+import { UserDetailsWithTeamAndPosition } from '../google/utils/interfaces';
 
 @Controller('users')
 export class UsersController {
@@ -9,7 +9,7 @@ export class UsersController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  public async getUsers(): Promise<Array<User>> {
+  public async getUsers(): Promise<Array<UserDetailsWithTeamAndPosition>> {
     return await this.usersService.getAllUsers();
   }
 }

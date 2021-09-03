@@ -10,7 +10,7 @@ import Typography from "@material-ui/core/Typography";
 import { resolve } from "inversify-react";
 
 import "./AdminUsers.css";
-import { IUser } from "common/interfaces";
+import { IUserWithTeamAndPosition } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import { IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
@@ -20,7 +20,7 @@ interface AdminUsersProps {}
 interface AdminUserState {
   error: boolean;
   loading: boolean;
-  users: Array<IUser>;
+  users: Array<IUserWithTeamAndPosition>;
 }
 
 class AdminUsers extends Component<AdminUsersProps, AdminUserState> {
@@ -82,6 +82,16 @@ class AdminUsers extends Component<AdminUsersProps, AdminUserState> {
                   <Avatar className="users-avatar" alt={el.firstName} src={el.picture} />
                   <Typography variant="h5" className="users-names">
                     {el.firstName} {el.lastName}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="h5" className="users-names">
+                    {el.position}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="h5" className="users-names">
+                    {el.team}
                   </Typography>
                 </Grid>
               </Grid>

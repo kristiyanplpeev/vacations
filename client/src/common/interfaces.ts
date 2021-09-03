@@ -1,11 +1,18 @@
-export type IUser = {
+import { PositionsEnum, TeamsEnum } from "common/constants";
+
+export interface IUser {
   id: string;
   googleId: string;
   email: string;
   firstName: string;
   lastName: string;
   picture: string;
-};
+}
+
+export interface IUserWithTeamAndPosition extends IUser {
+  team: TeamsEnum;
+  position: PositionsEnum;
+}
 
 export interface IPTOPeriod {
   startingDate: string;

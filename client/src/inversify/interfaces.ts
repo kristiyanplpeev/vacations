@@ -7,7 +7,7 @@ import {
   IUserPTOWithCalcDays,
   IUserPTOFullDetails,
   IPTOWithId,
-  IUser,
+  IUserWithTeamAndPosition,
 } from "common/interfaces";
 import { AppActions, IUserDetails } from "store/user/types";
 
@@ -39,5 +39,5 @@ export interface IPTOService {
 }
 
 export interface IUserService {
-  getAllUsers(): Promise<Array<IUser>>;
+  getAllUsers(): Promise<Array<IUserWithTeamAndPosition>>;
 }
