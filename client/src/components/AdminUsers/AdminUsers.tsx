@@ -21,6 +21,7 @@ interface AdminUserState {
   error: boolean;
   loading: boolean;
   users: Array<IUserWithTeamAndPosition>;
+  selectedUsers: Array<string>;
 }
 
 class AdminUsers extends Component<AdminUsersProps, AdminUserState> {
@@ -32,6 +33,7 @@ class AdminUsers extends Component<AdminUsersProps, AdminUserState> {
       error: false,
       loading: false,
       users: [],
+      selectedUsers: [],
     };
   }
 
@@ -74,7 +76,11 @@ class AdminUsers extends Component<AdminUsersProps, AdminUserState> {
         return <CircularProgress key={el.id} />;
       }
       return (
-        <Card key={el.id} className="users-card">
+        <Card
+          onClick={() => this.addUserToSelected(el.id)}
+          key={el.id}
+          className={this.isUserSelected(el.id) ? "users-card users-card-selected" : "users-card"}
+        >
           <CardActionArea>
             <CardContent>
               <Grid container spacing={1}>
@@ -100,6 +106,23 @@ class AdminUsers extends Component<AdminUsersProps, AdminUserState> {
         </Card>
       );
     });
+  }
+
+  addUserToSelected(userId: string): void {
+    if (!this.state.selectedUsers.includes(userId)) {
+      this.setState({
+        selectedUsers: [...this.state.selectedUsers, userId],
+      });
+    } else {
+      const decrementedUsers = this.state.selectedUsers.filter((el) => el !== userId);
+      this.setState({
+        selectedUsers: decrementedUsers,
+      });
+    }
+  }
+
+  isUserSelected(userId: string): boolean {
+    return this.state.selectedUsers.includes(userId);
   }
 }
 

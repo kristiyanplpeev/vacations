@@ -13,6 +13,9 @@
   text-align: left;
 }
 
+.users-card-selected.MuiPaper-root {
+   background-color: rgb(218, 216, 218);
+}
 .users-avatar {
   float: left;
   margin-right: 2%;
