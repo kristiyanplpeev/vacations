@@ -14,7 +14,7 @@ import { ApplicationState, IUserState, AppActions } from "store/user/types";
 type Props = RouteComponentProps & LinkDispatchProps & LinkStateProps;
 
 interface HeaderState {
-  anchorEl: HTMLElement | null | undefined;
+  anchorEl: HTMLElement | null;
 }
 
 class Header extends Component<Props, HeaderState> {
