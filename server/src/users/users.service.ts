@@ -1,15 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../model/user.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { PositionsEnum, TeamsEnum, UserRelations } from '../common/constants';
 import { UserDetailsWithTeamAndPosition } from '../google/utils/interfaces';
+import { Teams } from '../model/teams.entity';
+import { Positions } from '../model/positions.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(Teams) private teamsRepo: Repository<Teams>,
+    @InjectRepository(Positions) private positionsRepo: Repository<Positions>,
+  ) {}
 
-  //set users teams and positions
   private setUsersTeamsAndPositions(
     users: Array<User>,
   ): Array<UserDetailsWithTeamAndPosition> {
@@ -36,5 +41,26 @@ export class UsersService {
     });
 
     return this.setUsersTeamsAndPositions(users);
+  }
+
+  public async getUsersByIds(
+    usersIds: string,
+  ): Promise<Array<UserDetailsWithTeamAndPosition>> {
+    const usersIdsArr = usersIds.split(',');
+    const users = await this.userRepo.find({
+      where: {
+        id: In(usersIdsArr),
+      },
+      relations: [UserRelations.teams, UserRelations.positions],
+    });
+    return this.setUsersTeamsAndPositions(users);
+  }
+
+  public async getTeams(): Promise<Array<Teams>> {
+    return await this.teamsRepo.find();
+  }
+
+  public async getPositions(): Promise<Array<Positions>> {
+    return await this.positionsRepo.find();
   }
 }
