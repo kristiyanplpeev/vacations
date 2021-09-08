@@ -7,13 +7,13 @@ import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 
 import AdminPanel from "components/AdminPanel/AdminPanel";
-import AdminUsers from "components/AdminUsers/AdminUsers";
 import BulkChangeUsers from "components/BulkChangeUsers/BulkChangeUsers";
 import Header from "components/Header/Header";
 import Homepage from "components/Homepage/Homepage";
 import NewPTO from "components/NewPTO/NewPTO";
 import PTODetails from "components/PTODetails/PTODetails";
 import SideBar from "components/SideBar/SideBar";
+import UsersList from "components/UsersList/UsersList";
 import { IAuthenticationActionCreator } from "inversify/interfaces";
 import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
@@ -84,7 +84,7 @@ class App extends Component<AppProps, AppState> {
                 path="/admin/users"
                 exact
                 isAuthenticated={this.props.user.isAuthenticated}
-                component={AdminUsers}
+                component={UsersList}
               />
               <PrivateRoute
                 path="/admin/change/:ids"

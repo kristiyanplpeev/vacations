@@ -9,7 +9,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import { resolve } from "inversify-react";
-import "./AdminUsers.css";
+import "./UsersList.css";
 import { RouteComponentProps } from "react-router";
 
 import { IUserWithTeamAndPosition } from "common/interfaces";
@@ -17,19 +17,19 @@ import Error from "components/common/Error/Error";
 import { IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
-interface AdminUsersProps extends RouteComponentProps {}
+interface UsersListProps extends RouteComponentProps {}
 
-interface AdminUserState {
+interface UsersListState {
   error: boolean;
   loading: boolean;
   users: Array<IUserWithTeamAndPosition>;
   selectedUsers: Array<string>;
 }
 
-class AdminUsers extends Component<AdminUsersProps, AdminUserState> {
+class UsersList extends Component<UsersListProps, UsersListState> {
   @resolve(TYPES.user) private userService!: IUserService;
 
-  constructor(props: AdminUsersProps) {
+  constructor(props: UsersListProps) {
     super(props);
     this.state = {
       error: false,
@@ -146,4 +146,4 @@ class AdminUsers extends Component<AdminUsersProps, AdminUserState> {
   }
 }
 
-export default AdminUsers;
+export default UsersList;
