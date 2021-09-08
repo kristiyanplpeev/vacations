@@ -150,6 +150,7 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
             >
               <MenuItem value={noChange}>--- no change ---</MenuItem>
               {this.renderTeams()}
+              <MenuItem value={"no team"}>no team</MenuItem>
             </Select>
           </FormControl>
         </div>
@@ -166,6 +167,7 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
             >
               <MenuItem value={noChange}>--- no change ---</MenuItem>
               {this.renderPositions()}
+              <MenuItem value={"no position"}>no position</MenuItem>
             </Select>
           </FormControl>
         </div>

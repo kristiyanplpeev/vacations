@@ -68,7 +68,12 @@ export class UsersService {
     users: Array<string>,
     newTeamId: string,
   ): Promise<Array<User>> {
-    const newTeam = await this.teamsRepo.findOne({ id: newTeamId });
+    let newTeam;
+    if (newTeamId !== TeamsEnum.noTeam) {
+      newTeam = await this.teamsRepo.findOne({ id: newTeamId });
+    } else {
+      newTeam = null;
+    }
     const updatedUsers = users.map(async (userId) => {
       const user = await this.userRepo.findOne({
         where: { id: userId },
@@ -84,7 +89,12 @@ export class UsersService {
     users: Array<string>,
     newPositionId: string,
   ): Promise<Array<User>> {
-    const newPosition = await this.positionsRepo.findOne({ id: newPositionId });
+    let newPosition;
+    if (newPositionId !== PositionsEnum.noPosition) {
+      newPosition = await this.positionsRepo.findOne({ id: newPositionId });
+    } else {
+      newPosition = null;
+    }
     const updatedUsers = users.map(async (userId) => {
       const user = await this.userRepo.findOne({
         where: { id: userId },
