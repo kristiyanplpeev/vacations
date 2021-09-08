@@ -1,4 +1,4 @@
-import { IUserPTOWithCalcDays } from "common/types";
+import { IUserPTOWithCalcDays } from "common/interfaces";
 
 export class DateUtil {
   static dateSorting(a: IUserPTOWithCalcDays, b: IUserPTOWithCalcDays): number {

@@ -1,7 +1,28 @@
 .header-icon-button {
-    flex-grow: 1;
+  flex-grow: 1;
 }
 
-.header-title {
-    flex-grow: 1;
+.header-title.MuiTypography-root {
+  flex-grow: 1;
+  text-align: right;
+  margin-right: 1%;
+}
+
+.app-bar.MuiAppBar-root {
+  position: relative;
+  z-index: 1201;
+}
+
+.header-profile-menu {
+  text-align: center;
+}
+
+.header-profile-menu-divider {
+    width: 300px;
+}
+
+.header-profile-menu-pic.MuiAvatar-root {
+  margin: auto;
+  height: 60px;
+  width: 60px;
 }

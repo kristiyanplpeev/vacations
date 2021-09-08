@@ -1,0 +1,8 @@
+.admin-sidebar-list {
+  width: 240px;
+}
+
+.admin-sidebar-text.MuiTypography-root {
+  font-size: 1.5rem;
+  margin: auto;
+}

@@ -2,7 +2,7 @@ import axios from "axios";
 import { injectable } from "inversify";
 
 import { BASE_URL, errMessage } from "common/constants";
-import { IPTO, IPTOWithId, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/types";
+import { IPTO, IPTOWithId, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/interfaces";
 import { IPTOService, IAuthService } from "inversify/interfaces";
 import "reflect-metadata";
 // eslint-disable-next-line import/no-cycle

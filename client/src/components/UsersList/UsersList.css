@@ -1,0 +1,23 @@
+.users-container {
+  margin-left: 240px;
+}
+
+.users-title.MuiTypography-root {
+  text-align: left;
+  margin: 2%;
+}
+
+.users-card {
+  margin: 2px auto;
+  width: 90%;
+  text-align: left;
+}
+
+.users-avatar {
+  float: left;
+  margin-right: 2%;
+}
+
+.users-names.MuiTypography-root {
+  margin-top: 5px;
+}

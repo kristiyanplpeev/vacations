@@ -4,7 +4,7 @@ import Grid from "@material-ui/core/Grid";
 import { RouteComponentProps } from "react-router";
 
 import { DateUtil } from "common/DateUtil";
-import { OptionalWithNull } from "common/types";
+import { OptionalWithNull } from "common/interfaces";
 import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import Error from "components/common/Error/Error";
 import PTOForm from "components/NewPTO/PTOForm/PTOForm";
