@@ -3,16 +3,17 @@ import React, { Component, ReactNode } from "react";
 import "./App.css";
 import { Provider } from "inversify-react";
 import { connect } from "react-redux";
-import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
+import { RouteComponentProps, withRouter } from "react-router";
+import { Switch, Route, Redirect } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 
 import AdminPanel from "components/AdminPanel/AdminPanel";
-import AdminUsers from "components/AdminUsers/AdminUsers";
 import Header from "components/Header/Header";
 import Homepage from "components/Homepage/Homepage";
 import NewPTO from "components/NewPTO/NewPTO";
 import PTODetails from "components/PTODetails/PTODetails";
 import SideBar from "components/SideBar/SideBar";
+import UsersList from "components/UsersList/UsersList";
 import { IAuthenticationActionCreator } from "inversify/interfaces";
 import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
@@ -23,7 +24,7 @@ import "reflect-metadata";
 import Login from "./components/Login/Login";
 import Redirecting from "./components/Login/Redirecting";
 
-interface AppProps extends LinkDispatchProps {
+interface AppProps extends LinkDispatchProps, RouteComponentProps {
   user: IUserState;
 }
 
@@ -51,43 +52,36 @@ class App extends Component<AppProps, AppState> {
     if (!this.state.allowRender) return null;
     return (
       <div className="App">
-        <BrowserRouter>
-          <Provider container={myContainer}>
-            <Header />
-            <SideBar />
-            <Switch>
-              <Redirect path="/" exact to="/home" />
-              <Route path="/login" component={Login} />
-              <Route path="/redirecting" component={Redirecting} />
-              <PrivateRoute path="/home" exact isAuthenticated={this.props.user.isAuthenticated} component={Homepage} />
-              <PrivateRoute path="/new" exact isAuthenticated={this.props.user.isAuthenticated} component={NewPTO} />
-              <PrivateRoute
-                path="/edit/:id"
-                exact
-                isAuthenticated={this.props.user.isAuthenticated}
-                component={NewPTO}
-              />
-              <PrivateRoute
-                path="/pto/:id"
-                exact
-                isAuthenticated={this.props.user.isAuthenticated}
-                component={PTODetails}
-              />
-              <PrivateRoute
-                path="/admin"
-                exact
-                isAuthenticated={this.props.user.isAuthenticated}
-                component={AdminPanel}
-              />
-              <PrivateRoute
-                path="/admin/users"
-                exact
-                isAuthenticated={this.props.user.isAuthenticated}
-                component={AdminUsers}
-              />
-            </Switch>
-          </Provider>
-        </BrowserRouter>
+        <Provider container={myContainer}>
+          <Header />
+          {this.props.location.pathname.includes("/admin") && <SideBar />}
+          <Switch>
+            <Redirect path="/" exact to="/home" />
+            <Route path="/login" component={Login} />
+            <Route path="/redirecting" component={Redirecting} />
+            <PrivateRoute path="/home" exact isAuthenticated={this.props.user.isAuthenticated} component={Homepage} />
+            <PrivateRoute path="/new" exact isAuthenticated={this.props.user.isAuthenticated} component={NewPTO} />
+            <PrivateRoute path="/edit/:id" exact isAuthenticated={this.props.user.isAuthenticated} component={NewPTO} />
+            <PrivateRoute
+              path="/pto/:id"
+              exact
+              isAuthenticated={this.props.user.isAuthenticated}
+              component={PTODetails}
+            />
+            <PrivateRoute
+              path="/admin"
+              exact
+              isAuthenticated={this.props.user.isAuthenticated}
+              component={AdminPanel}
+            />
+            <PrivateRoute
+              path="/admin/users"
+              exact
+              isAuthenticated={this.props.user.isAuthenticated}
+              component={UsersList}
+            />
+          </Switch>
+        </Provider>
       </div>
     );
   }
@@ -111,4 +105,6 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<any, any, AppActions>): Link
   },
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+const routerWrapper = withRouter(App);
+
+export default connect(mapStateToProps, mapDispatchToProps)(routerWrapper);
