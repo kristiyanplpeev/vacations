@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 
 import Avatar from "@material-ui/core/Avatar";
+import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardContent from "@material-ui/core/CardContent";
@@ -8,14 +9,15 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import { resolve } from "inversify-react";
-
 import "./AdminUsers.css";
+import { RouteComponentProps } from "react-router";
+
 import { IUserWithTeamAndPosition } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import { IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
-interface AdminUsersProps {}
+interface AdminUsersProps extends RouteComponentProps {}
 
 interface AdminUserState {
   error: boolean;
@@ -65,8 +67,26 @@ class AdminUsers extends Component<AdminUsersProps, AdminUserState> {
         <Typography className="users-title" variant="h4" component="h2">
           Users
         </Typography>
+        {this.renderChangeButton()}
         {this.renderUsers()}
       </div>
+    );
+  }
+
+  renderChangeButton(): JSX.Element {
+    const selectedUsersLength = this.state.selectedUsers.length;
+    const selectedUsersString = this.state.selectedUsers.join("&");
+    return (
+      <>
+        <Button
+          className={selectedUsersLength ? "users-change-button" : "users-change-button-hidden"}
+          variant="outlined"
+          color="primary"
+          onClick={() => this.props.history.push(`/admin/change/${selectedUsersString}`)}
+        >
+          Change selected
+        </Button>
+      </>
     );
   }
 

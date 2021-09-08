@@ -28,6 +28,8 @@ export const emptyUser = {
   picture: "",
 };
 
+export const applicationJSON = "application/json";
+
 export const noLoggedUser = {
   isAuthenticated: false,
   user: emptyUser,

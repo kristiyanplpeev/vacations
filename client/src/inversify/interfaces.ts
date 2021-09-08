@@ -8,6 +8,8 @@ import {
   IUserPTOFullDetails,
   IPTOWithId,
   IUserWithTeamAndPosition,
+  ITeams,
+  IPositions,
 } from "common/interfaces";
 import { AppActions, IUserDetails } from "store/user/types";
 
@@ -40,4 +42,9 @@ export interface IPTOService {
 
 export interface IUserService {
   getAllUsers(): Promise<Array<IUserWithTeamAndPosition>>;
+  getUsersByIds(usersIds: string): Promise<Array<IUserWithTeamAndPosition>>;
+  getTeams(): Promise<Array<ITeams>>;
+  getPositions(): Promise<Array<IPositions>>;
+  updateUsersTeam(users: Array<string>, newTeamId: string): Promise<void>;
+  updateUsersPosition(users: Array<string>, newPositionId: string): Promise<void>;
 }

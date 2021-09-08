@@ -8,6 +8,7 @@ import { ThunkDispatch } from "redux-thunk";
 
 import AdminPanel from "components/AdminPanel/AdminPanel";
 import AdminUsers from "components/AdminUsers/AdminUsers";
+import BulkChangeUsers from "components/BulkChangeUsers/BulkChangeUsers";
 import Header from "components/Header/Header";
 import Homepage from "components/Homepage/Homepage";
 import NewPTO from "components/NewPTO/NewPTO";
@@ -84,6 +85,12 @@ class App extends Component<AppProps, AppState> {
                 exact
                 isAuthenticated={this.props.user.isAuthenticated}
                 component={AdminUsers}
+              />
+              <PrivateRoute
+                path="/admin/change/:ids"
+                exact
+                isAuthenticated={this.props.user.isAuthenticated}
+                component={BulkChangeUsers}
               />
             </Switch>
           </Provider>

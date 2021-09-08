@@ -57,6 +57,15 @@ export interface IUserPTOFullDetails extends IUserPTO {
   eachDayStatus: HolidayDays;
 }
 
+export interface ITeams {
+  id: string;
+  team: TeamsEnum;
+}
+
+export interface IPositions {
+  id: string;
+  position: PositionsEnum;
+}
 export interface Error {
   error: string;
 }
