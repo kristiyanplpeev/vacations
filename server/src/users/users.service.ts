@@ -63,4 +63,36 @@ export class UsersService {
   public async getPositions(): Promise<Array<Positions>> {
     return await this.positionsRepo.find();
   }
+
+  public async updateTeams(
+    users: Array<string>,
+    newTeamId: string,
+  ): Promise<Array<User>> {
+    const newTeam = await this.teamsRepo.findOne({ id: newTeamId });
+    const updatedUsers = users.map(async (userId) => {
+      const user = await this.userRepo.findOne({
+        where: { id: userId },
+        relations: [UserRelations.teams],
+      });
+      user.team = newTeam;
+      return await this.userRepo.save(user);
+    });
+    return Promise.all(updatedUsers);
+  }
+
+  public async updatePositions(
+    users: Array<string>,
+    newPositionId: string,
+  ): Promise<Array<User>> {
+    const newPosition = await this.positionsRepo.findOne({ id: newPositionId });
+    const updatedUsers = users.map(async (userId) => {
+      const user = await this.userRepo.findOne({
+        where: { id: userId },
+        relations: [UserRelations.positions],
+      });
+      user.position = newPosition;
+      return await this.userRepo.save(user);
+    });
+    return Promise.all(updatedUsers);
+  }
 }
