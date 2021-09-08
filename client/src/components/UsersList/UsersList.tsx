@@ -83,6 +83,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
           variant="outlined"
           color="primary"
           onClick={() => this.props.history.push(`/admin/change/${selectedUsersString}`)}
+          data-unit-test="change-button"
         >
           Change selected
         </Button>
@@ -100,6 +101,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
           onClick={() => this.addUserToSelected(el.id)}
           key={el.id}
           className={this.isUserSelected(el.id) ? "users-card users-card-selected" : "users-card"}
+          data-unit-test="users-card"
         >
           <CardActionArea>
             <CardContent>
