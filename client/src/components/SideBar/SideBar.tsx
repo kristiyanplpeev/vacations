@@ -13,7 +13,6 @@ interface SidebarProps extends RouteComponentProps {}
 
 class SideBar extends Component<SidebarProps> {
   render(): JSX.Element {
-    if (!this.props.location.pathname.includes("/admin")) return <></>;
     return (
       <Drawer variant="permanent">
         <Toolbar />
