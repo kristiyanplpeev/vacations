@@ -15,7 +15,7 @@ export class UsersService {
     @InjectRepository(Positions) private positionsRepo: Repository<Positions>,
   ) {}
 
-  private setUsersTeamsAndPositions(
+  setUsersTeamsAndPositions(
     users: Array<User>,
   ): Array<UserDetailsWithTeamAndPosition> {
     return users.reduce((acc, el) => {
@@ -82,7 +82,7 @@ export class UsersService {
       user.team = newTeam;
       return await this.userRepo.save(user);
     });
-    return Promise.all(updatedUsers);
+    return await Promise.all(updatedUsers);
   }
 
   public async updatePositions(
@@ -103,6 +103,6 @@ export class UsersService {
       user.position = newPosition;
       return await this.userRepo.save(user);
     });
-    return Promise.all(updatedUsers);
+    return await Promise.all(updatedUsers);
   }
 }
