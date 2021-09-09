@@ -1,7 +1,7 @@
 import axios from "axios";
 import { injectable } from "inversify";
 
-import { BASE_URL, errMessage } from "common/constants";
+import { applicationJSON, BASE_URL, errMessage } from "common/constants";
 import { IPTO, IPTOWithId, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/interfaces";
 import { IPTOService, IAuthService } from "inversify/interfaces";
 import "reflect-metadata";
@@ -13,12 +13,13 @@ import { TYPES } from "inversify/types";
 class PTOService implements IPTOService {
   private authService = myContainer.get<IAuthService>(TYPES.Auth);
 
+  private headers = {
+    "Content-Type": applicationJSON,
+    // eslint-disable-next-line prettier/prettier
+    Authorization: `Bearer ${this.authService.getToken()}`,
+  };
+
   addPTO = async ({ startingDate, endingDate, comment, approvers }: IPTO): Promise<void | { warning: string }> => {
-    const headers = {
-      "Content-Type": "application/json",
-      // eslint-disable-next-line prettier/prettier
-      Authorization: `Bearer ${this.authService.getToken()}`,
-    };
     const data = {
       startingDate,
       endingDate,
@@ -26,7 +27,7 @@ class PTOService implements IPTOService {
       approvers,
     };
     try {
-      await axios.post(`${BASE_URL}holidays`, data, { headers });
+      await axios.post(`${BASE_URL}holidays`, data, { headers: this.headers });
     } catch (error) {
       if (error.response) {
         return { warning: error.response.data.message };
@@ -37,11 +38,6 @@ class PTOService implements IPTOService {
   };
 
   editPTO = async ({ startingDate, endingDate, comment, approvers, id }: IPTOWithId): Promise<void> => {
-    const headers = {
-      "Content-Type": "application/json",
-      // eslint-disable-next-line prettier/prettier
-      Authorization: `Bearer ${this.authService.getToken()}`,
-    };
     const data = {
       id,
       startingDate,
@@ -50,7 +46,7 @@ class PTOService implements IPTOService {
       approvers,
     };
     try {
-      await axios.post(`${BASE_URL}holidays/edit`, data, { headers });
+      await axios.post(`${BASE_URL}holidays/edit`, data, { headers: this.headers });
     } catch (error) {
       if (error.response) {
         throw new Error(error.response.data.message);
@@ -61,12 +57,7 @@ class PTOService implements IPTOService {
   };
 
   getUserPTOs = async (): Promise<Array<IUserPTOWithCalcDays>> => {
-    const headers = {
-      // eslint-disable-next-line prettier/prettier
-      Authorization: `Bearer ${this.authService.getToken()}`,
-    };
-
-    return (await axios.get(`${BASE_URL}holidays/users`, { headers })).data;
+    return (await axios.get(`${BASE_URL}holidays/users`, { headers: this.headers })).data;
   };
 
   PTODetailed = async (PTOId: string): Promise<IUserPTOFullDetails> => {
@@ -79,12 +70,8 @@ class PTOService implements IPTOService {
   };
 
   getRequestedPTOById = async (PTOId: string): Promise<IUserPTOFullDetails> => {
-    const headers = {
-      // eslint-disable-next-line prettier/prettier
-      Authorization: `Bearer ${this.authService.getToken()}`,
-    };
     try {
-      return (await axios.get(`${BASE_URL}holidays/details/${PTOId}`, { headers })).data;
+      return (await axios.get(`${BASE_URL}holidays/details/${PTOId}`, { headers: this.headers })).data;
     } catch (error) {
       if (error.response) {
         throw new Error(error.response.data.message);

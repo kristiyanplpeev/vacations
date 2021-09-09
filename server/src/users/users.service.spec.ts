@@ -11,33 +11,13 @@ import { PositionsEnum, TeamsEnum } from '../common/constants';
 describe('UsersService', () => {
   let service: UsersService;
 
-  const mockedUserWithTeamAndPositionAsString = [
-    {
-      id: '749da264-0641-4d80-b6be-fe1c38ae2f93',
-      googleId: '106956791077954804246',
-      email: 'kristiyan.peev@atscale.com',
-      firstName: 'Kristiyan',
-      lastName: 'Peev',
-      picture:
-        'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
-      PTO: [],
-      team: TeamsEnum.noTeam,
-      position: PositionsEnum.noPosition,
-    },
-  ];
+  const getMockedUser = (team, position) => {
+    return { ...mockedUser, team, position };
+  };
 
-  const userWithUpdatedTeam = {
-    id: '2419e734-3445-471c-a940-397a7a279677',
-    googleId: '106956791077954804246',
-    email: 'kristiyan.peev@atscale.com',
-    firstName: 'Kristiyan',
-    lastName: 'Peev',
-    picture:
-      'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
-    team: {
-      id: '20149997-736d-4e71-bd1c-4392cb5d4b76',
-      team: 'Orchestrator',
-    },
+  const mockTeam = {
+    id: '20149997-736d-4e71-bd1c-4392cb5d4b76',
+    team: 'Orchestrator',
   };
 
   const mockTeamsRepository = {
@@ -47,7 +27,7 @@ describe('UsersService', () => {
   };
   const mockUserRepository = {
     findOne: jest.fn(() => Promise.resolve(mockedUser)),
-    save: jest.fn(() => Promise.resolve(userWithUpdatedTeam)),
+    save: jest.fn(() => Promise.resolve(getMockedUser(mockTeam, undefined))),
   };
   const mockPositionsRepository = {};
 
@@ -84,7 +64,9 @@ describe('UsersService', () => {
 
       //assert
       expect(spy).toHaveBeenCalled();
-      expect(result).toEqual(mockedUserWithTeamAndPositionAsString);
+      expect(result).toEqual([
+        getMockedUser(TeamsEnum.noTeam, PositionsEnum.noPosition),
+      ]);
     });
   });
 
@@ -101,7 +83,7 @@ describe('UsersService', () => {
 
       //assert
       expect(spy).toHaveBeenCalled();
-      expect(result).toEqual([userWithUpdatedTeam]);
+      expect(result).toEqual([getMockedUser(mockTeam, undefined)]);
     });
   });
 });

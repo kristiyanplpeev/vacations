@@ -19,18 +19,8 @@ export class UsersService {
     users: Array<User>,
   ): Array<UserDetailsWithTeamAndPosition> {
     return users.reduce((acc, el) => {
-      let team = '';
-      let position = '';
-      if (el.team === null) {
-        team = TeamsEnum.noTeam;
-      } else {
-        team = el.team.team;
-      }
-      if (el.position === null) {
-        position = PositionsEnum.noPosition;
-      } else {
-        position = el.position.position;
-      }
+      const team = el.team?.team || TeamsEnum.noTeam;
+      const position = el.position?.position || PositionsEnum.noPosition;
       return [...acc, { ...el, team, position }];
     }, []);
   }
