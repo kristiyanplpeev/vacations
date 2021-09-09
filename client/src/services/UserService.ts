@@ -19,8 +19,9 @@ class UserService implements IUserService {
     Authorization: `Bearer ${this.authService.getToken()}`,
   };
 
-  getAllUsers = async (): Promise<Array<IUserWithTeamAndPosition>> => {
-    return (await axios.get(`${BASE_URL}users`, { headers: this.headers })).data;
+  getAllUsers = async (teamId: string, positionId: string): Promise<Array<IUserWithTeamAndPosition>> => {
+    return (await axios.get(`${BASE_URL}users?teamId=${teamId}&positionId=${positionId}`, { headers: this.headers }))
+      .data;
   };
 
   getUsersByIds = async (usersIds: string): Promise<Array<IUserWithTeamAndPosition>> => {

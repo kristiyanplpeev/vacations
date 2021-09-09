@@ -33,6 +33,7 @@
 
 .change-bulk-selector.MuiFormControl-root {
   min-width: 144px;
+  text-align: center;
   margin: 0% 1% 1% 2%;
 }
 
