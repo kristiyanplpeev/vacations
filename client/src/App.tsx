@@ -8,6 +8,7 @@ import { Switch, Route, Redirect } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 
 import AdminPanel from "components/AdminPanel/AdminPanel";
+import BulkChangeUsers from "components/BulkChangeUsers/BulkChangeUsers";
 import Header from "components/Header/Header";
 import Homepage from "components/Homepage/Homepage";
 import NewPTO from "components/NewPTO/NewPTO";
@@ -39,7 +40,7 @@ class App extends Component<AppProps, AppState> {
       allowRender: false,
     };
   }
-
+  //checking if user is logged in
   componentDidMount(): void {
     this.props.checkUser();
     this.setState({
@@ -79,6 +80,12 @@ class App extends Component<AppProps, AppState> {
               exact
               isAuthenticated={this.props.user.isAuthenticated}
               component={UsersList}
+            />
+            <PrivateRoute
+              path="/admin/change/:ids"
+              exact
+              isAuthenticated={this.props.user.isAuthenticated}
+              component={BulkChangeUsers}
             />
           </Switch>
         </Provider>

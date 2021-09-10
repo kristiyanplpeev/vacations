@@ -28,7 +28,24 @@ export const emptyUser = {
   picture: "",
 };
 
+export const applicationJSON = "application/json";
+
 export const noLoggedUser = {
   isAuthenticated: false,
   user: emptyUser,
 };
+
+export enum TeamsEnum {
+  orchestrator = "Orchestrator",
+  datadash = "Datadash",
+  test = "Test team",
+  noTeam = "no team",
+}
+
+export enum PositionsEnum {
+  junior = "Junior",
+  regular = "Regular",
+  senior = "Senior",
+  lead = "Team lead",
+  noPosition = "no position",
+}

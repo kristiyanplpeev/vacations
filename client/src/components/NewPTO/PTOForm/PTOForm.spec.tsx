@@ -68,7 +68,7 @@ const getComponent = (
 };
 
 // eslint-disable-next-line max-lines-per-function
-describe("AdditionalInfo", () => {
+describe("PTOForm", () => {
   it("Should render warning after clicking Add button with invalid PTO period", () => {
     // arrange
     const component = getComponent(mockedPropsInvalid.startingDate, mockedPropsInvalid.endingDate);

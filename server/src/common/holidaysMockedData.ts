@@ -1,3 +1,5 @@
+import { PositionsEnum, TeamsEnum } from '../common/constants';
+
 export const constantHolidays = [
   {
     id: '31f6a5ec-72c9-47f2-9a66-5e46d253fffd',
@@ -201,6 +203,8 @@ export const mockedUser = {
   picture:
     'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
   PTO: [],
+  team: { id: 'id', team: TeamsEnum.noTeam, user: [] },
+  position: { id: 'id', position: PositionsEnum.noPosition, user: [] },
 };
 
 export const mockEmployeeHolidaysCalc = [

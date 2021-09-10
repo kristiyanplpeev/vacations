@@ -1,18 +1,20 @@
 .users-container {
   margin-left: 240px;
+  text-align: left;
 }
 
 .users-title.MuiTypography-root {
-  text-align: left;
-  margin: 2%;
+  margin: 1% 1% 1% 5%;
 }
 
 .users-card {
   margin: 2px auto;
   width: 90%;
-  text-align: left;
 }
 
+.users-card-selected.MuiPaper-root {
+  background-color: rgb(218, 216, 218);
+}
 .users-avatar {
   float: left;
   margin-right: 2%;
@@ -20,4 +22,13 @@
 
 .users-names.MuiTypography-root {
   margin-top: 5px;
+}
+
+.users-change-button.MuiButton-outlinedPrimary {
+  margin: 0% 1% 1% 5%;
+}
+
+.users-change-button-hidden.MuiButton-outlinedPrimary {
+  margin: 0% 1% 1% 5%;
+  visibility: hidden;
 }

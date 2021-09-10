@@ -20,4 +20,21 @@ export enum PTOStatus {
 export enum UserRelations {
   employee = 'employee',
   approvers = 'approvers',
+  teams = 'team',
+  positions = 'position',
+}
+
+export enum TeamsEnum {
+  orchestrator = 'Orchestrator',
+  datadash = 'Datadash',
+  test = 'Test team',
+  noTeam = 'no team',
+}
+
+export enum PositionsEnum {
+  junior = 'Junior',
+  regular = 'Regular',
+  senior = 'Senior',
+  lead = 'Team lead',
+  noPosition = 'no position',
 }

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 
 import Avatar from "@material-ui/core/Avatar";
+import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardContent from "@material-ui/core/CardContent";
@@ -8,19 +9,21 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import { resolve } from "inversify-react";
-
 import "./UsersList.css";
-import { IUser } from "common/interfaces";
+import { RouteComponentProps } from "react-router";
+
+import { IUserWithTeamAndPosition } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import { IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
-interface UsersListProps {}
+interface UsersListProps extends RouteComponentProps {}
 
 interface UsersListState {
   error: boolean;
   loading: boolean;
-  users: Array<IUser>;
+  users: Array<IUserWithTeamAndPosition>;
+  selectedUsers: Array<string>;
 }
 
 class UsersList extends Component<UsersListProps, UsersListState> {
@@ -32,6 +35,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
       error: false,
       loading: false,
       users: [],
+      selectedUsers: [],
     };
   }
 
@@ -63,8 +67,27 @@ class UsersList extends Component<UsersListProps, UsersListState> {
         <Typography className="users-title" variant="h4" component="h2">
           Users
         </Typography>
+        {this.renderChangeButton()}
         {this.renderUsers()}
       </div>
+    );
+  }
+
+  renderChangeButton(): JSX.Element {
+    const selectedUsersLength = this.state.selectedUsers.length;
+    const selectedUsersString = this.state.selectedUsers.join("&");
+    return (
+      <>
+        <Button
+          className={selectedUsersLength ? "users-change-button" : "users-change-button-hidden"}
+          variant="outlined"
+          color="primary"
+          onClick={() => this.props.history.push(`/admin/change/${selectedUsersString}`)}
+          data-unit-test="change-button"
+        >
+          Change selected
+        </Button>
+      </>
     );
   }
 
@@ -74,7 +97,12 @@ class UsersList extends Component<UsersListProps, UsersListState> {
         return <CircularProgress key={el.id} />;
       }
       return (
-        <Card key={el.id} className="users-card">
+        <Card
+          onClick={() => this.addUserToSelected(el.id)}
+          key={el.id}
+          className={this.isUserSelected(el.id) ? "users-card users-card-selected" : "users-card"}
+          data-unit-test="users-card"
+        >
           <CardActionArea>
             <CardContent>
               <Grid container spacing={1}>
@@ -84,12 +112,39 @@ class UsersList extends Component<UsersListProps, UsersListState> {
                     {el.firstName} {el.lastName}
                   </Typography>
                 </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="h5" className="users-names">
+                    {el.position}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="h5" className="users-names">
+                    {el.team}
+                  </Typography>
+                </Grid>
               </Grid>
             </CardContent>
           </CardActionArea>
         </Card>
       );
     });
+  }
+
+  addUserToSelected(userId: string): void {
+    if (!this.state.selectedUsers.includes(userId)) {
+      this.setState({
+        selectedUsers: [...this.state.selectedUsers, userId],
+      });
+    } else {
+      const decrementedUsers = this.state.selectedUsers.filter((el) => el !== userId);
+      this.setState({
+        selectedUsers: decrementedUsers,
+      });
+    }
+  }
+
+  isUserSelected(userId: string): boolean {
+    return this.state.selectedUsers.includes(userId);
   }
 }
 

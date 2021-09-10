@@ -1,0 +1,56 @@
+.change-bulk-container {
+  margin-left: 240px;
+  text-align: left;
+  padding: 0% 5%;
+}
+
+.change-bulk-title.MuiTypography-root {
+  margin: 1% 1% 1% 0%;
+}
+
+.change-bulk-new-values.MuiTypography-root {
+  margin: 1% 1% 1% 0%;
+}
+
+.change-bulk-card {
+  margin: 2px auto;
+}
+
+.change-bulk-avatar {
+  float: left;
+  margin-right: 2%;
+}
+
+.change-bulk-names.MuiTypography-root {
+  margin-top: 5px;
+}
+
+.change-bulk-selector-wrapper {
+  margin-bottom: 1%;
+  width: 17%;
+  text-align: right;
+}
+
+.change-bulk-selector.MuiFormControl-root {
+  min-width: 144px;
+  margin: 0% 1% 1% 2%;
+}
+
+.change-bulk-selector-label.MuiTypography-root {
+  display: inline;
+  float: left;
+}
+
+.change-bulk-divider.MuiDivider-root {
+  margin: auto;
+  background-color: black;
+}
+
+.change-bulk-buttons-container {
+  margin: auto;
+  text-align: right;
+}
+
+.change-bulk-buttons.MuiButton-root {
+  margin: 1% 1% 0% 1%;
+}
