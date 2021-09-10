@@ -40,7 +40,7 @@ class App extends Component<AppProps, AppState> {
       allowRender: false,
     };
   }
-  //checking if user is logged in
+
   componentDidMount(): void {
     this.props.checkUser();
     this.setState({
