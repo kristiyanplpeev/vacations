@@ -1,4 +1,4 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../model/user.entity';
 import { In, Repository } from 'typeorm';
@@ -28,18 +28,18 @@ export class UsersService {
     }, []);
   }
 
-  private async getTeamById(teamId: string): Promise<Teams | null> {
+  async getTeamById(teamId: string): Promise<Teams | null> {
     let team;
     if (teamId !== TeamsEnum.noTeam) {
       team = await this.teamsRepo.findOne({ id: teamId });
-      Guard.exists(team, `Position with id ${teamId} does not exist`);
+      Guard.exists(team, `Team with id ${teamId} does not exist`);
     } else {
       team = null;
     }
     return team;
   }
 
-  private async getPositionById(positionId: string): Promise<Positions | null> {
+  async getPositionById(positionId: string): Promise<Positions | null> {
     let position;
     if (positionId !== PositionsEnum.noPosition) {
       position = await this.positionsRepo.findOne({ id: positionId });

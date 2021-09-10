@@ -17,19 +17,26 @@ describe('UsersService', () => {
 
   const mockTeam = {
     id: '20149997-736d-4e71-bd1c-4392cb5d4b76',
-    team: 'Orchestrator',
+    team: TeamsEnum.orchestrator,
+    user: [],
+  };
+
+  const mockPosition = {
+    id: 'cd2debe5-fdae-4bc8-9991-6cce9f6ca40e',
+    team: PositionsEnum.regular,
+    user: [],
   };
 
   const mockTeamsRepository = {
-    findOne: jest.fn(() =>
-      Promise.resolve({ id: 'id', team: TeamsEnum.orchestrator, user: [] }),
-    ),
+    findOne: jest.fn(() => Promise.resolve(mockTeam)),
   };
   const mockUserRepository = {
     findOne: jest.fn(() => Promise.resolve(mockedUser)),
     save: jest.fn(() => Promise.resolve(getMockedUser(mockTeam, undefined))),
   };
-  const mockPositionsRepository = {};
+  const mockPositionsRepository = {
+    findOne: jest.fn(() => Promise.resolve(mockPosition)),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -84,6 +91,56 @@ describe('UsersService', () => {
       //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual([getMockedUser(mockTeam, undefined)]);
+    });
+  });
+
+  describe('getTeamById', () => {
+    it('should return null when input is no team', async () => {
+      //arrange
+      const spy = jest.spyOn(service, 'getTeamById');
+
+      //act
+      const result = await service.getTeamById(TeamsEnum.noTeam);
+
+      //assert
+      expect(spy).toHaveBeenCalled();
+      expect(result).toEqual(null);
+    });
+    it('should return team when input is valid id', async () => {
+      //arrange
+      const spy = jest.spyOn(service, 'getTeamById');
+
+      //act
+      const result = await service.getTeamById(mockTeam.id);
+
+      //assert
+      expect(spy).toHaveBeenCalled();
+      expect(result).toEqual(mockTeam);
+    });
+  });
+
+  describe('getPositionById', () => {
+    it('should return null when input is no position', async () => {
+      //arrange
+      const spy = jest.spyOn(service, 'getPositionById');
+
+      //act
+      const result = await service.getPositionById(PositionsEnum.noPosition);
+
+      //assert
+      expect(spy).toHaveBeenCalled();
+      expect(result).toEqual(null);
+    });
+    it('should return position when input is valid id', async () => {
+      //arrange
+      const spy = jest.spyOn(service, 'getPositionById');
+
+      //act
+      const result = await service.getPositionById(mockPosition.id);
+
+      //assert
+      expect(spy).toHaveBeenCalled();
+      expect(result).toEqual(mockPosition);
     });
   });
 });
