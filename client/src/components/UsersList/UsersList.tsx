@@ -225,27 +225,39 @@ class UsersList extends Component<UsersListProps, UsersListState> {
   }
 
   async handleTeamSelect(value: string): Promise<void> {
-    this.setState({
-      loading: true,
-    });
-    const users = await this.userService.getAllUsers(value, this.state.selectedPosition);
-    this.setState({
-      users,
-      selectedTeam: value,
-      loading: false,
-    });
+    try {
+      this.setState({
+        loading: true,
+      });
+      const users = await this.userService.getAllUsers(value, this.state.selectedPosition);
+      this.setState({
+        users,
+        selectedTeam: value,
+        loading: false,
+      });
+    } catch (error) {
+      this.setState({
+        error: true,
+      });
+    }
   }
 
   async handlePositionSelect(value: string): Promise<void> {
-    this.setState({
-      loading: true,
-    });
-    const users = await this.userService.getAllUsers(this.state.selectedTeam, value);
-    this.setState({
-      users,
-      selectedPosition: value,
-      loading: false,
-    });
+    try {
+      this.setState({
+        loading: true,
+      });
+      const users = await this.userService.getAllUsers(this.state.selectedTeam, value);
+      this.setState({
+        users,
+        selectedPosition: value,
+        loading: false,
+      });
+    } catch (error) {
+      this.setState({
+        error: true,
+      });
+    }
   }
 }
 
