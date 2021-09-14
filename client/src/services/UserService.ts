@@ -1,7 +1,7 @@
 import axios from "axios";
 import { injectable } from "inversify";
 
-import { applicationJSON, BASE_URL, errorHandle } from "common/constants";
+import { anyPosition, anyTeam, applicationJSON, BASE_URL, errorHandle } from "common/constants";
 import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import { IAuthService, IUserService } from "inversify/interfaces";
 import "reflect-metadata";
@@ -27,7 +27,11 @@ class UserService implements IUserService {
 
   getAllUsers = async (teamId?: string, positionId?: string): Promise<Array<IUserWithTeamAndPosition>> => {
     try {
-      return (await axios.get(`${BASE_URL}users?teamId=${teamId}&positionId=${positionId}`, this.getConfig())).data;
+      const team = teamId !== anyTeam ? `teamId=${teamId}` : "";
+      const position = positionId !== anyPosition ? `positionId=${positionId}` : "";
+      const query = [team, position].filter((el) => el).join("&");
+
+      return (await axios.get(`${BASE_URL}users?${query}`, this.getConfig())).data;
     } catch (error) {
       throw new Error(errorHandle(error));
     }

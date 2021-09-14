@@ -58,3 +58,6 @@ export const errorHandle = (err: any): string => {
     return errMessage;
   }
 };
+export const anyTeam = "any team";
+
+export const anyPosition = "any position";
