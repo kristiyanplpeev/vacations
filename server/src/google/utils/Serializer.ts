@@ -1,9 +1,9 @@
 import { PassportSerializer } from '@nestjs/passport';
 import { Inject, Injectable } from '@nestjs/common';
-import { User } from 'src/model/user.entity';
+import { Userdb } from 'src/model/user.entity';
 import { AuthenticationProvider } from '../auth';
 
-type Done = (err: Error, user: User) => void;
+type Done = (err: Error, user: Userdb) => void;
 @Injectable()
 export class SessionSerializer extends PassportSerializer {
   constructor(
@@ -13,11 +13,11 @@ export class SessionSerializer extends PassportSerializer {
     super();
   }
 
-  serializeUser(user: User, done: Done) {
+  serializeUser(user: Userdb, done: Done) {
     done(null, user);
   }
 
-  async deserializeUser(user: User, done: Done) {
+  async deserializeUser(user: Userdb, done: Done) {
     const userDB = await this.authService.findUser(user.googleId);
     return userDB ? done(null, userDB) : done(null, null);
   }

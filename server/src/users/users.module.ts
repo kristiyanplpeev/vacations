@@ -2,14 +2,14 @@ import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Holiday } from '../model/holiday.entity';
-import { PTO } from '../model/pto.entity';
-import { User } from '../model/user.entity';
-import { Teams } from '../model/teams.entity';
-import { Positions } from '../model/positions.entity';
+import { Holidaydb } from '../model/holiday.entity';
+import { PTOdb } from '../model/pto.entity';
+import { Userdb } from '../model/user.entity';
+import { Teamsdb } from '../model/teams.entity';
+import { Positionsdb } from '../model/positions.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Holiday, PTO, User, Teams, Positions])],
+  imports: [TypeOrmModule.forFeature([Holidaydb, PTOdb, Userdb, Teamsdb, Positionsdb])],
   controllers: [UsersController],
   providers: [UsersService],
 })

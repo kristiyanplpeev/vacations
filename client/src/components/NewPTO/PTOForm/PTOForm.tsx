@@ -14,10 +14,11 @@ import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/picker
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext, withRouter } from "react-router";
 
-import { errMessage } from "common/constants";
+import { errMessage, PTOStatus } from "common/constants";
 import { IPTO, ITextBox, IUser, OptionalWithNull } from "common/interfaces";
 import { ValidationUtil } from "common/ValidationUtil";
 import "./PTOForm.css";
+import ButtonWithLoader from "components/common/ButtonWithLoader/ButtonWithLoader";
 import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
@@ -38,7 +39,7 @@ interface PTOFormProps extends RouteComponentProps<PTOFormMatchProps, StaticCont
   endingDate: string;
   setStartingDate: (date: Date | null, value: OptionalWithNull<string>) => Promise<void>;
   setEndingDate: (date: Date | null, value: OptionalWithNull<string>) => Promise<void>;
-  setError: (errorState: boolean) => void;
+  setError: (errorMessage: string) => void;
   editMode: () => boolean;
 }
 
@@ -77,6 +78,11 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       });
       try {
         const PTODetailed = await this.PTOService.getRequestedPTOById(this.props.match.params.id);
+        if (PTODetailed.status !== PTOStatus.requested) {
+          this.setState({
+            modalError: "Approved or rejected vacations can't be edited.",
+          });
+        }
         const approversValue = this.getApproversAsString(PTODetailed.approvers);
         this.props.setStartingDate(new Date(PTODetailed.from_date), PTODetailed.from_date);
         this.props.setEndingDate(new Date(PTODetailed.to_date), PTODetailed.to_date);
@@ -85,13 +91,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
           approvers: { ...this.state.approvers, value: approversValue, isValid: true },
         });
       } catch (error) {
-        if (error.message === errMessage) {
-          this.props.setError(true);
-        } else {
-          this.setState({
-            modalError: error.message,
-          });
-        }
+        this.props.setError(error.message);
       }
       this.setState({
         loadingEditMode: false,
@@ -216,7 +216,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       <Grid item xs={12}>
         {this.state.warning && (
           <Alert className="pto-form-warning card-content" data-unit-test="warning-message" severity="error">
-            {this.state.loading ? <CircularProgress /> : this.state.warning}
+            {this.state.warning}
           </Alert>
         )}
       </Grid>
@@ -232,7 +232,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
           <Button
             className="pto-form-buttons"
             variant="outlined"
-            color="primary"
+            color="secondary"
             onClick={() => this.props.history.push("/home")}
           >
             Cancel
@@ -240,19 +240,20 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
         </Grid>
         <Grid item xs={4}>
           {this.props.editMode() ? (
-            <Button className="pto-form-buttons" variant="outlined" color="primary" onClick={this.editPTO}>
-              Save
-            </Button>
+            <ButtonWithLoader
+              stylingClass="pto-form-buttons"
+              buttonAction={this.editPTO}
+              loading={this.state.loading}
+              buttonText="Save"
+            />
           ) : (
-            <Button
-              data-unit-test="addPTO-button"
-              className="pto-form-buttons"
-              variant="outlined"
-              color="primary"
-              onClick={this.addPTO}
-            >
-              Add
-            </Button>
+            <ButtonWithLoader
+              dataUnitTest="addPTO-button"
+              stylingClass="pto-form-buttons"
+              buttonAction={this.addPTO}
+              loading={this.state.loading}
+              buttonText="Add"
+            />
           )}
         </Grid>
         <Grid item xs={2}></Grid>
@@ -267,18 +268,18 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
     });
     try {
       const PTODetails = this.getHoliday();
-      const warning = await this.PTOService.addPTO(PTODetails);
-      if (warning && warning.warning) {
+      await this.PTOService.addPTO(PTODetails);
+      this.props.history.push({ pathname: "/home", state: { showSnackbar: true } });
+    } catch (error) {
+      if (error.message === errMessage) {
+        this.props.setError(error.message);
+      } else {
         this.setState({
-          warning: warning.warning,
+          warning: error.message,
           loading: false,
         });
-        this.setApproversInputError(warning.warning);
-      } else {
-        this.props.history.push({ pathname: "/home", state: { showSnackbar: true } });
+        this.setApproversInputError(error.message);
       }
-    } catch (error) {
-      this.props.setError(true);
     }
   };
 
@@ -295,7 +296,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       this.props.history.push({ pathname: "/home", state: { showSnackbar: true } });
     } catch (error) {
       if (error.message === errMessage) {
-        this.props.setError(true);
+        this.props.setError(error.message);
       } else {
         this.setState({
           warning: error.message,

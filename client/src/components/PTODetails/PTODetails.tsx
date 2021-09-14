@@ -92,7 +92,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
   }
   render(): JSX.Element {
     if (this.state.error) {
-      return <Error />;
+      return <Error message={this.state.error} />;
     }
     return (
       <div className="pto-details-container">

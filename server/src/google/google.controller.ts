@@ -1,9 +1,10 @@
 import { Controller, Get, Req, UseGuards, Redirect } from '@nestjs/common';
 import { GoogleService } from './google.service';
 import { AuthenticatedGuard, GoogleAuthGuard } from './guards';
-import { UserDetails } from './utils/interfaces';
 import { CLIENT_URL } from '../common/constants';
 import { Token } from 'src/google/utils/interfaces';
+import { UserResponseDto } from './dto/google.dto';
+import { plainToClass } from 'class-transformer';
 
 @Controller('auth')
 export class GoogleController {
@@ -18,8 +19,9 @@ export class GoogleController {
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
   @Redirect(`${CLIENT_URL}redirecting`)
-  async googleAuthRedirect(@Req() req): Promise<UserDetails> {
-    return await this.googleService.validateUser(req.user);
+  async googleAuthRedirect(@Req() req): Promise<UserResponseDto> {
+    const user = await this.googleService.validateUser(req.user);
+    return plainToClass(UserResponseDto, user)
   }
 
   @Get('users')

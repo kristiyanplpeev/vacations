@@ -1,7 +1,7 @@
 import axios from "axios";
 import { injectable } from "inversify";
 
-import { applicationJSON, BASE_URL, errMessage } from "common/constants";
+import { applicationJSON, BASE_URL, errorHandle } from "common/constants";
 import { IPTO, IPTOWithId, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/interfaces";
 import { IPTOService, IAuthService } from "inversify/interfaces";
 import "reflect-metadata";
@@ -13,11 +13,17 @@ import { TYPES } from "inversify/types";
 class PTOService implements IPTOService {
   private authService = myContainer.get<IAuthService>(TYPES.Auth);
 
-  private headers = {
-    "Content-Type": applicationJSON,
-    // eslint-disable-next-line prettier/prettier
-    Authorization: `Bearer ${this.authService.getToken()}`,
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private getConfig = (headers?: any) => ({
+    headers: Object.assign(
+      {
+        "Content-Type": applicationJSON,
+        // eslint-disable-next-line prettier/prettier
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+      headers,
+    ),
+  });
 
   addPTO = async ({ startingDate, endingDate, comment, approvers }: IPTO): Promise<void | { warning: string }> => {
     const data = {
@@ -27,13 +33,9 @@ class PTOService implements IPTOService {
       approvers,
     };
     try {
-      await axios.post(`${BASE_URL}holidays`, data, { headers: this.headers });
+      await axios.post(`${BASE_URL}holidays`, data, this.getConfig());
     } catch (error) {
-      if (error.response) {
-        return { warning: error.response.data.message };
-      } else {
-        throw new Error(errMessage);
-      }
+      throw new Error(errorHandle(error));
     }
   };
 
@@ -46,38 +48,33 @@ class PTOService implements IPTOService {
       approvers,
     };
     try {
-      await axios.post(`${BASE_URL}holidays/edit`, data, { headers: this.headers });
+      await axios.post(`${BASE_URL}holidays/edit`, data, this.getConfig());
     } catch (error) {
-      if (error.response) {
-        throw new Error(error.response.data.message);
-      } else {
-        throw new Error(errMessage);
-      }
+      throw new Error(errorHandle(error));
     }
   };
 
   getUserPTOs = async (): Promise<Array<IUserPTOWithCalcDays>> => {
-    return (await axios.get(`${BASE_URL}holidays/users`, { headers: this.headers })).data;
+    try {
+      return (await axios.get(`${BASE_URL}holidays/users`, this.getConfig())).data;
+    } catch (error) {
+      throw new Error(errorHandle(error));
+    }
   };
 
   PTODetailed = async (PTOId: string): Promise<IUserPTOFullDetails> => {
-    const headers = {
-      // eslint-disable-next-line prettier/prettier
-      Authorization: `Bearer ${this.authService.getToken()}`,
-    };
-
-    return (await axios.get(`${BASE_URL}holidays/${PTOId}`, { headers })).data;
+    try {
+      return (await axios.get(`${BASE_URL}holidays/${PTOId}`, this.getConfig())).data;
+    } catch (error) {
+      throw new Error(errorHandle(error));
+    }
   };
 
   getRequestedPTOById = async (PTOId: string): Promise<IUserPTOFullDetails> => {
     try {
-      return (await axios.get(`${BASE_URL}holidays/details/${PTOId}`, { headers: this.headers })).data;
+      return (await axios.get(`${BASE_URL}holidays/details/${PTOId}`, this.getConfig())).data;
     } catch (error) {
-      if (error.response) {
-        throw new Error(error.response.data.message);
-      } else {
-        throw new Error(errMessage);
-      }
+      throw new Error(errorHandle(error));
     }
   };
 }

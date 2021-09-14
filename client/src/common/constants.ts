@@ -49,3 +49,12 @@ export enum PositionsEnum {
   lead = "Team lead",
   noPosition = "no position",
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const errorHandle = (err: any): string => {
+  if (err.response) {
+    return err.response.data.message;
+  } else {
+    return errMessage;
+  }
+};

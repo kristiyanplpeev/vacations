@@ -1,6 +1,7 @@
 import React from "react";
 
-import { shallow } from "enzyme";
+import { Button } from "@material-ui/core";
+import { mount, shallow } from "enzyme";
 
 import { RouteComponentPropsMock } from "common/testConstants";
 import { PTOForm } from "components/NewPTO/PTOForm/PTOForm";
@@ -54,7 +55,7 @@ const getComponent = (
   endingDate: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any => {
-  return shallow(
+  return mount(
     <PTOForm
       startingDate={startingDate}
       endingDate={endingDate}
@@ -72,7 +73,7 @@ describe("PTOForm", () => {
   it("Should render warning after clicking Add button with invalid PTO period", () => {
     // arrange
     const component = getComponent(mockedPropsInvalid.startingDate, mockedPropsInvalid.endingDate);
-    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest));
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
 
     // act
     component.setState({
@@ -83,12 +84,12 @@ describe("PTOForm", () => {
     const warning = component.find(getSelector(warningMessageDataUnitTest));
 
     // assert
-    expect(warning).toHaveLength(1);
+    expect(warning).toHaveLength(5);
   });
   it("Should render warning after clicking Add button with invalid PTO comment", () => {
     // arrange
     const component = getComponent(mockedProps.startingDate, mockedProps.endingDate);
-    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest));
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
 
     // act
     component.setState({
@@ -99,12 +100,12 @@ describe("PTOForm", () => {
     const warning = component.find(getSelector(warningMessageDataUnitTest));
 
     // assert
-    expect(warning).toHaveLength(1);
+    expect(warning).toHaveLength(5);
   });
   it("Should render warning after clicking Add button with invalid PTO approvers", () => {
     // arrange
     const component = getComponent(mockedProps.startingDate, mockedProps.endingDate);
-    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest));
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
 
     // act
     component.setState({
@@ -115,12 +116,12 @@ describe("PTOForm", () => {
     const warning = component.find(getSelector(warningMessageDataUnitTest));
 
     // assert
-    expect(warning).toHaveLength(1);
+    expect(warning).toHaveLength(5);
   });
   it("Should not render warning after clicking Add button", () => {
     // arrange
     const component = getComponent(mockedProps.startingDate, mockedProps.endingDate);
-    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest));
+    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
 
     // act
     component.setState({

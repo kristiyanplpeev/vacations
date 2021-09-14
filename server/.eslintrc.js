@@ -16,6 +16,13 @@ module.exports = {
   },
   ignorePatterns: ['.eslintrc.js'],
   rules: {
+    "max-line-length": [
+      true, 
+      {
+        "limit": 140, 
+        "ignore-pattern": "^import [^,]+ from |^export | implements"
+      }
+    ],
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',

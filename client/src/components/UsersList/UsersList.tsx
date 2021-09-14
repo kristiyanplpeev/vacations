@@ -27,7 +27,7 @@ const anyPosition = "any position";
 interface UsersListProps extends RouteComponentProps {}
 
 interface UsersListState {
-  error: boolean;
+  error: string;
   loading: boolean;
   users: Array<IUserWithTeamAndPosition>;
   selectedUsers: Array<string>;
@@ -43,7 +43,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
   constructor(props: UsersListProps) {
     super(props);
     this.state = {
-      error: false,
+      error: "",
       loading: false,
       users: [],
       selectedUsers: [],
@@ -69,7 +69,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
       });
     } catch (error) {
       this.setState({
-        error: true,
+        error: error.message,
       });
     }
     this.setState({
@@ -79,7 +79,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
 
   render(): JSX.Element {
     if (this.state.error) {
-      return <Error />;
+      return <Error message={this.state.error} />;
     }
     return (
       <div className="users-container">
@@ -168,9 +168,14 @@ class UsersList extends Component<UsersListProps, UsersListState> {
     );
   }
 
+  // eslint-disable-next-line max-lines-per-function
   renderUsers(): Array<JSX.Element> | JSX.Element {
     if (this.state.loading) {
-      return <CircularProgress />;
+      return (
+        <div className="circular-progress-container">
+          <CircularProgress />
+        </div>
+      );
     }
     return this.state.users.map((el) => {
       return (
@@ -237,7 +242,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
       });
     } catch (error) {
       this.setState({
-        error: true,
+        error: error.message,
       });
     }
   }
@@ -255,7 +260,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
       });
     } catch (error) {
       this.setState({
-        error: true,
+        error: error.message,
       });
     }
   }

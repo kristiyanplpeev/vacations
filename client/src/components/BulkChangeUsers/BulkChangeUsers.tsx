@@ -30,7 +30,7 @@ interface BulkChangeUsersMatchProps {
 interface BulkChangeUsersProps extends RouteComponentProps<BulkChangeUsersMatchProps> {}
 
 interface BulkChangeUsersState {
-  error: boolean;
+  error: string;
   loading: boolean;
   users: Array<IUserWithTeamAndPosition>;
   teams: Array<ITeams>;
@@ -45,7 +45,7 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
   constructor(props: BulkChangeUsersProps) {
     super(props);
     this.state = {
-      error: false,
+      error: "",
       loading: false,
       users: [],
       teams: [],
@@ -71,7 +71,7 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
       });
     } catch (error) {
       this.setState({
-        error: true,
+        error: error.message,
       });
     }
     this.setState({
@@ -82,7 +82,7 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
   render(): JSX.Element {
     const numberOfUsers = this.state.users.length;
     if (this.state.error) {
-      return <Error />;
+      return <Error message={this.state.error} />;
     }
     if (this.state.loading) {
       return <CircularProgress />;
@@ -197,7 +197,7 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
         <Button
           className="change-bulk-buttons"
           variant="outlined"
-          color="primary"
+          color="secondary"
           onClick={() => this.props.history.push("/admin/users")}
         >
           Cancel
@@ -226,7 +226,7 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
       this.props.history.push("/admin/users");
     } catch (error) {
       this.setState({
-        error: true,
+        error: error.message,
       });
     }
   }

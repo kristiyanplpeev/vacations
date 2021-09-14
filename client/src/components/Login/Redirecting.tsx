@@ -50,7 +50,7 @@ class Redirecting extends Component<Props, RedirectingState> {
 
   render(): ReactNode {
     if (this.state.error) {
-      return <Error />;
+      return <Error message={this.state.error} />;
     }
     return (
       <Backdrop open>

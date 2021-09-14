@@ -1,35 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../model/user.entity';
+import { Userdb } from '../model/user.entity';
 import { Repository } from 'typeorm';
 import { AuthenticationProvider } from './auth';
-import { UserDetails } from './utils/interfaces';
+import { User } from './utils/interfaces';
 import { JwtService } from '@nestjs/jwt';
 import { Token } from 'src/google/utils/interfaces';
 
 @Injectable()
 export class GoogleService implements AuthenticationProvider {
   constructor(
-    @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(Userdb) private userRepo: Repository<Userdb>,
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(details: UserDetails): Promise<UserDetails> {
+  public async validateUser(details: User): Promise<User> {
     const { email } = details;
     const user = await this.userRepo.findOne({ email });
-    if (user) return user;
+    if (user) return user.toUser();
 
     return await this.createUser(details);
   }
-  async createUser(details: UserDetails): Promise<UserDetails> {
+  async createUser(details: User): Promise<User> {
     const user = this.userRepo.create(details);
-    return this.userRepo.save(user);
+    return (await this.userRepo.save(user)).toUser();
   }
-  findUser(googleId: string): Promise<User | undefined> {
-    return this.userRepo.findOne({ googleId });
+  async findUser(googleId: string): Promise<User | undefined> {
+    return (await (this.userRepo.findOne({ googleId }))).toUser();
   }
 
-  login(details: UserDetails): Token {
+  login(details: User): Token {
     const payload = {
       sub: details.id,
       googleId: details.googleId,
