@@ -13,8 +13,11 @@ export class UsersController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  public async getUsers(): Promise<Array<UserDetailsWithTeamAndPosition>> {
-    return await this.usersService.getAllUsers();
+  public async getUsers(
+    @Query('teamId') teamId: string,
+    @Query('positionId') positionId: string,
+  ): Promise<Array<UserDetailsWithTeamAndPosition>> {
+    return await this.usersService.getAllUsers(teamId, positionId);
   }
 
   @Get('byId')

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { injectable } from "inversify";
 
-import { applicationJSON, BASE_URL } from "common/constants";
+import { anyPosition, anyTeam, applicationJSON, BASE_URL } from "common/constants";
 import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import { IAuthService, IUserService } from "inversify/interfaces";
 import "reflect-metadata";
@@ -19,8 +19,12 @@ class UserService implements IUserService {
     Authorization: `Bearer ${this.authService.getToken()}`,
   };
 
-  getAllUsers = async (): Promise<Array<IUserWithTeamAndPosition>> => {
-    return (await axios.get(`${BASE_URL}users`, { headers: this.headers })).data;
+  getAllUsers = async (teamId: string, positionId: string): Promise<Array<IUserWithTeamAndPosition>> => {
+    const team = teamId !== anyTeam ? `teamId=${teamId}` : "";
+    const position = positionId !== anyPosition ? `positionId=${positionId}` : "";
+    const query = [team, position].filter((el) => el).join("&");
+
+    return (await axios.get(`${BASE_URL}users?${query}`, { headers: this.headers })).data;
   };
 
   getUsersByIds = async (usersIds: string): Promise<Array<IUserWithTeamAndPosition>> => {

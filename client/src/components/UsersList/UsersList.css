@@ -1,15 +1,15 @@
 .users-container {
   margin-left: 240px;
   text-align: left;
+  padding: 0% 5%;
 }
 
 .users-title.MuiTypography-root {
-  margin: 1% 1% 1% 5%;
+  margin: 1% 1% 1% 0%;
 }
 
 .users-card {
   margin: 2px auto;
-  width: 90%;
 }
 
 .users-card-selected.MuiPaper-root {
@@ -25,10 +25,27 @@
 }
 
 .users-change-button.MuiButton-outlinedPrimary {
-  margin: 0% 1% 1% 5%;
+  display: block;
+  margin: 1% 1% 1% 0%;
 }
 
 .users-change-button-hidden.MuiButton-outlinedPrimary {
-  margin: 0% 1% 1% 5%;
+  display: block;
+  margin: 1% 1% 1% 0%;
   visibility: hidden;
+}
+
+.users-list-selector-wrapper {
+  display: inline;
+}
+
+.users-list-selector-label.MuiTypography-root {
+  display: inline-block;
+  margin-right: 2%;
+}
+
+.users-list-selector.MuiFormControl-root {
+  min-width: 154px;
+  margin-right: 2%;
+  text-align: center;
 }

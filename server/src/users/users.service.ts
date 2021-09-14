@@ -6,7 +6,10 @@ import { PositionsEnum, TeamsEnum, UserRelations } from '../common/constants';
 import { UserDetailsWithTeamAndPosition } from '../google/utils/interfaces';
 import { Teams } from '../model/teams.entity';
 import { Positions } from '../model/positions.entity';
+import Guard from '../utils/Guard';
 
+const anyTeam = 'any team';
+const anyPosition = 'any position';
 @Injectable()
 export class UsersService {
   constructor(
@@ -25,8 +28,49 @@ export class UsersService {
     }, []);
   }
 
-  public async getAllUsers(): Promise<Array<UserDetailsWithTeamAndPosition>> {
+  async getTeamById(teamId: string): Promise<Teams | null> {
+    let team;
+    if (teamId !== TeamsEnum.noTeam) {
+      team = await this.teamsRepo.findOne({ id: teamId });
+      Guard.exists(team, `Team with id ${teamId} does not exist`);
+    } else {
+      team = null;
+    }
+    return team;
+  }
+
+  async getPositionById(positionId: string): Promise<Positions | null> {
+    let position;
+    if (positionId !== PositionsEnum.noPosition) {
+      position = await this.positionsRepo.findOne({ id: positionId });
+      Guard.exists(position, `Position with id ${positionId} does not exist`);
+    } else {
+      position = null;
+    }
+    return position;
+  }
+
+  public async getAllUsers(
+    teamId: string,
+    positionId: string,
+  ): Promise<Array<UserDetailsWithTeamAndPosition>> {
+    const queryObj = {
+      team: null,
+      position: null,
+    };
+    if (teamId) {
+      queryObj.team = await this.getTeamById(teamId);
+    } else {
+      delete queryObj.team;
+    }
+    if (positionId) {
+      queryObj.position = await this.getPositionById(positionId);
+    } else {
+      delete queryObj.position;
+    }
+
     const users = await this.userRepo.find({
+      where: { ...queryObj },
       relations: [UserRelations.teams, UserRelations.positions],
     });
 
@@ -58,12 +102,7 @@ export class UsersService {
     users: Array<string>,
     newTeamId: string,
   ): Promise<Array<User>> {
-    let newTeam;
-    if (newTeamId !== TeamsEnum.noTeam) {
-      newTeam = await this.teamsRepo.findOne({ id: newTeamId });
-    } else {
-      newTeam = null;
-    }
+    const newTeam = await this.getTeamById(newTeamId);
     const updatedUsers = users.map(async (userId) => {
       const user = await this.userRepo.findOne({
         where: { id: userId },
@@ -79,12 +118,7 @@ export class UsersService {
     users: Array<string>,
     newPositionId: string,
   ): Promise<Array<User>> {
-    let newPosition;
-    if (newPositionId !== PositionsEnum.noPosition) {
-      newPosition = await this.positionsRepo.findOne({ id: newPositionId });
-    } else {
-      newPosition = null;
-    }
+    const newPosition = await this.getPositionById(newPositionId);
     const updatedUsers = users.map(async (userId) => {
       const user = await this.userRepo.findOne({
         where: { id: userId },
