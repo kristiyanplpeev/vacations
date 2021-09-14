@@ -15,14 +15,11 @@ import { resolve } from "inversify-react";
 import "./UsersList.css";
 import { RouteComponentProps } from "react-router";
 
-import { PositionsEnum, TeamsEnum } from "common/constants";
+import { anyPosition, anyTeam, PositionsEnum, TeamsEnum } from "common/constants";
 import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import { IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
-
-const anyTeam = "any team";
-const anyPosition = "any position";
 
 interface UsersListProps extends RouteComponentProps {}
 
@@ -168,43 +165,45 @@ class UsersList extends Component<UsersListProps, UsersListState> {
     );
   }
 
-  renderUsers(): Array<JSX.Element> | JSX.Element {
+  renderUsers(): JSX.Element {
     if (this.state.loading) {
       return <CircularProgress />;
     }
-    return this.state.users.map((el) => {
-      return (
-        <Card
-          onClick={() => this.addUserToSelected(el.id)}
-          key={el.id}
-          className={this.isUserSelected(el.id) ? "users-card users-card-selected" : "users-card"}
-          data-unit-test="users-card"
-        >
-          <CardActionArea>
-            <CardContent>
-              <Grid container spacing={1}>
-                <Grid item xs={4}>
-                  <Avatar className="users-avatar" alt={el.firstName} src={el.picture} />
-                  <Typography variant="h5" className="users-names">
-                    {el.firstName} {el.lastName}
-                  </Typography>
+    return (
+      <>
+        {this.state.users.map((el) => (
+          <Card
+            onClick={() => this.addUserToSelected(el.id)}
+            key={el.id}
+            className={this.isUserSelected(el.id) ? "users-card users-card-selected" : "users-card"}
+            data-unit-test="users-card"
+          >
+            <CardActionArea>
+              <CardContent>
+                <Grid container spacing={1}>
+                  <Grid item xs={4}>
+                    <Avatar className="users-avatar" alt={el.firstName} src={el.picture} />
+                    <Typography variant="h5" className="users-names">
+                      {el.firstName} {el.lastName}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Typography variant="h5" className="users-names">
+                      {el.position}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Typography variant="h5" className="users-names">
+                      {el.team}
+                    </Typography>
+                  </Grid>
                 </Grid>
-                <Grid item xs={4}>
-                  <Typography variant="h5" className="users-names">
-                    {el.position}
-                  </Typography>
-                </Grid>
-                <Grid item xs={4}>
-                  <Typography variant="h5" className="users-names">
-                    {el.team}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </CardActionArea>
-        </Card>
-      );
-    });
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        ))}
+      </>
+    );
   }
 
   addUserToSelected(userId: string): void {

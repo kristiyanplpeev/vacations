@@ -49,3 +49,7 @@ export enum PositionsEnum {
   lead = "Team lead",
   noPosition = "no position",
 }
+
+export const anyTeam = "any team";
+
+export const anyPosition = "any position";

@@ -58,12 +58,12 @@ export class UsersService {
       team: null,
       position: null,
     };
-    if (teamId !== anyTeam) {
+    if (teamId) {
       queryObj.team = await this.getTeamById(teamId);
     } else {
       delete queryObj.team;
     }
-    if (positionId !== anyPosition) {
+    if (positionId) {
       queryObj.position = await this.getPositionById(positionId);
     } else {
       delete queryObj.position;
