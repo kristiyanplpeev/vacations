@@ -63,14 +63,6 @@ describe('GoogleService', () => {
       expect(result).toEqual(mockedUser);
     });
   });
-  describe('findUser', () => {
-    it('should return info about user', async () => {
-      const spy = jest.spyOn(service, 'findUser');
-      const result = await service.findUser(mockedUser.googleId);
-      expect(spy).toHaveBeenCalled();
-      expect(result).toEqual(mockedUser);
-    });
-  });
   describe('login', () => {
     it('should return access token', () => {
       const spy = jest.spyOn(service, 'login');

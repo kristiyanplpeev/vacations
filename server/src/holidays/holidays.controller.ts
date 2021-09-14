@@ -12,6 +12,7 @@ import { PTOsService } from './pto.service';
 import { JwtAuthGuard } from '../google/guards';
 import {
   EditPTODto,
+  getPTObyIdDto,
   HolidayInfoDto,
   HolidayPeriodDto,
   PTODaysStatusResponseDto,
@@ -58,17 +59,19 @@ export class HolidaysController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  public async getPTOById(@Param('id') id: string): Promise<PTOWithEachDay> {
-    const PTO = await this.PTOService.getPTOById(id);
+  public async getPTOById(
+    @Param() params: getPTObyIdDto,
+  ): Promise<PTOWithEachDay> {
+    const PTO = await this.PTOService.getPTOById(params.id);
     return plainToClass(PTOWithEachDay, PTO);
   }
 
   @Get('details/:id')
   @UseGuards(JwtAuthGuard)
   public async getRequestedPTOById(
-    @Param('id') id: string,
+    @Param() params: getPTObyIdDto,
   ): Promise<PTOResponseDto> {
-    const PTO = await this.PTOService.getRequestedPTOById(id);
+    const PTO = await this.PTOService.getRequestedPTOById(params.id);
     return plainToClass(PTOResponseDto, PTO);
   }
 

@@ -5,6 +5,6 @@ import { User } from './utils/interfaces';
 export interface AuthenticationProvider {
   validateUser(details: User): Promise<User>;
   createUser(details: User): Promise<User>;
-  findUser(googleId: string): Promise<User | undefined>;
+  findUser(googleId: string): Promise<Userdb | undefined>;
   login(details: User): Token;
 }

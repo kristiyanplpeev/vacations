@@ -25,8 +25,8 @@ export class GoogleService implements AuthenticationProvider {
     const user = this.userRepo.create(details);
     return (await this.userRepo.save(user)).toUser();
   }
-  async findUser(googleId: string): Promise<User | undefined> {
-    return (await (this.userRepo.findOne({ googleId }))).toUser();
+  async findUser(googleId: string): Promise<Userdb | undefined> {
+    return await this.userRepo.findOne({ googleId });
   }
 
   login(details: User): Token {

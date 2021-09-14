@@ -4,6 +4,7 @@ import {
   IsDateString,
   IsEmail,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -17,6 +18,11 @@ export class HolidayPeriodDto {
 
   @IsDateString({}, { message: 'The submitted ending date is invalid.' })
   endingDate: string;
+}
+
+export class getPTObyIdDto {
+  @IsUUID('all', { message: 'PTO id is not valid uuid format' })
+  id: string;
 }
 
 export class HolidayInfoDto extends HolidayPeriodDto {
@@ -38,7 +44,7 @@ export class HolidayInfoDto extends HolidayPeriodDto {
 }
 
 export class EditPTODto extends HolidayInfoDto {
-  @IsString()
+  @IsUUID()
   id: string;
 }
 

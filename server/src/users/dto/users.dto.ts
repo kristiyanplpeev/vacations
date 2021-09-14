@@ -1,5 +1,4 @@
 import { ArrayMinSize, IsArray, IsString } from 'class-validator';
-import { Positions, Teams } from '../../users/interfaces';
 import { PositionsEnum, TeamsEnum } from '../../common/constants';
 
 export class UpdateUserDto {
