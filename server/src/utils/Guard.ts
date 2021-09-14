@@ -1,5 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import { User } from '../google/utils/interfaces';
 
 export default class Guard {
   static should(rule: boolean, message: string): void {
@@ -22,5 +21,11 @@ export default class Guard {
       .filter((el) => !receivedIds.includes(el))
       .join(', ');
     Guard.should(requestedIds.length === received.length, message(missingIds));
+  }
+
+  static isValidUUID(uuid: string, message: string): void {
+    const regexExp =
+      /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+    Guard.should(regexExp.test(uuid), message);
   }
 }

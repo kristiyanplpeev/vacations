@@ -21,7 +21,7 @@ export class HolidayPeriodDto {
 }
 
 export class getPTObyIdDto {
-  @IsUUID('all', { message: 'PTO id is not valid uuid format' })
+  @IsUUID('all', { message: 'Invalid PTO id' })
   id: string;
 }
 
@@ -44,7 +44,7 @@ export class HolidayInfoDto extends HolidayPeriodDto {
 }
 
 export class EditPTODto extends HolidayInfoDto {
-  @IsUUID()
+  @IsUUID('all', { message: 'PTO id is invalid' })
   id: string;
 }
 

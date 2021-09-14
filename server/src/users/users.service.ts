@@ -36,6 +36,7 @@ export class UsersService {
   async getTeamById(teamId: string): Promise<Teamsdb | null> {
     let team;
     if (teamId !== TeamsEnum.noTeam) {
+      Guard.isValidUUID(teamId, `Invalid team id: ${teamId}`);
       team = await this.teamsRepo.findOne({ id: teamId });
       Guard.exists(team, `Team with id ${teamId} does not exist`);
     } else {
@@ -47,6 +48,7 @@ export class UsersService {
   async getPositionById(positionId: string): Promise<Positionsdb | null> {
     let position;
     if (positionId !== PositionsEnum.noPosition) {
+      Guard.isValidUUID(positionId, `Invalid position id: ${positionId}`);
       position = await this.positionsRepo.findOne({ id: positionId });
       Guard.exists(position, `Position with id ${positionId} does not exist`);
     } else {
@@ -86,13 +88,21 @@ export class UsersService {
     usersIds: string,
   ): Promise<Array<UserWithTeamAndPositionAsStrings>> {
     const usersIdsArr = usersIds.split(',');
+
+    usersIdsArr.forEach((el) => {
+      Guard.isValidUUID(el, `User id ${el} is invalid`);
+    });
     const users = await this.userRepo.find({
       where: {
         id: In(usersIdsArr),
       },
       relations: [UserRelations.teams, UserRelations.positions],
     });
-    Guard.allElementsExist<User>(usersIdsArr, users, (ids) => `Users with ids ${ids} doesn't exist.`);
+    Guard.allElementsExist<User>(
+      usersIdsArr,
+      users,
+      (ids) => `Users with ids ${ids} doesn't exist.`,
+    );
     return this.setUsersTeamsAndPositions(users);
   }
 
@@ -115,12 +125,16 @@ export class UsersService {
       },
       relations: [UserRelations.teams],
     });
-    Guard.allElementsExist<User>(users, usersWithTeam, (ids) => `Users with ids ${ids} doesn't exist.`);
+    Guard.allElementsExist<User>(
+      users,
+      usersWithTeam,
+      (ids) => `Users with ids ${ids} doesn't exist.`,
+    );
     usersWithTeam.forEach((el) => {
       el.team = newTeam;
     });
     const updatedUsers = (await this.userRepo.save(usersWithTeam)).map((el) =>
-    el.toUser(),
+      el.toUser(),
     );
 
     return updatedUsers;
@@ -137,7 +151,11 @@ export class UsersService {
       },
       relations: [UserRelations.positions],
     });
-    Guard.allElementsExist<User>(users, usersWithPosition, (ids) => `Users with ids ${ids} doesn't exist.`);
+    Guard.allElementsExist<User>(
+      users,
+      usersWithPosition,
+      (ids) => `Users with ids ${ids} doesn't exist.`,
+    );
     usersWithPosition.forEach((el) => {
       el.position = newPosition;
     });

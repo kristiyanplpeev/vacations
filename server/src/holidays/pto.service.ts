@@ -143,6 +143,7 @@ export class PTOsService {
   public async getUserPTOs(
     user: User,
   ): Promise<Array<PTODetailsWithTotalDays>> {
+    Guard.isValidUUID(user.id, `Invalid user id: ${user.id}`);
     const userHolidays = await this.PTORepo.find({
       where: { employee: user.id },
     });
