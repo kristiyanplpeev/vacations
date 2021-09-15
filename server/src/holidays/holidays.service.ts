@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Holiday } from '../model/holiday.entity';
+import { Holidaydb } from '../model/holiday.entity';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HolidayPeriodDto } from './dto/holidays.dto';
@@ -10,12 +10,12 @@ import { DayStatus } from '../common/constants';
 @Injectable()
 export class HolidaysService {
   constructor(
-    @InjectRepository(Holiday) private holidayRepo: Repository<Holiday>,
+    @InjectRepository(Holidaydb) private holidayRepo: Repository<Holidaydb>,
   ) {}
 
   getConstantHolidaysForTheCurrentYear = async (
     holidayPeriod: HolidayPeriod,
-  ): Promise<Array<Holiday>> => {
+  ): Promise<Array<Holidaydb>> => {
     try {
       const constantHolidays = await this.holidayRepo.find({
         where: { movable: false },
@@ -39,7 +39,7 @@ export class HolidaysService {
 
   getMovableHolidaysForTheCurrentYear = async (
     holidayPeriod: HolidayPeriod,
-  ): Promise<Array<Holiday>> => {
+  ): Promise<Array<Holidaydb>> => {
     try {
       const movableHolidays = await this.holidayRepo.find({
         movable: true,
@@ -54,8 +54,8 @@ export class HolidaysService {
 
   getDatesWithAllHolidaysAndWeekends = (
     days: HolidaysDaysStatus,
-    movableHolidays: Array<Holiday>,
-    constantHolidays: Array<Holiday>,
+    movableHolidays: Array<Holidaydb>,
+    constantHolidays: Array<Holidaydb>,
   ): HolidaysDaysStatus => {
     const datesWithWeekends = days.map((el) => {
       if (new Date(el.date).getDay() == 6 || new Date(el.date).getDay() == 0) {

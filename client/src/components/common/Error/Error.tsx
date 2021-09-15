@@ -1,11 +1,18 @@
 import React, { Component, ReactNode } from "react";
 import "./Error.css";
 
-class Error extends Component {
+interface ErrorProps {
+  message: string;
+}
+
+class Error extends Component<ErrorProps> {
+  constructor(props: ErrorProps) {
+    super(props);
+  }
   render(): ReactNode {
     return (
       <div className="app-error">
-        <h1>Ooops, we crashed, try again later :)</h1>
+        <h1>{this.props.message}</h1>
       </div>
     );
   }

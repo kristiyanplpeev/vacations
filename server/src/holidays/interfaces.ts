@@ -1,5 +1,5 @@
 import { PTOStatus } from '../common/constants';
-import { User } from 'src/model/user.entity';
+import { Userdb } from 'src/model/user.entity';
 
 export interface HolidayPeriod {
   startingDate: string;
@@ -7,6 +7,16 @@ export interface HolidayPeriod {
 }
 
 export type HolidaysDaysStatus = Array<{ date: string; status: string }>;
+
+export interface PTO {
+  id: string;
+  from_date: string;
+  to_date: string;
+  comment: string;
+  status: PTOStatus;
+  employee: Userdb;
+  approvers: Array<Userdb>;
+}
 
 export interface PTODetails {
   id?: string;
@@ -22,8 +32,8 @@ export interface PTODetailsWithEachDay {
   to_date: string;
   comment: string;
   status: string;
-  employee: User;
-  approvers: Array<User>;
+  employee: Userdb;
+  approvers: Array<Userdb>;
   eachDayStatus: HolidaysDaysStatus;
 }
 

@@ -1,10 +1,10 @@
 import { Token } from 'src/google/utils/interfaces';
-import { User } from '../model/user.entity';
-import { UserDetails } from './utils/interfaces';
+import { Userdb } from '../model/user.entity';
+import { User } from './utils/interfaces';
 
 export interface AuthenticationProvider {
-  validateUser(details: UserDetails): Promise<UserDetails>;
-  createUser(details: UserDetails): Promise<UserDetails>;
-  findUser(googleId: string): Promise<User | undefined>;
-  login(details: UserDetails): Token;
+  validateUser(details: User): Promise<User>;
+  createUser(details: User): Promise<User>;
+  findUser(googleId: string): Promise<Userdb | undefined>;
+  login(details: User): Token;
 }

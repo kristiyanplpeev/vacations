@@ -1,7 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PTO } from '../model/pto.entity';
-import { User } from '../model/user.entity';
+import { PTOdb } from '../model/pto.entity';
+import { Userdb } from '../model/user.entity';
 import { Repository } from 'typeorm';
 import { EditPTODto, HolidayInfoDto } from './dto/holidays.dto';
 import { HolidaysService } from './holidays.service';
@@ -9,20 +13,23 @@ import {
   PTODetails,
   PTODetailsWithTotalDays,
   PTODetailsWithEachDay,
+  PTO,
 } from './interfaces';
 import { DayStatus, PTOStatus, UserRelations } from '../common/constants';
+import Guard from '../utils/Guard';
+import { User } from 'src/google/utils/interfaces';
 
 @Injectable()
 export class PTOsService {
   constructor(
-    @InjectRepository(PTO) private PTORepo: Repository<PTO>,
-    @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(PTOdb) private PTORepo: Repository<PTOdb>,
+    @InjectRepository(Userdb) private userRepo: Repository<Userdb>,
     private readonly holidaysService: HolidaysService,
   ) {}
 
   private async validateApprovers(
     approvers: Array<string>,
-  ): Promise<Array<User>> {
+  ): Promise<Array<Userdb>> {
     const approversProm = approvers.map(async (el) => {
       return await this.userRepo.findOne({ email: el });
     });
@@ -51,7 +58,7 @@ export class PTOsService {
       employee,
       approvers,
     });
-    return await this.PTORepo.save(newHoliday);
+    return (await this.PTORepo.save(newHoliday)).toPTO();
   };
 
   validatePTOPeriod = async (
@@ -115,6 +122,19 @@ export class PTOsService {
     }
   };
 
+  validateEditPTO(PTO: PTO, user: User, PTOEdited: EditPTODto): void {
+    Guard.exists(PTO, `PTO with id ${PTOEdited.id} does not exist.`);
+
+    if (user.id !== PTO.employee.id) {
+      throw new UnauthorizedException('Only the owner of the PTO can edit it.');
+    }
+
+    Guard.should(
+      PTO.status === PTOStatus.requested,
+      "You can't edit approved or rejected PTOs.",
+    );
+  }
+
   public async postPTO(holidayInfo: HolidayInfoDto, user: User): Promise<PTO> {
     await this.validatePTOPeriod(holidayInfo, user);
     return await this.saveHolidayIntoPTO(holidayInfo, user);
@@ -123,6 +143,7 @@ export class PTOsService {
   public async getUserPTOs(
     user: User,
   ): Promise<Array<PTODetailsWithTotalDays>> {
+    Guard.isValidUUID(user.id, `Invalid user id: ${user.id}`);
     const userHolidays = await this.PTORepo.find({
       where: { employee: user.id },
     });
@@ -150,10 +171,12 @@ export class PTOsService {
   }
 
   private async getPTOFullInfo(PTOId: string): Promise<PTO> {
-    return await this.PTORepo.findOne({
+    const PTO = await this.PTORepo.findOne({
       where: { id: PTOId },
       relations: [UserRelations.employee, UserRelations.approvers],
     });
+    Guard.exists(PTO, `PTO with id ${PTOId} does not exist.`);
+    return PTO.toPTO();
   }
 
   public async getPTOById(PTOId: string): Promise<PTODetailsWithEachDay> {
@@ -168,26 +191,23 @@ export class PTOsService {
 
   public async getRequestedPTOById(PTOId: string): Promise<PTO> {
     const PTODetails = await this.getPTOFullInfo(PTOId);
-    if (PTODetails.status !== PTOStatus.requested) {
-      throw new BadRequestException(
-        `You can't edit approved or rejected PTOs.`,
-      );
-    }
     return PTODetails;
   }
 
   public async editPTO(PTOEdited: EditPTODto, user: User): Promise<PTO> {
-    await this.validatePTOPeriod(PTOEdited, user);
-    const approvers = await this.validateApprovers(PTOEdited.approvers);
     const PTO = await this.PTORepo.findOne({
       where: { id: PTOEdited.id },
-      relations: [UserRelations.approvers],
+      relations: [UserRelations.approvers, UserRelations.employee],
     });
+    this.validateEditPTO(PTO, user, PTOEdited);
+    await this.validatePTOPeriod(PTOEdited, user);
+    const approvers = await this.validateApprovers(PTOEdited.approvers);
+
     PTO.from_date = PTOEdited.startingDate;
     PTO.to_date = PTOEdited.endingDate;
     PTO.comment = PTOEdited.comment;
     PTO.approvers = approvers;
 
-    return this.PTORepo.save(PTO);
+    return (await this.PTORepo.save(PTO)).toPTO();
   }
 }

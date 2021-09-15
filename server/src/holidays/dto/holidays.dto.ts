@@ -4,9 +4,13 @@ import {
   IsDateString,
   IsEmail,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { HolidaysDaysStatus } from '../../holidays/interfaces';
+import { PTOStatus } from '../../common/constants';
+import { Userdb } from '../../model/user.entity';
 
 export class HolidayPeriodDto {
   @IsDateString({}, { message: 'The submitted starting date is invalid.' })
@@ -14,6 +18,11 @@ export class HolidayPeriodDto {
 
   @IsDateString({}, { message: 'The submitted ending date is invalid.' })
   endingDate: string;
+}
+
+export class getPTObyIdDto {
+  @IsUUID('all', { message: 'Invalid PTO id' })
+  id: string;
 }
 
 export class HolidayInfoDto extends HolidayPeriodDto {
@@ -35,6 +44,35 @@ export class HolidayInfoDto extends HolidayPeriodDto {
 }
 
 export class EditPTODto extends HolidayInfoDto {
-  @IsString()
+  @IsUUID('all', { message: 'PTO id is invalid' })
   id: string;
+}
+
+export class PTOResponseDto {
+  id: string;
+  from_date: string;
+  to_date: string;
+  comment: string;
+  status: PTOStatus;
+  employee: Userdb;
+  approvers: Array<Userdb>;
+}
+
+export class PTODaysStatusResponseDto {
+  date: string;
+  status: string;
+}
+
+export class PTOWithTotalDaysResponseDto {
+  totalDays: number;
+  PTODays: number;
+  from_date: string;
+  to_date: string;
+  comment: string;
+  status: PTOStatus;
+  id: string;
+}
+
+export class PTOWithEachDay extends PTOResponseDto {
+  eachDayStatus: HolidaysDaysStatus;
 }

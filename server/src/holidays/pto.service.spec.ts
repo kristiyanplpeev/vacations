@@ -1,9 +1,9 @@
 import { PTOsService } from './pto.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { PTO } from '../model/pto.entity';
-import { User } from '../model/user.entity';
-import { Holiday } from '../model/holiday.entity';
+import { PTOdb } from '../model/pto.entity';
+import { Userdb } from '../model/user.entity';
+import { Holidaydb } from '../model/holiday.entity';
 import { HolidaysController } from './holidays.controller';
 import { HolidaysService } from './holidays.service';
 import {
@@ -16,15 +16,36 @@ import {
   mockedUser,
   mockEmployeeHolidaysCalc,
 } from '../common/holidaysMockedData';
+import { UnauthorizedException } from '@nestjs/common';
+
+const mockUserWIthIdMatchingPTOEmployeeId = {
+  ...mockedUser,
+  id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
+};
+
+const PTOFromdb = (PTO) => ({
+  ...PTO,
+  toPTO() {
+    return {
+      id: this.id,
+      from_date: this.from_date,
+      to_date: this.to_date,
+      comment: this.comment,
+      status: this.status,
+      employee: this.employee,
+      approvers: this.approvers,
+    };
+  },
+});
 
 describe('PTOService', () => {
   let service: PTOsService;
 
   const mockPTORepository = {
-    save: jest.fn(() => Promise.resolve(mockSavedHoliday)),
+    save: jest.fn(() => Promise.resolve(PTOFromdb(mockSavedHoliday))),
     create: jest.fn(() => Promise.resolve(undefined)),
     find: jest.fn(() => Promise.resolve(mockEmployeeHolidays)),
-    findOne: jest.fn(() => Promise.resolve(mockPTOInfo)),
+    findOne: jest.fn(() => Promise.resolve(PTOFromdb(mockPTOInfo))),
   };
   const mockUserRepository = {
     findOne: jest.fn(() => Promise.resolve(mockApprovers)),
@@ -41,15 +62,15 @@ describe('PTOService', () => {
         HolidaysService,
         PTOsService,
         {
-          provide: getRepositoryToken(Holiday),
+          provide: getRepositoryToken(Holidaydb),
           useValue: mockHolidaysRepository,
         },
         {
-          provide: getRepositoryToken(PTO),
+          provide: getRepositoryToken(PTOdb),
           useValue: mockPTORepository,
         },
         {
-          provide: getRepositoryToken(User),
+          provide: getRepositoryToken(Userdb),
           useValue: mockUserRepository,
         },
       ],
@@ -173,11 +194,26 @@ describe('PTOService', () => {
       const spy = jest.spyOn(service, 'editPTO');
 
       //act
-      const result = await service.editPTO(mockEditedHoliday, mockedUser);
+      const result = await service.editPTO(
+        mockEditedHoliday,
+        mockUserWIthIdMatchingPTOEmployeeId,
+      );
 
       //assert
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockSavedHoliday);
+    });
+
+    it('should throw when user id and PTO employee id does not match', async () => {
+      //arrange
+      expect.hasAssertions();
+      try {
+        //act
+        await service.editPTO(mockEditedHoliday, mockedUser);
+      } catch (error) {
+        //assert
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
     });
   });
 });

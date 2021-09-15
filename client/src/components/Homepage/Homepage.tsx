@@ -78,10 +78,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   // eslint-disable-next-line max-lines-per-function
   render(): JSX.Element {
     if (this.state.error) {
-      return <Error />;
-    }
-    if (this.state.loading) {
-      return <CircularProgress />;
+      return <Error message={this.state.error} />;
     }
     return (
       <div className="homepage-root">
@@ -180,6 +177,9 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   }
 
   renderNoPTOsView(): JSX.Element {
+    if (this.state.loading) {
+      return <CircularProgress />;
+    }
     return (
       <div>
         <div className="homepage-message-wrapper">

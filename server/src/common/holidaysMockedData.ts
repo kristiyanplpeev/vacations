@@ -202,7 +202,7 @@ export const mockedUser = {
   lastName: 'Peev',
   picture:
     'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
-  PTO: [],
+  // PTO: [],
   team: { id: 'id', team: TeamsEnum.noTeam, user: [] },
   position: { id: 'id', position: PositionsEnum.noPosition, user: [] },
 };
@@ -227,3 +227,19 @@ export const mockEmployeeHolidaysCalc = [
     PTODays: 1,
   },
 ];
+
+export const userFromdb = (user) => ({
+  ...user,
+  toUser() {
+    return {
+      id: this.id,
+      googleId: this.googleId,
+      email: this.email,
+      firstName: this.firstName,
+      lastName: this.lastName,
+      picture: this.picture,
+      team: this.team,
+      position: this.position,
+    };
+  },
+});

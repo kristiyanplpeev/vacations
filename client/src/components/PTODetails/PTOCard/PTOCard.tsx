@@ -127,7 +127,7 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
           <Button
             className="pto-card-buttons"
             variant="outlined"
-            color="primary"
+            color="secondary"
             onClick={() => this.props.history.push("/home")}
           >
             <ArrowBackIosIcon /> Go Back

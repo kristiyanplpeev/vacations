@@ -2,7 +2,7 @@ import { Entity, Column } from 'typeorm';
 import { BaseEntity } from './base.entity';
 
 @Entity({ name: 'holiday' })
-export class Holiday extends BaseEntity {
+export class Holidaydb extends BaseEntity {
   @Column({ type: 'date' })
   date: string;
 

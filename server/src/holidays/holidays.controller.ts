@@ -12,12 +12,15 @@ import { PTOsService } from './pto.service';
 import { JwtAuthGuard } from '../google/guards';
 import {
   EditPTODto,
+  getPTObyIdDto,
   HolidayInfoDto,
   HolidayPeriodDto,
+  PTODaysStatusResponseDto,
+  PTOResponseDto,
+  PTOWithEachDay,
+  PTOWithTotalDaysResponseDto,
 } from './dto/holidays.dto';
-import { HolidaysDaysStatus, PTODetailsWithEachDay } from './interfaces';
-import { PTO } from 'src/model/pto.entity';
-import { PTODetailsWithTotalDays } from './interfaces';
+import { plainToClass } from 'class-transformer';
 
 @Controller('holidays')
 export class HolidaysController {
@@ -30,8 +33,9 @@ export class HolidaysController {
   @UseGuards(JwtAuthGuard)
   public async calculateHolidayPeriod(
     @Body() body: HolidayPeriodDto,
-  ): Promise<HolidaysDaysStatus> {
-    return await this.holidaysService.calculateDays(body);
+  ): Promise<Array<PTODaysStatusResponseDto>> {
+    const daysWithStatus = await this.holidaysService.calculateDays(body);
+    return plainToClass(PTODaysStatusResponseDto, daysWithStatus);
   }
 
   @Post()
@@ -39,35 +43,45 @@ export class HolidaysController {
   public async postHoliday(
     @Body() body: HolidayInfoDto,
     @Req() req,
-  ): Promise<PTO> {
-    return await this.PTOService.postPTO(body, req.user);
+  ): Promise<PTOResponseDto> {
+    const postedPTO = await this.PTOService.postPTO(body, req.user);
+    return plainToClass(PTOResponseDto, postedPTO);
   }
 
   @Get('users')
   @UseGuards(JwtAuthGuard)
   public async getUserPTOs(
     @Req() req,
-  ): Promise<Array<PTODetailsWithTotalDays>> {
-    return await this.PTOService.getUserPTOs(req.user);
+  ): Promise<Array<PTOWithTotalDaysResponseDto>> {
+    const userPTOs = await this.PTOService.getUserPTOs(req.user);
+    return plainToClass(PTOWithTotalDaysResponseDto, userPTOs);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   public async getPTOById(
-    @Param('id') id: string,
-  ): Promise<PTODetailsWithEachDay> {
-    return await this.PTOService.getPTOById(id);
+    @Param() params: getPTObyIdDto,
+  ): Promise<PTOWithEachDay> {
+    const PTO = await this.PTOService.getPTOById(params.id);
+    return plainToClass(PTOWithEachDay, PTO);
   }
 
   @Get('details/:id')
   @UseGuards(JwtAuthGuard)
-  public async getRequestedPTOById(@Param('id') id: string): Promise<PTO> {
-    return await this.PTOService.getRequestedPTOById(id);
+  public async getRequestedPTOById(
+    @Param() params: getPTObyIdDto,
+  ): Promise<PTOResponseDto> {
+    const PTO = await this.PTOService.getRequestedPTOById(params.id);
+    return plainToClass(PTOResponseDto, PTO);
   }
 
   @Post('edit')
   @UseGuards(JwtAuthGuard)
-  public async editPTO(@Body() body: EditPTODto, @Req() req): Promise<PTO> {
-    return await this.PTOService.editPTO(body, req.user);
+  public async editPTO(
+    @Body() body: EditPTODto,
+    @Req() req,
+  ): Promise<PTOResponseDto> {
+    const editedPTO = await this.PTOService.editPTO(body, req.user);
+    return plainToClass(PTOResponseDto, editedPTO);
   }
 }

@@ -2,11 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { User } from '../model/user.entity';
-import { Teams } from '../model/teams.entity';
-import { Positions } from '../model/positions.entity';
-import { mockedUser } from '../common/holidaysMockedData';
+import { Userdb } from '../model/user.entity';
+import { Teamsdb } from '../model/teams.entity';
+import { Positionsdb } from '../model/positions.entity';
+import { mockedUser, userFromdb } from '../common/holidaysMockedData';
 import { PositionsEnum, TeamsEnum } from '../common/constants';
+import { User } from 'src/google/utils/interfaces';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -31,8 +32,10 @@ describe('UsersService', () => {
     findOne: jest.fn(() => Promise.resolve(mockTeam)),
   };
   const mockUserRepository = {
-    findOne: jest.fn(() => Promise.resolve(mockedUser)),
-    save: jest.fn(() => Promise.resolve(getMockedUser(mockTeam, undefined))),
+    find: jest.fn(() => Promise.resolve([mockedUser])),
+    save: jest.fn(() =>
+      Promise.resolve([userFromdb(getMockedUser(mockTeam, undefined))]),
+    ),
   };
   const mockPositionsRepository = {
     findOne: jest.fn(() => Promise.resolve(mockPosition)),
@@ -44,15 +47,15 @@ describe('UsersService', () => {
       providers: [
         UsersService,
         {
-          provide: getRepositoryToken(User),
+          provide: getRepositoryToken(Userdb),
           useValue: mockUserRepository,
         },
         {
-          provide: getRepositoryToken(Teams),
+          provide: getRepositoryToken(Teamsdb),
           useValue: mockTeamsRepository,
         },
         {
-          provide: getRepositoryToken(Positions),
+          provide: getRepositoryToken(Positionsdb),
           useValue: mockPositionsRepository,
         },
       ],

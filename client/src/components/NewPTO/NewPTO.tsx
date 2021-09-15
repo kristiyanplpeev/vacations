@@ -16,7 +16,7 @@ interface NewPTOProps extends RouteComponentProps {}
 interface NewPTOState {
   startingDate: string;
   endingDate: string;
-  error: boolean;
+  error: string;
 }
 
 class NewPTO extends Component<NewPTOProps, NewPTOState> {
@@ -25,13 +25,13 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
     this.state = {
       startingDate: DateUtil.todayStringified(),
       endingDate: DateUtil.todayStringified(),
-      error: false,
+      error: "",
     };
   }
 
   render(): JSX.Element {
     if (this.state.error) {
-      return <Error />;
+      return <Error message={this.state.error} />;
     }
     return (
       <div className="new-pto-container">
@@ -73,9 +73,9 @@ class NewPTO extends Component<NewPTOProps, NewPTOState> {
     }
   };
 
-  setError = (errorState: boolean): void => {
+  setError = (errorMessage: string): void => {
     this.setState({
-      error: errorState,
+      error: errorMessage,
     });
   };
 

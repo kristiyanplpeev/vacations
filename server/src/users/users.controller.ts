@@ -1,11 +1,15 @@
 import { Controller, UseGuards, Get, Query, Post, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../google/guards';
-import { UserDetailsWithTeamAndPosition } from '../google/utils/interfaces';
-import { Teams } from '../model/teams.entity';
-import { Positions } from '../model/positions.entity';
-import { User } from '../model/user.entity';
-import { UpdateTeamsDto, UpdatePositionsDto } from './dto/users.dto';
+import {
+  UpdateTeamsDto,
+  UpdatePositionsDto,
+  UserWithTeamAndPositionAsStringsResponseDto,
+  PositionsResponseDto,
+  TeamsResponseDto,
+} from './dto/users.dto';
+import { plainToClass } from 'class-transformer';
+import { UserResponseDto } from '../google/dto/google.dto';
 
 @Controller('users')
 export class UsersController {
@@ -13,44 +17,52 @@ export class UsersController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  public async getUsers(
+  public async getUsersByTeamAndPosition(
     @Query('teamId') teamId: string,
     @Query('positionId') positionId: string,
-  ): Promise<Array<UserDetailsWithTeamAndPosition>> {
-    return await this.usersService.getAllUsers(teamId, positionId);
+  ): Promise<Array<UserWithTeamAndPositionAsStringsResponseDto>> {
+    const users = await this.usersService.getFilteredUsers(teamId, positionId);
+    return plainToClass(UserWithTeamAndPositionAsStringsResponseDto, users);
   }
 
   @Get('byId')
   @UseGuards(JwtAuthGuard)
   public async getUsersByIds(
     @Query('usersIds') usersIds: string,
-  ): Promise<Array<UserDetailsWithTeamAndPosition>> {
-    return await this.usersService.getUsersByIds(usersIds);
+  ): Promise<Array<UserWithTeamAndPositionAsStringsResponseDto>> {
+    const users = await this.usersService.getUsersByIds(usersIds);
+    return plainToClass(UserWithTeamAndPositionAsStringsResponseDto, users);
   }
 
   @Get('teams')
   @UseGuards(JwtAuthGuard)
-  public async getTeams(): Promise<Array<Teams>> {
-    return await this.usersService.getTeams();
+  public async getTeams(): Promise<Array<TeamsResponseDto>> {
+    const teams = await this.usersService.getTeams();
+    return plainToClass(TeamsResponseDto, teams);
   }
 
   @Get('positions')
   @UseGuards(JwtAuthGuard)
-  public async getPositions(): Promise<Array<Positions>> {
-    return await this.usersService.getPositions();
+  public async getPositions(): Promise<Array<PositionsResponseDto>> {
+    const positions = await this.usersService.getPositions();
+    return plainToClass(PositionsResponseDto, positions);
   }
 
   @Post('teams')
   @UseGuards(JwtAuthGuard)
-  public async updateTeams(@Body() body: UpdateTeamsDto): Promise<Array<User>> {
-    return await this.usersService.updateTeams(body.users, body.teamId);
+  public async updateTeams(
+    @Body() body: UpdateTeamsDto,
+  ): Promise<Array<UserResponseDto>> {
+    const updatedUsers = await this.usersService.updateTeams(body.users, body.teamId);
+    return plainToClass(UserResponseDto, updatedUsers);
   }
 
   @Post('positions')
   @UseGuards(JwtAuthGuard)
   public async updatePositions(
     @Body() body: UpdatePositionsDto,
-  ): Promise<Array<User>> {
-    return await this.usersService.updatePositions(body.users, body.positionId);
+  ): Promise<Array<UserResponseDto>> {
+    const updatedUsers = await this.usersService.updatePositions(body.users, body.positionId);
+    return plainToClass(UserResponseDto, updatedUsers);
   }
 }

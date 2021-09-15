@@ -50,6 +50,14 @@ export enum PositionsEnum {
   noPosition = "no position",
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const errorHandle = (err: any): string => {
+  if (err.response) {
+    return err.response.data.message;
+  } else {
+    return errMessage;
+  }
+};
 export const anyTeam = "any team";
 
 export const anyPosition = "any position";

@@ -1,11 +1,12 @@
-import { PTO } from './pto.entity';
+import { PTOdb } from './pto.entity';
 import { Entity, Column, OneToMany, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { Teams } from './teams.entity';
-import { Positions } from './positions.entity';
+import { Teamsdb } from './teams.entity';
+import { Positionsdb } from './positions.entity';
+import { User } from '../google/utils/interfaces';
 
 @Entity({ name: 'user' })
-export class User extends BaseEntity {
+export class Userdb extends BaseEntity {
   @Column({ type: 'varchar', unique: true })
   googleId: string;
 
@@ -21,12 +22,25 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 300 })
   picture: string;
 
-  @ManyToOne(() => Teams, (team) => team.user)
-  team: Teams;
+  @ManyToOne(() => Teamsdb, (team) => team.user)
+  team: Teamsdb;
 
-  @ManyToOne(() => Positions, (position) => position.user)
-  position: Positions;
+  @ManyToOne(() => Positionsdb, (position) => position.user)
+  position: Positionsdb;
 
-  @OneToMany(() => PTO, (pto) => pto.employee)
-  PTO: PTO[];
+  @OneToMany(() => PTOdb, (pto) => pto.employee)
+  PTO: PTOdb[];
+
+  toUser(): User {
+    return {
+      id: this.id,
+      googleId: this.googleId,
+      email: this.email,
+      firstName: this.firstName,
+      lastName: this.lastName,
+      picture: this.picture,
+      team: this.team,
+      position: this.position,
+    };
+  }
 }

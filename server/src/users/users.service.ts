@@ -1,26 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../model/user.entity';
+import { Userdb } from '../model/user.entity';
 import { In, Repository } from 'typeorm';
 import { PositionsEnum, TeamsEnum, UserRelations } from '../common/constants';
-import { UserDetailsWithTeamAndPosition } from '../google/utils/interfaces';
-import { Teams } from '../model/teams.entity';
-import { Positions } from '../model/positions.entity';
+import {
+  UserWithTeamAndPositionAsStrings,
+  User,
+} from '../google/utils/interfaces';
+import { Teamsdb } from '../model/teams.entity';
+import { Positionsdb } from '../model/positions.entity';
 import Guard from '../utils/Guard';
+import { Positions, Teams } from '../users/interfaces';
 
 const anyTeam = 'any team';
 const anyPosition = 'any position';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User) private userRepo: Repository<User>,
-    @InjectRepository(Teams) private teamsRepo: Repository<Teams>,
-    @InjectRepository(Positions) private positionsRepo: Repository<Positions>,
+    @InjectRepository(Userdb) private userRepo: Repository<Userdb>,
+    @InjectRepository(Teamsdb) private teamsRepo: Repository<Teamsdb>,
+    @InjectRepository(Positionsdb)
+    private positionsRepo: Repository<Positionsdb>,
   ) {}
 
   setUsersTeamsAndPositions(
     users: Array<User>,
-  ): Array<UserDetailsWithTeamAndPosition> {
+  ): Array<UserWithTeamAndPositionAsStrings> {
     return users.reduce((acc, el) => {
       const team = el.team?.team || TeamsEnum.noTeam;
       const position = el.position?.position || PositionsEnum.noPosition;
@@ -28,9 +33,10 @@ export class UsersService {
     }, []);
   }
 
-  async getTeamById(teamId: string): Promise<Teams | null> {
+  async getTeamById(teamId: string): Promise<Teamsdb | null> {
     let team;
     if (teamId !== TeamsEnum.noTeam) {
+      Guard.isValidUUID(teamId, `Invalid team id: ${teamId}`);
       team = await this.teamsRepo.findOne({ id: teamId });
       Guard.exists(team, `Team with id ${teamId} does not exist`);
     } else {
@@ -39,9 +45,10 @@ export class UsersService {
     return team;
   }
 
-  async getPositionById(positionId: string): Promise<Positions | null> {
+  async getPositionById(positionId: string): Promise<Positionsdb | null> {
     let position;
     if (positionId !== PositionsEnum.noPosition) {
+      Guard.isValidUUID(positionId, `Invalid position id: ${positionId}`);
       position = await this.positionsRepo.findOne({ id: positionId });
       Guard.exists(position, `Position with id ${positionId} does not exist`);
     } else {
@@ -50,10 +57,10 @@ export class UsersService {
     return position;
   }
 
-  public async getAllUsers(
+  public async getFilteredUsers(
     teamId: string,
     positionId: string,
-  ): Promise<Array<UserDetailsWithTeamAndPosition>> {
+  ): Promise<Array<UserWithTeamAndPositionAsStrings>> {
     const queryObj = {
       team: null,
       position: null,
@@ -79,23 +86,32 @@ export class UsersService {
 
   public async getUsersByIds(
     usersIds: string,
-  ): Promise<Array<UserDetailsWithTeamAndPosition>> {
+  ): Promise<Array<UserWithTeamAndPositionAsStrings>> {
     const usersIdsArr = usersIds.split(',');
+
+    usersIdsArr.forEach((el) => {
+      Guard.isValidUUID(el, `User id ${el} is invalid`);
+    });
     const users = await this.userRepo.find({
       where: {
         id: In(usersIdsArr),
       },
       relations: [UserRelations.teams, UserRelations.positions],
     });
+    Guard.allElementsExist<User>(
+      usersIdsArr,
+      users,
+      (ids) => `Users with ids ${ids} doesn't exist.`,
+    );
     return this.setUsersTeamsAndPositions(users);
   }
 
   public async getTeams(): Promise<Array<Teams>> {
-    return await this.teamsRepo.find();
+    return (await this.teamsRepo.find()).map((el) => el.toTeams());
   }
 
   public async getPositions(): Promise<Array<Positions>> {
-    return await this.positionsRepo.find();
+    return (await this.positionsRepo.find()).map((el) => el.toPositions());
   }
 
   public async updateTeams(
@@ -103,15 +119,25 @@ export class UsersService {
     newTeamId: string,
   ): Promise<Array<User>> {
     const newTeam = await this.getTeamById(newTeamId);
-    const updatedUsers = users.map(async (userId) => {
-      const user = await this.userRepo.findOne({
-        where: { id: userId },
-        relations: [UserRelations.teams],
-      });
-      user.team = newTeam;
-      return await this.userRepo.save(user);
+    const usersWithTeam = await this.userRepo.find({
+      where: {
+        id: In(users),
+      },
+      relations: [UserRelations.teams],
     });
-    return await Promise.all(updatedUsers);
+    Guard.allElementsExist<User>(
+      users,
+      usersWithTeam,
+      (ids) => `Users with ids ${ids} doesn't exist.`,
+    );
+    usersWithTeam.forEach((el) => {
+      el.team = newTeam;
+    });
+    const updatedUsers = (await this.userRepo.save(usersWithTeam)).map((el) =>
+      el.toUser(),
+    );
+
+    return updatedUsers;
   }
 
   public async updatePositions(
@@ -119,14 +145,23 @@ export class UsersService {
     newPositionId: string,
   ): Promise<Array<User>> {
     const newPosition = await this.getPositionById(newPositionId);
-    const updatedUsers = users.map(async (userId) => {
-      const user = await this.userRepo.findOne({
-        where: { id: userId },
-        relations: [UserRelations.positions],
-      });
-      user.position = newPosition;
-      return await this.userRepo.save(user);
+    const usersWithPosition = await this.userRepo.find({
+      where: {
+        id: In(users),
+      },
+      relations: [UserRelations.positions],
     });
-    return await Promise.all(updatedUsers);
+    Guard.allElementsExist<User>(
+      users,
+      usersWithPosition,
+      (ids) => `Users with ids ${ids} doesn't exist.`,
+    );
+    usersWithPosition.forEach((el) => {
+      el.position = newPosition;
+    });
+    const updatedUsers = (await this.userRepo.save(usersWithPosition)).map(
+      (el) => el.toUser(),
+    );
+    return updatedUsers;
   }
 }
