@@ -242,9 +242,9 @@ describe('HolidaysController', () => {
         const spy = jest.spyOn(controller, 'getPTOById');
 
         //act
-        const result = await controller.getPTOById(
-          '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
-        );
+        const result = await controller.getPTOById({
+          id: '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
+        });
 
         //assert
         expect(spy).toHaveBeenCalled();

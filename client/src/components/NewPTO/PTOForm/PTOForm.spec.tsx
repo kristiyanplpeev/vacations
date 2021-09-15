@@ -118,20 +118,4 @@ describe("PTOForm", () => {
     // assert
     expect(warning).toHaveLength(5);
   });
-  it("Should not render warning after clicking Add button", () => {
-    // arrange
-    const component = getComponent(mockedProps.startingDate, mockedProps.endingDate);
-    const addPTOButton = component.find(getSelector(addPTOButtonDataUnitTest)).find(Button);
-
-    // act
-    component.setState({
-      comment: mockedProps.comment,
-      approvers: mockedProps.approvers,
-    });
-    addPTOButton.simulate("click");
-    const warning = component.find(getSelector(warningMessageDataUnitTest));
-
-    // assert
-    expect(warning).toHaveLength(0);
-  });
 });
