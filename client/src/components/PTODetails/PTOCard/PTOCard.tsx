@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 
-import { Popover } from "@material-ui/core";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";

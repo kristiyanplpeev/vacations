@@ -1,7 +1,12 @@
 import React, { Component } from "react";
 
-import { Button } from "@material-ui/core";
+import { Button, Divider } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
 import Paper from "@material-ui/core/Paper";
 import Snackbar from "@material-ui/core/Snackbar";
 import Table from "@material-ui/core/Table";
@@ -18,8 +23,10 @@ import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext } from "react-router";
 
+import { AbsencesEnum } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import { IUserPTOWithCalcDays } from "common/interfaces";
+import { StringUtil } from "common/StringUtil";
 import Error from "components/common/Error/Error";
 import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
@@ -30,6 +37,7 @@ interface HomepageState {
   loading: boolean;
   error: string;
   successMessage: boolean;
+  openSelectorDialog: boolean;
   userPastPTOs: Array<IUserPTOWithCalcDays>;
   userFuturePTOs: Array<IUserPTOWithCalcDays>;
 }
@@ -43,6 +51,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       loading: false,
       error: "",
       successMessage: false,
+      openSelectorDialog: false,
       userPastPTOs: [],
       userFuturePTOs: [],
     };
@@ -78,11 +87,12 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     }
     return (
       <div className="homepage-root">
-        <h1 className="homepage-header">Paid Time Off</h1>
+        <h1 className="homepage-header">Absence</h1>
         {this.state.userFuturePTOs.length === 0 && this.state.userPastPTOs.length === 0
           ? this.renderNoPTOsView()
           : this.renderPTOsTable()}
         {this.renderSnackbar()}
+        {this.renderSelectDialog()}
       </div>
     );
   }
@@ -91,11 +101,11 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     return (
       <Button
         className="homepage-add-pto-button"
-        onClick={() => this.props.history.push("/new")}
+        onClick={() => this.handleToggleSelectDialog(true)}
         variant="outlined"
         color="primary"
       >
-        Add PTO
+        Add absence
       </Button>
     );
   }
@@ -156,8 +166,27 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  renderPTOsSeparator(): JSX.Element | null {
-    if (this.state.userFuturePTOs.length === 0 || this.state.userPastPTOs.length === 0) return null;
+  renderSelectDialog(): JSX.Element {
+    return (
+      <Dialog onClose={() => this.handleToggleSelectDialog(false)} open={this.state.openSelectorDialog}>
+        <DialogTitle>Specify the type of leave you want to request?</DialogTitle>
+        <Divider className="homepage-main-divider" />
+        <List>
+          {Object.values(AbsencesEnum).map((el) => (
+            <>
+              <ListItem button key={el} onClick={() => this.props.history.push(`/new/${StringUtil.zipString(el)}`)}>
+                <ListItemText primary={el} />
+              </ListItem>
+              <Divider />
+            </>
+          ))}
+        </List>
+      </Dialog>
+    );
+  }
+
+  renderPTOsSeparator(): JSX.Element {
+    if (this.state.userFuturePTOs.length === 0 || this.state.userPastPTOs.length === 0) return <></>;
     return (
       <div className="or-spacer">
         <div className="mask"></div>
@@ -180,10 +209,18 @@ class Homepage extends Component<HomepageProps, HomepageState> {
           </Typography>
           <SentimentSatisfiedSharpIcon fontSize="large" />
         </div>
-        <Button onClick={() => this.props.history.push("/new")} variant="outlined" color="primary">
-          REQUEST VACATION
+        <Button onClick={() => this.handleToggleSelectDialog(true)} variant="outlined" color="primary">
+          REQUEST ABSENCE
         </Button>
       </div>
+    );
+  }
+
+  renderSnackbar(): JSX.Element {
+    return (
+      <Snackbar open={this.state.successMessage} onClose={() => this.openSnackbar(false)} autoHideDuration={2000}>
+        <Alert severity="success">Your absence has been successfully submitted!</Alert>
+      </Snackbar>
     );
   }
 
@@ -217,12 +254,10 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     </TableRow>
   );
 
-  renderSnackbar(): JSX.Element {
-    return (
-      <Snackbar open={this.state.successMessage} onClose={() => this.openSnackbar(false)} autoHideDuration={2000}>
-        <Alert severity="success">Your PTO has been successfully submitted!</Alert>
-      </Snackbar>
-    );
+  handleToggleSelectDialog(state: boolean): void {
+    this.setState({
+      openSelectorDialog: state,
+    });
   }
 
   handleEditClick(currentPTOId: string): void {

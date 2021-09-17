@@ -13,15 +13,17 @@ import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/picker
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext, withRouter } from "react-router";
 
-import { errMessage } from "common/constants";
-import { IPTO, ITextBox, IUser, OptionalWithNull } from "common/interfaces";
+import { AbsencesEnum, errMessage } from "common/constants";
+import { IPTO, ITextBox, OptionalWithNull } from "common/interfaces";
 import "./PTOForm.css";
+import { StringUtil } from "common/StringUtil";
 import ButtonWithLoader from "components/common/ButtonWithLoader/ButtonWithLoader";
 import { IPTOService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
 export interface PTOFormMatchProps {
   id: string;
+  type: string;
 }
 interface PTOFormState {
   comment: ITextBox;
@@ -49,7 +51,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       loadingEditMode: false,
       warning: "",
       comment: {
-        value: "PTO",
+        value: "Out of office",
         isValid: true,
         validate: (value) => value.length >= 1 && value.length <= 1000,
         errorText: "Comment is mandatory.",
@@ -121,6 +123,13 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
         </Grid>
         <Grid item xs={12}>
           <KeyboardDatePicker
+            disabled={
+              this.props.match.params.type === StringUtil.zipString(AbsencesEnum.weddingLeave) ||
+              this.props.match.params.type === StringUtil.zipString(AbsencesEnum.bereavementLeave) ||
+              this.props.match.params.type === StringUtil.zipString(AbsencesEnum.bloodDonationLeave)
+                ? true
+                : false
+            }
             className="pto-form-datepicker card-content"
             margin="normal"
             label="To:"
@@ -137,6 +146,11 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
   }
 
   renderCommentInput(): JSX.Element {
+    if (
+      this.props.match.params.type !== StringUtil.zipString(AbsencesEnum.paidLeave) &&
+      this.props.match.params.type !== StringUtil.zipString(AbsencesEnum.unpaidLeave)
+    )
+      return <></>;
     return (
       <>
         <Grid item xs={12}>

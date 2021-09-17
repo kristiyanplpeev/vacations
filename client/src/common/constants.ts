@@ -44,6 +44,15 @@ export enum PositionsEnum {
   noPosition = "no position",
 }
 
+export enum AbsencesEnum {
+  paidLeave = "Paid",
+  unpaidLeave = "Unpaid",
+  weddingLeave = "Own wedding",
+  bereavementLeave = "Bereavement",
+  bloodDonationLeave = "Blood donation",
+  courtLeave = "Court",
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const errorHandle = (err: any): string => {
   if (err.response) {
