@@ -15,7 +15,7 @@ import {
   PTODetailsWithEachDay,
   PTO,
 } from './interfaces';
-import { DayStatus, PTOStatus, UserRelations } from '../common/constants';
+import { DayStatus, UserRelations } from '../common/constants';
 import Guard from '../utils/Guard';
 import { User } from 'src/google/utils/interfaces';
 
@@ -27,36 +27,16 @@ export class PTOsService {
     private readonly holidaysService: HolidaysService,
   ) {}
 
-  private async validateApprovers(
-    approvers: Array<string>,
-  ): Promise<Array<Userdb>> {
-    const approversProm = approvers.map(async (el) => {
-      return await this.userRepo.findOne({ email: el });
-    });
-    const approversResolved = await Promise.all(approversProm);
-    const approversValidation = approversResolved.indexOf(undefined);
-    if (approversValidation >= 0) {
-      throw new BadRequestException(
-        `User with email ${approvers[approversValidation]} does not exist.`,
-      );
-    }
-    return approversResolved;
-  }
-
   saveHolidayIntoPTO = async (
     holidayInfo: HolidayInfoDto,
     user: User,
   ): Promise<PTO> => {
-    const approvers = await this.validateApprovers(holidayInfo.approvers);
-
     const employee = this.userRepo.create(user);
     const newHoliday = this.PTORepo.create({
       from_date: holidayInfo.startingDate.toString(),
       to_date: holidayInfo.endingDate.toString(),
       comment: holidayInfo.comment,
-      status: PTOStatus.requested,
       employee,
-      approvers,
     });
     return (await this.PTORepo.save(newHoliday)).toPTO();
   };
@@ -91,10 +71,7 @@ export class PTOsService {
     }
 
     const allEmployeeHolidays = await this.PTORepo.find({
-      where: [
-        { employee: user.id, status: PTOStatus.requested },
-        { employee: user.id, status: PTOStatus.approved },
-      ],
+      where: [{ employee: user.id }],
     });
 
     //remove currently edited PTO from the validation
@@ -128,11 +105,6 @@ export class PTOsService {
     if (user.id !== PTO.employee.id) {
       throw new UnauthorizedException('Only the owner of the PTO can edit it.');
     }
-
-    Guard.should(
-      PTO.status === PTOStatus.requested,
-      "You can't edit approved or rejected PTOs.",
-    );
   }
 
   public async postPTO(holidayInfo: HolidayInfoDto, user: User): Promise<PTO> {
@@ -173,7 +145,7 @@ export class PTOsService {
   private async getPTOFullInfo(PTOId: string): Promise<PTO> {
     const PTO = await this.PTORepo.findOne({
       where: { id: PTOId },
-      relations: [UserRelations.employee, UserRelations.approvers],
+      relations: [UserRelations.employee],
     });
     Guard.exists(PTO, `PTO with id ${PTOId} does not exist.`);
     return PTO.toPTO();
@@ -197,16 +169,14 @@ export class PTOsService {
   public async editPTO(PTOEdited: EditPTODto, user: User): Promise<PTO> {
     const PTO = await this.PTORepo.findOne({
       where: { id: PTOEdited.id },
-      relations: [UserRelations.approvers, UserRelations.employee],
+      relations: [UserRelations.employee],
     });
     this.validateEditPTO(PTO, user, PTOEdited);
     await this.validatePTOPeriod(PTOEdited, user);
-    const approvers = await this.validateApprovers(PTOEdited.approvers);
 
     PTO.from_date = PTOEdited.startingDate;
     PTO.to_date = PTOEdited.endingDate;
     PTO.comment = PTOEdited.comment;
-    PTO.approvers = approvers;
 
     return (await this.PTORepo.save(PTO)).toPTO();
   }

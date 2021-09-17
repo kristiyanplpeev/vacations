@@ -21,7 +21,6 @@ export interface IPTOPeriod {
 
 export interface IPTO extends IPTOPeriod {
   comment: string;
-  approvers: Array<string>;
 }
 
 export interface IPTOWithId extends IPTO {
@@ -43,7 +42,6 @@ export interface IUserPTO {
   from_date: string;
   to_date: string;
   comment: string;
-  status: string;
 }
 
 export interface IUserPTOWithCalcDays extends IUserPTO {
@@ -53,7 +51,6 @@ export interface IUserPTOWithCalcDays extends IUserPTO {
 
 export interface IUserPTOFullDetails extends IUserPTO {
   employee: IUser;
-  approvers: Array<IUser>;
   eachDayStatus: HolidayDays;
 }
 

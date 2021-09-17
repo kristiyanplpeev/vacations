@@ -11,7 +11,6 @@ import {
   mockEditedHoliday,
   mockEmployeeHolidays,
   mockPTOInfo,
-  mockApprovers,
   constantHolidays,
   mockedUser,
   mockEmployeeHolidaysCalc,
@@ -33,7 +32,6 @@ const PTOFromdb = (PTO) => ({
       comment: this.comment,
       status: this.status,
       employee: this.employee,
-      approvers: this.approvers,
     };
   },
 });
@@ -48,7 +46,6 @@ describe('PTOService', () => {
     findOne: jest.fn(() => Promise.resolve(PTOFromdb(mockPTOInfo))),
   };
   const mockUserRepository = {
-    findOne: jest.fn(() => Promise.resolve(mockApprovers)),
     create: jest.fn(() => Promise.resolve(undefined)),
   };
   const mockHolidaysRepository = {
@@ -89,7 +86,6 @@ describe('PTOService', () => {
         startingDate: '2021-08-12',
         endingDate: '2021-08-14',
         comment: 'PTO',
-        approvers: ['kristiyan.peev@atscale.com'],
       };
       const spy = jest.spyOn(service, 'saveHolidayIntoPTO');
 
@@ -108,7 +104,6 @@ describe('PTOService', () => {
         startingDate: '2021-08-12',
         endingDate: '2021-08-11',
         comment: 'PTO',
-        approvers: ['kristiyan.peev@atscale.com'],
       };
       const spy = jest.spyOn(service, 'validatePTOPeriod');
 
@@ -125,7 +120,6 @@ describe('PTOService', () => {
         startingDate: '2021-08-14',
         endingDate: '2021-08-15',
         comment: 'PTO',
-        approvers: ['kristiyan.peev@atscale.com'],
       };
       const spy = jest.spyOn(service, 'validatePTOPeriod');
 
@@ -142,7 +136,6 @@ describe('PTOService', () => {
         startingDate: '2021-08-11',
         endingDate: '2021-08-13',
         comment: 'PTO',
-        approvers: ['kristiyan.peev@atscale.com'],
       };
       const spy = jest.spyOn(service, 'validatePTOPeriod');
 

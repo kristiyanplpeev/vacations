@@ -7,16 +7,14 @@ import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Grid from "@material-ui/core/Grid";
-import Modal from "@material-ui/core/Modal";
 import Typography from "@material-ui/core/Typography";
 import { Alert } from "@material-ui/lab";
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext, withRouter } from "react-router";
 
-import { errMessage, PTOStatus } from "common/constants";
+import { errMessage } from "common/constants";
 import { IPTO, ITextBox, IUser, OptionalWithNull } from "common/interfaces";
-import { ValidationUtil } from "common/ValidationUtil";
 import "./PTOForm.css";
 import ButtonWithLoader from "components/common/ButtonWithLoader/ButtonWithLoader";
 import { IPTOService } from "inversify/interfaces";
@@ -27,9 +25,7 @@ export interface PTOFormMatchProps {
 }
 interface PTOFormState {
   comment: ITextBox;
-  approvers: ITextBox;
   warning: string;
-  modalError: string;
   loading: boolean;
   loadingEditMode: boolean;
 }
@@ -52,19 +48,11 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       loading: false,
       loadingEditMode: false,
       warning: "",
-      modalError: "",
       comment: {
         value: "PTO",
         isValid: true,
         validate: (value) => value.length >= 1 && value.length <= 1000,
         errorText: "Comment is mandatory.",
-        textBoxInvalid: false,
-      },
-      approvers: {
-        value: "",
-        isValid: false,
-        validate: (value) => value.length > 0 && this.isApproversValid(value),
-        errorText: "One or more approvers separated with comma must be provided.",
         textBoxInvalid: false,
       },
     };
@@ -78,17 +66,10 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
       });
       try {
         const PTODetailed = await this.PTOService.getRequestedPTOById(this.props.match.params.id);
-        if (PTODetailed.status !== PTOStatus.requested) {
-          this.setState({
-            modalError: "Approved or rejected vacations can't be edited.",
-          });
-        }
-        const approversValue = this.getApproversAsString(PTODetailed.approvers);
         this.props.setStartingDate(new Date(PTODetailed.from_date), PTODetailed.from_date);
         this.props.setEndingDate(new Date(PTODetailed.to_date), PTODetailed.to_date);
         this.setState({
           comment: { ...this.state.comment, value: PTODetailed.comment },
-          approvers: { ...this.state.approvers, value: approversValue, isValid: true },
         });
       } catch (error) {
         this.props.setError(error.message);
@@ -112,34 +93,13 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
                 Details
               </Typography>
               {this.renderDatePickers()}
-              {this.renderTextFields()}
+              {this.renderCommentInput()}
               {this.renderWarning()}
               {this.renderButtons()}
             </CardContent>
           </Card>
         </Grid>
-        {this.renderModal()}
       </Grid>
-    );
-  }
-
-  renderModal(): JSX.Element {
-    return (
-      <Modal
-        open={!!this.state.modalError}
-        onClose={() => this.handleModalClose()}
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
-      >
-        <div className="error-modal">
-          <Typography variant="subtitle1" gutterBottom>
-            {this.state.modalError}
-          </Typography>
-          <Button onClick={() => this.handleModalClose()} className="error-modal-button" variant="outlined">
-            OK
-          </Button>
-        </div>
-      </Modal>
     );
   }
 
@@ -176,7 +136,7 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
     );
   }
 
-  renderTextFields(): JSX.Element {
+  renderCommentInput(): JSX.Element {
     return (
       <>
         <Grid item xs={12}>
@@ -187,21 +147,6 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
             label="Comments"
             value={this.state.comment.value}
             onChange={this.handleCommentChange}
-            multiline
-            rows={4}
-            variant="outlined"
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            data-unit-test="approvers-input"
-            className="pto-form-text-fields card-content"
-            error={this.state.approvers.textBoxInvalid}
-            id="outlined-multiline-static"
-            label="Approvers"
-            value={this.state.approvers.value}
-            onChange={this.handleApproversChange}
-            placeholder="comma separated emails of the approvers"
             multiline
             rows={4}
             variant="outlined"
@@ -223,7 +168,6 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
     );
   }
 
-  // eslint-disable-next-line max-lines-per-function
   renderButtons(): JSX.Element {
     return (
       <Grid container spacing={3}>
@@ -278,7 +222,6 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
           warning: error.message,
           loading: false,
         });
-        this.setApproversInputError(error.message);
       }
     }
   };
@@ -302,51 +245,28 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
           warning: error.message,
           loading: false,
         });
-        this.setApproversInputError(error.message);
       }
     }
   };
 
   private getHoliday(): IPTO {
-    const approversArr = this.formatApprovers(this.state.approvers.value);
-
     return {
       startingDate: this.props.startingDate,
       endingDate: this.props.endingDate,
       comment: this.state.comment.value,
-      approvers: approversArr,
     };
-  }
-
-  handleModalClose(): void {
-    this.setState({
-      modalError: "",
-    });
-    this.props.history.push("/home");
   }
 
   areInputsValid = (): boolean => {
     if (!this.state.comment.isValid) {
       this.setState({
         comment: { ...this.state.comment, textBoxInvalid: true },
-        approvers: { ...this.state.approvers, textBoxInvalid: false },
         warning: this.state.comment.errorText,
       });
       return false;
     } else {
       this.setState({
         comment: { ...this.state.comment, textBoxInvalid: false },
-      });
-    }
-    if (!this.state.approvers.isValid) {
-      this.setState({
-        approvers: { ...this.state.approvers, textBoxInvalid: true },
-        warning: this.state.approvers.errorText,
-      });
-      return false;
-    } else {
-      this.setState({
-        approvers: { ...this.state.approvers, textBoxInvalid: false },
       });
     }
     if (this.props.startingDate > this.props.endingDate) {
@@ -358,51 +278,12 @@ export class PTOForm extends Component<PTOFormProps, PTOFormState> {
     return true;
   };
 
-  private setApproversInputError(warning: string): void {
-    if (warning.includes("@")) {
-      this.setState({
-        approvers: { ...this.state.approvers, textBoxInvalid: true },
-      });
-    }
-  }
-
-  private formatApprovers(approversValue: string): Array<string> {
-    return approversValue
-      .replace(/ /g, "")
-      .split(",")
-      .filter((elem) => elem.length > 0);
-  }
-
-  private isApproversValid(approversValue: string): boolean {
-    const approversArr = this.formatApprovers(approversValue);
-    return approversArr.every((el) => ValidationUtil.isEmail(el));
-  }
-
-  private getApproversAsString(approvers: Array<IUser>): string {
-    return approvers.reduce((acc, el, index) => {
-      if (index === 0) {
-        return el.email;
-      }
-      return `${acc}, ${el.email}`;
-    }, "");
-  }
-
   handleCommentChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     this.setState({
       comment: {
         ...this.state.comment,
         value: event.target.value,
         isValid: this.state.comment.validate(event.target.value),
-      },
-    });
-  };
-
-  handleApproversChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    this.setState({
-      approvers: {
-        ...this.state.approvers,
-        value: event.target.value,
-        isValid: this.state.approvers.validate(event.target.value),
       },
     });
   };

@@ -26,11 +26,3 @@ div.pto-card-chip-avatar.MuiAvatar-root {
 .pto-card-content.MuiCardContent-root:last-child {
   padding-bottom: 13px;
 }
-
-.pto-card-popover {
-  pointer-events: none;
-}
-
-.pto-card-button-wrapper.MuiButton-root:hover {
-  background-color: transparent;
-}

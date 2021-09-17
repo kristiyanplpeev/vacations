@@ -1,7 +1,7 @@
 import React from "react";
 
-import { Button, Card } from "@material-ui/core";
-import { mount, shallow } from "enzyme";
+import { Button } from "@material-ui/core";
+import { shallow } from "enzyme";
 
 import { RouteComponentPropsMock } from "common/testConstants";
 import UsersList from "components/UsersList/UsersList";

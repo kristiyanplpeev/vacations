@@ -25,12 +25,11 @@ class PTOService implements IPTOService {
     ),
   });
 
-  addPTO = async ({ startingDate, endingDate, comment, approvers }: IPTO): Promise<void | { warning: string }> => {
+  addPTO = async ({ startingDate, endingDate, comment }: IPTO): Promise<void | { warning: string }> => {
     const data = {
       startingDate,
       endingDate,
       comment,
-      approvers,
     };
     try {
       await axios.post(`${BASE_URL}holidays`, data, this.getConfig());
@@ -39,13 +38,12 @@ class PTOService implements IPTOService {
     }
   };
 
-  editPTO = async ({ startingDate, endingDate, comment, approvers, id }: IPTOWithId): Promise<void> => {
+  editPTO = async ({ startingDate, endingDate, comment, id }: IPTOWithId): Promise<void> => {
     const data = {
       id,
       startingDate,
       endingDate,
       comment,
-      approvers,
     };
     try {
       await axios.post(`${BASE_URL}holidays/edit`, data, this.getConfig());

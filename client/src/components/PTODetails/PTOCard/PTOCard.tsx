@@ -15,27 +15,18 @@ import "./PTOCard.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { RouteComponentProps, withRouter } from "react-router";
 
-import { PTOStatus } from "common/constants";
 import { IUserPTO, IUser } from "common/interfaces";
 import MyDocument from "components/PTODetails/PDFDocu/AtscaleLeaveRequest";
 
 interface PTOCardProps extends RouteComponentProps {
   PTOInfo: IUserPTO;
   employee: IUser;
-  approvers: Array<IUser>;
   workingDays: number;
 }
 
-interface PTOCardState {
-  anchorEl: HTMLButtonElement | null;
-}
-
-class PTOCard extends Component<PTOCardProps, PTOCardState> {
+class PTOCard extends Component<PTOCardProps> {
   constructor(props: PTOCardProps) {
     super(props);
-    this.state = {
-      anchorEl: null,
-    };
   }
 
   // eslint-disable-next-line max-lines-per-function
@@ -46,9 +37,8 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
           <Typography className="pto-card-header" variant="h5" component="h2">
             Details
           </Typography>
-          {this.renderUser([this.props.employee], "Employee")}
+          {this.renderEmployee(this.props.employee)}
           {this.renderInfoCard()}
-          {this.renderUser(this.props.approvers, "Approvers")}
           {this.renderButtons()}
         </CardContent>
       </Card>
@@ -56,11 +46,9 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
   }
 
   renderInfoCard(): Array<JSX.Element> {
-    const statusCapitalized = this.stringCapitalize(this.props.PTOInfo.status);
     const PTOInfo = {
       from: this.props.PTOInfo.from_date,
       to: this.props.PTOInfo.to_date,
-      status: statusCapitalized,
       comment: this.props.PTOInfo.comment,
     };
     return Object.entries(PTOInfo).map((field) => {
@@ -89,16 +77,7 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
     });
   }
 
-  renderUser(users: Array<IUser>, fieldType: string): JSX.Element {
-    const userChips = users.map((user) => (
-      <Chip
-        key={user.id}
-        className="pto-card-chip"
-        avatar={<Avatar className="pto-card-chip-avatar" alt={user.firstName[0]} src={user.picture} />}
-        label={user.email}
-        variant="outlined"
-      />
-    ));
+  renderEmployee(user: IUser): JSX.Element {
     return (
       <Grid item xs={12}>
         <Card className="pto-card-small-card">
@@ -106,11 +85,16 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
             <Grid container spacing={2}>
               <Grid item xs={3}>
                 <Typography variant="h6" gutterBottom>
-                  <b>{fieldType}</b>
+                  <b>Employee</b>
                 </Typography>
               </Grid>
               <Grid item xs={9}>
-                {userChips}
+                <Chip
+                  className="pto-card-chip"
+                  avatar={<Avatar className="pto-card-chip-avatar" alt={user.firstName[0]} src={user.picture} />}
+                  label={user.email}
+                  variant="outlined"
+                />
               </Grid>
             </Grid>
           </CardContent>
@@ -151,66 +135,20 @@ class PTOCard extends Component<PTOCardProps, PTOCardState> {
         </Grid>
         <Grid item xs={4}>
           <Button
-            onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => this.handleEditHover(event)}
-            onMouseLeave={() => this.handlePopoverClose()}
-            className="pto-card-button-wrapper"
-            disableRipple
+            className="pto-card-buttons"
+            onClick={() => this.handleEditClick()}
+            variant="outlined"
+            color="primary"
           >
-            <Button
-              className="pto-card-buttons"
-              onClick={() => this.handleEditClick()}
-              variant="outlined"
-              color="primary"
-              disabled={this.props.PTOInfo.status !== PTOStatus.requested}
-            >
-              <EditIcon /> Edit
-            </Button>
+            <EditIcon /> Edit
           </Button>
-          {this.renderPopover()}
         </Grid>
       </Grid>
     );
   }
 
-  renderPopover(): JSX.Element {
-    return (
-      <Popover
-        className="pto-card-popover"
-        id="mouse-over-popover"
-        open={Boolean(this.state.anchorEl)}
-        anchorEl={this.state.anchorEl}
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        onClose={() => this.handlePopoverClose()}
-        disableRestoreFocus
-      >
-        <Typography className="dates-calculator-popover-text">Approved or rejected PTOs can&#39;t be edited</Typography>
-      </Popover>
-    );
-  }
-
-  handleEditHover(event: React.MouseEvent<HTMLButtonElement>): void {
-    if (this.props.PTOInfo.status !== PTOStatus.requested) {
-      this.setState({
-        anchorEl: event.currentTarget,
-      });
-    }
-  }
-
   handleEditClick(): void {
     this.props.history.push(`/edit/${this.props.PTOInfo.id}`);
-  }
-
-  handlePopoverClose(): void {
-    this.setState({
-      anchorEl: null,
-    });
   }
 
   private stringCapitalize(string: string): string {

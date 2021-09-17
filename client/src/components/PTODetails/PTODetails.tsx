@@ -25,7 +25,6 @@ interface PTODetailsState {
   loading: boolean;
   PTOInfo: IUserPTO;
   employee: IUser;
-  approvers: Array<IUser>;
   eachDayStatus: HolidayDays;
   workingDays: number;
 }
@@ -51,9 +50,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
         from_date: "",
         to_date: "",
         comment: "",
-        status: "",
       },
-      approvers: [],
       eachDayStatus: [],
       workingDays: 0,
     };
@@ -75,9 +72,7 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
           from_date: PTOFullInfo.from_date,
           to_date: PTOFullInfo.to_date,
           comment: PTOFullInfo.comment,
-          status: PTOFullInfo.status,
         },
-        approvers: PTOFullInfo.approvers,
         eachDayStatus: PTOFullInfo.eachDayStatus,
         workingDays,
       });
@@ -104,7 +99,6 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
             ) : (
               <PTOCard
                 employee={this.state.employee}
-                approvers={this.state.approvers}
                 PTOInfo={this.state.PTOInfo}
                 workingDays={this.state.workingDays}
               />

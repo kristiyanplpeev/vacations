@@ -30,13 +30,11 @@ describe('HolidaysController', () => {
     startingDate: '2021-08-12',
     endingDate: '2021-08-14',
     comment: 'PTO',
-    approvers: ['kristiyan.peev@atscale.com'],
   };
   const mockHolidayInfoInvalid = {
     startingDate: '2021-08-12',
     endingDate: '2021-08-11',
     comment: 'PTO',
-    approvers: ['kristiyan.peev@atscale.com'],
   };
 
   const mockHolidayInfoResponse = {
@@ -45,7 +43,6 @@ describe('HolidaysController', () => {
     comment: 'PTO',
     status: 'requested',
     employee: 'kristiyan.peev@atscale.com',
-    approvers: ['kristiyan.peev@atscale.com'],
   };
   const mockedUser = {
     id: '749da264-0641-4d80-b6be-fe1c38ae2f93',
@@ -94,17 +91,6 @@ describe('HolidaysController', () => {
       picture:
         'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
     },
-    approvers: [
-      {
-        id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
-        googleId: '106956791077954804246',
-        email: 'kristiyan.peev@atscale.com',
-        firstName: 'Kristiyan',
-        lastName: 'Peev',
-        picture:
-          'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
-      },
-    ],
     eachDayStatus: [
       { date: '2021-07-07', status: 'workday' },
       { date: '2021-07-08', status: 'workday' },

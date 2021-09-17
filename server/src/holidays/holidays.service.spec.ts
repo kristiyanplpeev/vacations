@@ -10,7 +10,6 @@ import {
   mockSavedHoliday,
   mockEmployeeHolidays,
   mockPTOInfo,
-  mockApprovers,
   constantHolidays,
   movableHolidays,
   mockReturnedPeriod,
@@ -29,7 +28,6 @@ describe('HolidaysService', () => {
     findOne: jest.fn(() => Promise.resolve(mockPTOInfo)),
   };
   const mockUserRepository = {
-    findOne: jest.fn(() => Promise.resolve(mockApprovers)),
     create: jest.fn(() => Promise.resolve(undefined)),
   };
 
