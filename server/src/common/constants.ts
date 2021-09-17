@@ -11,15 +11,8 @@ export enum DayStatus {
   workday = 'workday',
 }
 
-export enum PTOStatus {
-  requested = 'requested',
-  approved = 'approved',
-  rejected = 'rejected',
-}
-
 export enum UserRelations {
   employee = 'employee',
-  approvers = 'approvers',
   teams = 'team',
   positions = 'position',
 }

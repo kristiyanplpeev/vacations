@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import { Button } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Paper from "@material-ui/core/Paper";
-import Popover from "@material-ui/core/Popover";
 import Snackbar from "@material-ui/core/Snackbar";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -19,7 +18,6 @@ import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext } from "react-router";
 
-import { PTOStatus } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import { IUserPTOWithCalcDays } from "common/interfaces";
 import Error from "components/common/Error/Error";
@@ -34,7 +32,6 @@ interface HomepageState {
   successMessage: boolean;
   userPastPTOs: Array<IUserPTOWithCalcDays>;
   userFuturePTOs: Array<IUserPTOWithCalcDays>;
-  anchorEl: HTMLButtonElement | null;
 }
 
 class Homepage extends Component<HomepageProps, HomepageState> {
@@ -48,7 +45,6 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       successMessage: false,
       userPastPTOs: [],
       userFuturePTOs: [],
-      anchorEl: null,
     };
   }
 
@@ -86,7 +82,6 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         {this.state.userFuturePTOs.length === 0 && this.state.userPastPTOs.length === 0
           ? this.renderNoPTOsView()
           : this.renderPTOsTable()}
-        {this.renderPopover()}
         {this.renderSnackbar()}
       </div>
     );
@@ -140,9 +135,6 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   renderTableHeaderAndFooterCells(): JSX.Element {
     return (
       <TableRow>
-        <TableCell width="10%">
-          <b>Status</b>
-        </TableCell>
         <TableCell width="10%" align="left">
           <b>From</b>
         </TableCell>
@@ -155,8 +147,8 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         <TableCell width="8%" align="left">
           <b>Total days</b>
         </TableCell>
-        <TableCell width="5%" align="left"></TableCell>
-        <TableCell width="5%" align="left"></TableCell>
+        <TableCell width="10%" align="left"></TableCell>
+        <TableCell width="10%" align="left"></TableCell>
         <TableCell width="30%" align="left">
           <b>Comment</b>
         </TableCell>
@@ -195,33 +187,8 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  renderPopover(): JSX.Element {
-    return (
-      <Popover
-        className="homepage-popover"
-        id="mouse-over-popover"
-        open={Boolean(this.state.anchorEl)}
-        anchorEl={this.state.anchorEl}
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        onClose={() => this.handlePopoverClose()}
-        disableRestoreFocus
-      >
-        <Typography className="dates-calculator-popover-text">Approved or rejected PTOs can&#39;t be edited</Typography>
-      </Popover>
-    );
-  }
-
-  // eslint-disable-next-line max-lines-per-function
   private mappingFunc = (el: IUserPTOWithCalcDays): JSX.Element => (
     <TableRow hover key={el.id}>
-      <TableCell width="10%">{el.status}</TableCell>
       <TableCell width="10%" align="left">
         {el.from_date}
       </TableCell>
@@ -240,19 +207,8 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         </Button>
       </TableCell>
       <TableCell width="5%" align="left">
-        <Button
-          onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => this.handleEditHover(event, el.status)}
-          onMouseLeave={() => this.handlePopoverClose()}
-          className="homepage-button-wrapper"
-          disableRipple
-        >
-          <Button
-            color="primary"
-            onClick={() => this.handleEditClick(el.id)}
-            disabled={el.status !== PTOStatus.requested}
-          >
-            edit
-          </Button>
+        <Button color="primary" onClick={() => this.handleEditClick(el.id)}>
+          edit
         </Button>
       </TableCell>
       <TableCell width="30%" align="left">
@@ -269,22 +225,8 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  handleEditHover(event: React.MouseEvent<HTMLButtonElement>, currentPTOStatus: string): void {
-    if (currentPTOStatus !== PTOStatus.requested) {
-      this.setState({
-        anchorEl: event.currentTarget,
-      });
-    }
-  }
-
   handleEditClick(currentPTOId: string): void {
     this.props.history.push(`/edit/${currentPTOId}`);
-  }
-
-  handlePopoverClose(): void {
-    this.setState({
-      anchorEl: null,
-    });
   }
 
   private openSnackbar(isOpen: boolean): void {

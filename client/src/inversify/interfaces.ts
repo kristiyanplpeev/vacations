@@ -33,11 +33,11 @@ export interface IAuthenticationActionCreator {
 }
 
 export interface IPTOService {
-  addPTO({ startingDate, endingDate, comment, approvers }: IPTO): Promise<void | { warning: string }>;
+  addPTO({ startingDate, endingDate, comment }: IPTO): Promise<void | { warning: string }>;
   getUserPTOs(): Promise<Array<IUserPTOWithCalcDays>>;
   PTODetailed(PTOId: string): Promise<IUserPTOFullDetails>;
   getRequestedPTOById(PTOId: string): Promise<IUserPTOFullDetails>;
-  editPTO({ startingDate, endingDate, comment, approvers, id }: IPTOWithId): Promise<void>;
+  editPTO({ startingDate, endingDate, comment, id }: IPTOWithId): Promise<void>;
 }
 
 export interface IUserService {
