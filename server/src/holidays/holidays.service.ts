@@ -2,8 +2,13 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Holidaydb } from '../model/holiday.entity';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { HolidayPeriodDto } from './dto/holidays.dto';
-import { HolidayPeriod, HolidaysDaysStatus } from './interfaces';
+import { AbsenceDetailsDto } from './dto/holidays.dto';
+import {
+  HolidayPeriod,
+  AbsencePeriodWithStatus,
+  AbsencePeriod,
+  Holiday,
+} from './interfaces';
 import DateUtil from '../utils/DateUtil';
 import { DayStatus } from '../common/constants';
 
@@ -14,58 +19,55 @@ export class HolidaysService {
   ) {}
 
   getConstantHolidaysForTheCurrentYear = async (
-    holidayPeriod: HolidayPeriod,
-  ): Promise<Array<Holidaydb>> => {
-    try {
-      const constantHolidays = await this.holidayRepo.find({
-        where: { movable: false },
+    absencePeriod: HolidayPeriod,
+  ): Promise<Array<Holiday>> => {
+    const constantHolidays = await this.holidayRepo.find({
+      where: { movable: false },
+    });
+    const constantHolidaysForCurrentYear = constantHolidays
+      .map((el) => el.toHoliday())
+      .map((el) => {
+        const constantHolidaysFromDB = el.date;
+        const absenceStartingDateYear =
+          absencePeriod.startingDate.getFullYear();
+        constantHolidaysFromDB.setFullYear(absenceStartingDateYear);
+        return { ...el, date: constantHolidaysFromDB };
       });
-      const constantHolidaysForCurrentYear = constantHolidays.map((el) => {
-        const databaseDateArr = el.date.split('-');
-        const givenDateArr = holidayPeriod.startingDate.split('-');
-        if (databaseDateArr[0] !== givenDateArr[0]) {
-          return {
-            ...el,
-            date: `${givenDateArr[0]}-${databaseDateArr[1]}-${databaseDateArr[2]}`,
-          };
-        }
-        return el;
-      });
-      return constantHolidaysForCurrentYear;
-    } catch (error) {
-      throw new BadRequestException('Invalid dates submitted.');
-    }
+    return constantHolidaysForCurrentYear;
   };
 
   getMovableHolidaysForTheCurrentYear = async (
     holidayPeriod: HolidayPeriod,
-  ): Promise<Array<Holidaydb>> => {
+  ): Promise<Array<Holiday>> => {
     try {
       const movableHolidays = await this.holidayRepo.find({
         movable: true,
-        date: Between(holidayPeriod.startingDate, holidayPeriod.endingDate),
+        date: Between(
+          DateUtil.dateToString(holidayPeriod.startingDate),
+          DateUtil.dateToString(holidayPeriod.endingDate),
+        ),
       });
 
-      return movableHolidays;
+      return movableHolidays.map((el) => el.toHoliday());
     } catch (error) {
       throw new BadRequestException('Invalid dates submitted.');
     }
   };
 
   getDatesWithAllHolidaysAndWeekends = (
-    days: HolidaysDaysStatus,
-    movableHolidays: Array<Holidaydb>,
-    constantHolidays: Array<Holidaydb>,
-  ): HolidaysDaysStatus => {
+    days: AbsencePeriodWithStatus,
+    movableHolidays: Array<Holiday>,
+    constantHolidays: Array<Holiday>,
+  ): AbsencePeriodWithStatus => {
     const datesWithWeekends = days.map((el) => {
-      if (new Date(el.date).getDay() == 6 || new Date(el.date).getDay() == 0) {
+      if (el.date.getDay() == 6 || el.date.getDay() == 0) {
         el.status = DayStatus.weekend;
       }
       return el;
     });
     const datesWithMovableHolidays = datesWithWeekends.reduce((acc, el) => {
       for (let i = 0; i < movableHolidays.length; i++) {
-        if (el.date == movableHolidays[i].date) {
+        if (el.date.getTime() === movableHolidays[i].date.getTime()) {
           el.status = movableHolidays[i].comment;
         }
       }
@@ -75,7 +77,7 @@ export class HolidaysService {
     const datesWithAllHolidaysAndWeekends = constantHolidays.reduce(
       (dates, constantHoliday) => {
         for (let i = 0; i < dates.length; i++) {
-          if (constantHoliday.date == dates[i].date) {
+          if (constantHoliday.date.getTime() == dates[i].date.getTime()) {
             if (dates[i].status === DayStatus.workday) {
               dates[i].status = constantHoliday.comment;
             } else {
@@ -97,20 +99,16 @@ export class HolidaysService {
   };
 
   public async calculateDays(
-    holidayPeriod: HolidayPeriodDto,
-  ): Promise<HolidaysDaysStatus> {
-    const holidayPeriodAsString = {
-      startingDate: holidayPeriod.startingDate.toString(),
-      endingDate: holidayPeriod.endingDate.toString(),
-    };
-    const datesBetween = DateUtil.getPeriodBetweenDates(holidayPeriodAsString);
-    const constantHolidays = await this.getConstantHolidaysForTheCurrentYear(
-      holidayPeriodAsString,
-    );
-
-    const movableHolidays = await this.getMovableHolidaysForTheCurrentYear(
-      holidayPeriodAsString,
-    );
+    startingDate: Date,
+    endingDate: Date,
+  ): Promise<AbsencePeriodWithStatus> {
+    const absenceStartAndEndDate = {
+      startingDate,
+      endingDate,
+    }
+    const datesBetween = DateUtil.getPeriodBetweenDates(absenceStartAndEndDate);
+    const constantHolidays = await this.getConstantHolidaysForTheCurrentYear(absenceStartAndEndDate);
+    const movableHolidays = await this.getMovableHolidaysForTheCurrentYear(absenceStartAndEndDate);
 
     const datesBetweenAsObj = datesBetween.map((el) => ({
       date: el,

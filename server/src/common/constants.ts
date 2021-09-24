@@ -6,6 +6,8 @@ export const postgresUser = 'POSTGRES_USER';
 export const postgresPass = 'POSTGRES_PASSWORD';
 export const postgresDB = 'POSTGRES_DATABASE';
 
+export const nonWorkingDaysCount = 2;
+
 export enum DayStatus {
   weekend = 'weekend',
   workday = 'workday',
@@ -30,4 +32,13 @@ export enum PositionsEnum {
   senior = 'Senior',
   lead = 'Team lead',
   noPosition = 'no position',
+}
+
+export enum AbsenceTypesEnum {
+  paidLeave = 'Paid',
+  unpaidLeave = 'Unpaid',
+  weddingLeave = 'Wedding',
+  bereavementLeave = 'Bereavement',
+  bloodDonationLeave = 'Blood donation',
+  courtLeave = 'Court',
 }

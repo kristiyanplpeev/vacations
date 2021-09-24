@@ -1,7 +1,7 @@
 import { PTOsService } from './pto.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { PTOdb } from '../model/pto.entity';
+import { Absencedb } from '../model/absence.entity';
 import { Userdb } from '../model/user.entity';
 import { Holidaydb } from '../model/holiday.entity';
 import { HolidaysController } from './holidays.controller';
@@ -63,7 +63,7 @@ describe('PTOService', () => {
           useValue: mockHolidaysRepository,
         },
         {
-          provide: getRepositoryToken(PTOdb),
+          provide: getRepositoryToken(Absencedb),
           useValue: mockPTORepository,
         },
         {

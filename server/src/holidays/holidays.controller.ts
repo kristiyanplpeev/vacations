@@ -12,9 +12,9 @@ import { PTOsService } from './pto.service';
 import { JwtAuthGuard } from '../google/guards';
 import {
   EditPTODto,
-  getPTObyIdDto,
-  HolidayInfoDto,
-  HolidayPeriodDto,
+  GetByIdDto,
+  AbsencePeriodDto,
+  AbsenceDetailsDto,
   PTODaysStatusResponseDto,
   PTOResponseDto,
   PTOWithEachDay,
@@ -29,22 +29,34 @@ export class HolidaysController {
     private readonly PTOService: PTOsService,
   ) {}
 
-  @Post('calc')
+  @Get('calc')
   @UseGuards(JwtAuthGuard)
   public async calculateHolidayPeriod(
-    @Body() body: HolidayPeriodDto,
+    @Body() body: AbsencePeriodDto,
   ): Promise<Array<PTODaysStatusResponseDto>> {
-    const daysWithStatus = await this.holidaysService.calculateDays(body);
+    const daysWithStatus = await this.holidaysService.calculateDays(
+      new Date(body.startingDate),
+      new Date(body.endingDate),
+    );
     return plainToClass(PTODaysStatusResponseDto, daysWithStatus);
   }
 
   @Post()
   @UseGuards(JwtAuthGuard)
   public async postHoliday(
-    @Body() body: HolidayInfoDto,
+    @Body() body: AbsenceDetailsDto,
     @Req() req,
   ): Promise<PTOResponseDto> {
-    const postedPTO = await this.PTOService.postPTO(body, req.user);
+    const absenceDetails = {
+      ...body,
+      startingDate: new Date(body.startingDate),
+      ...(body.endingDate && { endingDate: new Date(body.endingDate) }),
+    };
+    
+    const postedPTO = await this.PTOService.postAbsence(
+      absenceDetails,
+      req.user,
+    );
     return plainToClass(PTOResponseDto, postedPTO);
   }
 
@@ -60,7 +72,7 @@ export class HolidaysController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   public async getPTOById(
-    @Param() params: getPTObyIdDto,
+    @Param() params: GetByIdDto,
   ): Promise<PTOWithEachDay> {
     const PTO = await this.PTOService.getPTOById(params.id);
     return plainToClass(PTOWithEachDay, PTO);
@@ -69,7 +81,7 @@ export class HolidaysController {
   @Get('details/:id')
   @UseGuards(JwtAuthGuard)
   public async getRequestedPTOById(
-    @Param() params: getPTObyIdDto,
+    @Param() params: GetByIdDto,
   ): Promise<PTOResponseDto> {
     const PTO = await this.PTOService.getRequestedPTOById(params.id);
     return plainToClass(PTOResponseDto, PTO);

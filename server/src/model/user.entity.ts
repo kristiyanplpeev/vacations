@@ -1,4 +1,4 @@
-import { PTOdb } from './pto.entity';
+import { Absencedb } from './absence.entity';
 import { Entity, Column, OneToMany, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Teamsdb } from './teams.entity';
@@ -28,8 +28,8 @@ export class Userdb extends BaseEntity {
   @ManyToOne(() => Positionsdb, (position) => position.user)
   position: Positionsdb;
 
-  @OneToMany(() => PTOdb, (pto) => pto.employee)
-  PTO: PTOdb[];
+  @OneToMany(() => Absencedb, (pto) => pto.employee)
+  PTO: Absencedb[];
 
   toUser(): User {
     return {

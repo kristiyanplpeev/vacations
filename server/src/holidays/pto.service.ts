@@ -4,100 +4,107 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PTOdb } from '../model/pto.entity';
+import { Absencedb } from '../model/absence.entity';
 import { Userdb } from '../model/user.entity';
 import { Repository } from 'typeorm';
-import { EditPTODto, HolidayInfoDto } from './dto/holidays.dto';
+import { EditPTODto } from './dto/holidays.dto';
 import { HolidaysService } from './holidays.service';
 import {
-  PTODetails,
   PTODetailsWithTotalDays,
   PTODetailsWithEachDay,
   PTO,
+  AbsenceDetails,
 } from './interfaces';
 import { DayStatus, UserRelations } from '../common/constants';
 import Guard from '../utils/Guard';
-import { User } from 'src/google/utils/interfaces';
+import { User } from '../google/utils/interfaces';
+import DateUtil from '../utils/DateUtil';
+import { AbsenceBehaviourFactory } from '../holidays/absenceBehaviour/absenceBehaviour';
 
 @Injectable()
 export class PTOsService {
   constructor(
-    @InjectRepository(PTOdb) private PTORepo: Repository<PTOdb>,
+    @InjectRepository(Absencedb) private PTORepo: Repository<Absencedb>,
     @InjectRepository(Userdb) private userRepo: Repository<Userdb>,
     private readonly holidaysService: HolidaysService,
   ) {}
 
   saveHolidayIntoPTO = async (
-    holidayInfo: HolidayInfoDto,
+    holidayInfo: AbsenceDetails,
     user: User,
   ): Promise<PTO> => {
     const employee = this.userRepo.create(user);
     const newHoliday = this.PTORepo.create({
-      from_date: holidayInfo.startingDate.toString(),
-      to_date: holidayInfo.endingDate.toString(),
+      type: holidayInfo.type,
+      from_date: DateUtil.dateToString(holidayInfo.startingDate),
+      to_date: DateUtil.dateToString(holidayInfo.endingDate),
       comment: holidayInfo.comment,
       employee,
     });
     return (await this.PTORepo.save(newHoliday)).toPTO();
   };
 
-  validatePTOPeriod = async (
-    holidayInfo: PTODetails,
-    user: User,
-  ): Promise<void> => {
-    if (holidayInfo.startingDate > holidayInfo.endingDate) {
-      throw new BadRequestException(
-        'The first date must not be after the last date!',
-      );
-    }
+  // validatePTOPeriod = async (
+  //   holidayInfo: AbsenceDetails,
+  //   user: User,
+  // ): Promise<void> => {
+  //   if (holidayInfo.startingDate > holidayInfo.endingDate) {
+  //     throw new BadRequestException(
+  //       'The first date must not be after the last date!',
+  //     );
+  //   }
 
-    const vacationDays = await this.holidaysService.calculateDays({
-      startingDate: holidayInfo.startingDate,
-      endingDate: holidayInfo.endingDate,
-    });
+  //   const vacationDays = await this.holidaysService.calculateDays({
+  //     startingDate: holidayInfo.startingDate,
+  //     endingDate: holidayInfo.endingDate,
+  //   });
 
-    let isThereAWorkdayInSubmittedPeriod = false;
+  //   let isThereAWorkdayInSubmittedPeriod = false;
 
-    for (let i = 0; i < vacationDays.length; i++) {
-      if (vacationDays[i].status === DayStatus.workday) {
-        isThereAWorkdayInSubmittedPeriod = true;
-        break;
-      }
-    }
-    if (!isThereAWorkdayInSubmittedPeriod) {
-      throw new BadRequestException(
-        'There are not working days in the submitted period.',
-      );
-    }
+  //   for (let i = 0; i < vacationDays.length; i++) {
+  //     if (vacationDays[i].status === DayStatus.workday) {
+  //       isThereAWorkdayInSubmittedPeriod = true;
+  //       break;
+  //     }
+  //   }
+  //   if (!isThereAWorkdayInSubmittedPeriod) {
+  //     throw new BadRequestException(
+  //       'There are not working days in the submitted period.',
+  //     );
+  //   }
 
-    const allEmployeeHolidays = await this.PTORepo.find({
-      where: [{ employee: user.id }],
-    });
+  //   const allEmployeeHolidays = await this.PTORepo.find({
+  //     where: [{ employee: user.id }],
+  //   });
 
-    //remove currently edited PTO from the validation
-    const employeeHolidays = allEmployeeHolidays.filter(
-      (el) => el.id !== holidayInfo.id,
-    );
+  //   //remove currently edited PTO from the validation
+  //   const employeeHolidays = allEmployeeHolidays
+  //     .filter((el) => el.id !== holidayInfo.id)
+  //     .map((el) => ({
+  //       ...el,
+  //       from_date: new Date(el.from_date),
+  //       to_date: new Date(el.to_date),
+  //     }));
 
-    let overlapIndex = -1;
+  //   let overlapIndex = -1;
 
-    for (let i = 0; i < employeeHolidays.length; i++) {
-      if (
-        !(
-          holidayInfo.endingDate < employeeHolidays[i].from_date ||
-          holidayInfo.startingDate > employeeHolidays[i].to_date
-        )
-      ) {
-        overlapIndex = i;
-        break;
-      }
-    }
-    if (overlapIndex >= 0) {
-      throw new BadRequestException(
-        `The period you submitted is overlapping with another vacation from ${employeeHolidays[overlapIndex].from_date} to ${employeeHolidays[overlapIndex].to_date}`,
-      );
-    }
-  };
+  //   for (let i = 0; i < employeeHolidays.length; i++) {
+  //     if (
+  //       !(
+  //         holidayInfo.endingDate < employeeHolidays[i].from_date ||
+  //         holidayInfo.startingDate > employeeHolidays[i].to_date
+  //       )
+  //     ) {
+  //       overlapIndex = i;
+  //       break;
+  //     }
+  //   }
+  //   if (overlapIndex >= 0) {
+  //     throw new BadRequestException(
+  //       `The period you submitted is overlapping with another vacation from ${employeeHolidays[overlapIndex].from_date} to ${employeeHolidays[overlapIndex].to_date}`,
+  //     );
+  //   }
+  // };
 
   validateEditPTO(PTO: PTO, user: User, PTOEdited: EditPTODto): void {
     Guard.exists(PTO, `PTO with id ${PTOEdited.id} does not exist.`);
@@ -107,9 +114,20 @@ export class PTOsService {
     }
   }
 
-  public async postPTO(holidayInfo: HolidayInfoDto, user: User): Promise<PTO> {
-    await this.validatePTOPeriod(holidayInfo, user);
-    return await this.saveHolidayIntoPTO(holidayInfo, user);
+  public async postAbsence(
+    holidayInfo: AbsenceDetails,
+    user: User,
+  ): Promise<PTO> {
+    const userAbsences = await this.getUserPTOs(user);
+
+    const absence = AbsenceBehaviourFactory.create(
+      holidayInfo,
+      userAbsences,
+      (startingDate: Date, endingDate: Date) => this.holidaysService.calculateDays(startingDate, endingDate),
+    );
+    await absence.validate();
+    const absenceValue = await absence.getAbsenceDetails();
+    return await this.saveHolidayIntoPTO(absenceValue, user);
   }
 
   public async getUserPTOs(
@@ -118,24 +136,27 @@ export class PTOsService {
     Guard.isValidUUID(user.id, `Invalid user id: ${user.id}`);
     const userHolidays = await this.PTORepo.find({
       where: { employee: user.id },
+      relations: [UserRelations.employee],
     });
 
-    const userHolidaysWithCalculatedPTOs = userHolidays.map(async (el) => {
-      const eachDayStatus = await this.holidaysService.calculateDays({
-        startingDate: el.from_date,
-        endingDate: el.to_date,
-      });
-      if (Array.isArray(eachDayStatus)) {
-        const workDays = eachDayStatus.filter(
-          (elem) => elem.status === DayStatus.workday,
+    const userHolidaysWithCalculatedPTOs = userHolidays
+      .map((el) => el.toPTO())
+      .map(async (el) => {
+        const eachDayStatus = await this.holidaysService.calculateDays(
+          el.from_date,
+          el.to_date,
         );
-        return {
-          ...el,
-          totalDays: eachDayStatus.length,
-          PTODays: workDays.length,
-        };
-      }
-    });
+        if (Array.isArray(eachDayStatus)) {
+          const workDays = eachDayStatus.filter(
+            (elem) => elem.status === DayStatus.workday,
+          );
+          return {
+            ...el,
+            totalDays: eachDayStatus.length,
+            PTODays: workDays.length,
+          };
+        }
+      });
     const resolvedHolidaysInfo = await Promise.all(
       userHolidaysWithCalculatedPTOs,
     );
@@ -153,10 +174,10 @@ export class PTOsService {
 
   public async getPTOById(PTOId: string): Promise<PTODetailsWithEachDay> {
     const PTOInfo = await this.getPTOFullInfo(PTOId);
-    const eachDayStatus = await this.holidaysService.calculateDays({
-      startingDate: PTOInfo.from_date,
-      endingDate: PTOInfo.to_date,
-    });
+    const eachDayStatus = await this.holidaysService.calculateDays(
+      PTOInfo.from_date,
+      PTOInfo.to_date,
+    );
     const PTOInfoWithEachDayStatus = { ...PTOInfo, eachDayStatus };
     return PTOInfoWithEachDayStatus;
   }
@@ -167,17 +188,17 @@ export class PTOsService {
   }
 
   public async editPTO(PTOEdited: EditPTODto, user: User): Promise<PTO> {
-    const PTO = await this.PTORepo.findOne({
+    const PTOdb = await this.PTORepo.findOne({
       where: { id: PTOEdited.id },
       relations: [UserRelations.employee],
     });
+    const PTO = PTOdb.toPTO();
     this.validateEditPTO(PTO, user, PTOEdited);
-    await this.validatePTOPeriod(PTOEdited, user);
 
-    PTO.from_date = PTOEdited.startingDate;
-    PTO.to_date = PTOEdited.endingDate;
-    PTO.comment = PTOEdited.comment;
+    PTOdb.from_date = PTOEdited.startingDate;
+    PTOdb.to_date = PTOEdited.endingDate;
+    PTOdb.comment = PTOEdited.comment;
 
-    return (await this.PTORepo.save(PTO)).toPTO();
+    return (await this.PTORepo.save(PTOdb)).toPTO();
   }
 }

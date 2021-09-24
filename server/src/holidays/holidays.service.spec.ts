@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { PTOdb } from '../model/pto.entity';
+import { Absencedb } from '../model/absence.entity';
 import { Userdb } from '../model/user.entity';
 import { Holidaydb } from '../model/holiday.entity';
 import { HolidaysController } from './holidays.controller';
@@ -42,7 +42,7 @@ describe('HolidaysService', () => {
           useValue: mockHolidaysRepository,
         },
         {
-          provide: getRepositoryToken(PTOdb),
+          provide: getRepositoryToken(Absencedb),
           useValue: mockPTORepository,
         },
         {
@@ -63,8 +63,8 @@ describe('HolidaysService', () => {
     it('should return dates of constant holidays in the current year', async () => {
       //arrange
       const dto = {
-        startingDate: '2022-08-12',
-        endingDate: '2022-08-14',
+        startingDate: new Date('2022-08-12'),
+        endingDate: new Date('2022-08-14'),
       };
       const spy = jest.spyOn(service, 'getConstantHolidaysForTheCurrentYear');
 
