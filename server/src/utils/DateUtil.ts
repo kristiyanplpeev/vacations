@@ -1,10 +1,10 @@
-import { HolidayPeriod } from '../holidays/interfaces';
+import { AbsencePeriod } from '../holidays/interfaces';
 
 class DateUtil {
   static getPeriodBetweenDates = ({
     startingDate,
     endingDate,
-  }: HolidayPeriod) => {
+  }: AbsencePeriod) => {
     let dates = [];
     const theDate = new Date(startingDate);
     while (theDate <= endingDate) {

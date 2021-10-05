@@ -1,16 +1,16 @@
 import axios from "axios";
 import { injectable } from "inversify";
 
-import { applicationJSON, BASE_URL, errorHandle } from "common/constants";
-import { IPTO, IPTOWithId, IUserPTOWithCalcDays, IUserPTOFullDetails } from "common/interfaces";
-import { IPTOService, IAuthService } from "inversify/interfaces";
+import { AbsencesEnum, applicationJSON, BASE_URL, errorHandle } from "common/constants";
+import { IUserAbsenceWithWorkingDays, IUserAbsenceWithEachDayStatus } from "common/interfaces";
+import { IAbsenceService, IAuthService } from "inversify/interfaces";
 import "reflect-metadata";
 // eslint-disable-next-line import/no-cycle
 import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
 
 @injectable()
-class PTOService implements IPTOService {
+class AbsenceService implements IAbsenceService {
   private authService = myContainer.get<IAuthService>(TYPES.Auth);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,12 +25,19 @@ class PTOService implements IPTOService {
     ),
   });
 
-  addPTO = async ({ startingDate, endingDate, comment }: IPTO): Promise<void | { warning: string }> => {
+  addAbsence = async (
+    type: AbsencesEnum,
+    startingDate: string,
+    endingDate: string,
+    comment: string,
+  ): Promise<void | { warning: string }> => {
     const data = {
+      type,
       startingDate,
       endingDate,
       comment,
     };
+    console.log(data);
     try {
       await axios.post(`${BASE_URL}holidays`, data, this.getConfig());
     } catch (error) {
@@ -38,9 +45,16 @@ class PTOService implements IPTOService {
     }
   };
 
-  editPTO = async ({ startingDate, endingDate, comment, id }: IPTOWithId): Promise<void> => {
+  editAbsence = async (
+    id: string,
+    type: AbsencesEnum,
+    startingDate: string,
+    endingDate?: string,
+    comment?: string,
+  ): Promise<void> => {
     const data = {
       id,
+      type,
       startingDate,
       endingDate,
       comment,
@@ -52,7 +66,15 @@ class PTOService implements IPTOService {
     }
   };
 
-  getUserPTOs = async (): Promise<Array<IUserPTOWithCalcDays>> => {
+  getAbsenceEndDate = async (type: AbsencesEnum, startingDate: string): Promise<{ endingDate: string }> => {
+    try {
+      return (await axios.get(`${BASE_URL}holidays/end/${type}/${startingDate}`, this.getConfig())).data;
+    } catch (error) {
+      throw new Error(errorHandle(error));
+    }
+  };
+
+  getUserAbsences = async (): Promise<Array<IUserAbsenceWithWorkingDays>> => {
     try {
       return (await axios.get(`${BASE_URL}holidays/users`, this.getConfig())).data;
     } catch (error) {
@@ -60,21 +82,21 @@ class PTOService implements IPTOService {
     }
   };
 
-  PTODetailed = async (PTOId: string): Promise<IUserPTOFullDetails> => {
+  DetailedAbsence = async (absenceId: string): Promise<IUserAbsenceWithEachDayStatus> => {
     try {
-      return (await axios.get(`${BASE_URL}holidays/${PTOId}`, this.getConfig())).data;
+      return (await axios.get(`${BASE_URL}holidays/${absenceId}`, this.getConfig())).data;
     } catch (error) {
       throw new Error(errorHandle(error));
     }
   };
 
-  getRequestedPTOById = async (PTOId: string): Promise<IUserPTOFullDetails> => {
+  getRequestedAbsenceById = async (absenceId: string): Promise<IUserAbsenceWithEachDayStatus> => {
     try {
-      return (await axios.get(`${BASE_URL}holidays/details/${PTOId}`, this.getConfig())).data;
+      return (await axios.get(`${BASE_URL}holidays/details/${absenceId}`, this.getConfig())).data;
     } catch (error) {
       throw new Error(errorHandle(error));
     }
   };
 }
 
-export default PTOService;
+export default AbsenceService;

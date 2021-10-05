@@ -8,6 +8,10 @@ export const postgresDB = 'POSTGRES_DATABASE';
 
 export const nonWorkingDaysCount = 2;
 
+export const maxYearDifference = 1;
+
+export const invalidDateFormatMessage = "Date must be yyyy-mm-dd formatted string.";
+
 export enum DayStatus {
   weekend = 'weekend',
   workday = 'workday',

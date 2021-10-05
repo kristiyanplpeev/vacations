@@ -1,7 +1,7 @@
 import { Userdb } from './user.entity';
 import { Entity, Column, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { PTO } from '../holidays/interfaces';
+import { Absence } from '../holidays/interfaces';
 import { AbsenceTypesEnum } from '../common/constants';
 
 @Entity({ name: 'absence' })
@@ -21,7 +21,7 @@ export class Absencedb extends BaseEntity {
   @ManyToOne(() => Userdb, (user) => user.PTO)
   employee: Userdb;
 
-  toPTO(): PTO {
+  toAbsence(): Absence {
     return {
       id: this.id,
       type: this.type,

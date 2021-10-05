@@ -25,10 +25,10 @@ import { RouteComponentProps, StaticContext } from "react-router";
 
 import { AbsencesEnum } from "common/constants";
 import { DateUtil } from "common/DateUtil";
-import { IUserPTOWithCalcDays } from "common/interfaces";
+import { IUserAbsenceWithWorkingDays } from "common/interfaces";
 import { StringUtil } from "common/StringUtil";
 import Error from "components/common/Error/Error";
-import { IPTOService } from "inversify/interfaces";
+import { IAbsenceService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
 interface HomepageProps extends RouteComponentProps<null, StaticContext, { showSnackbar: boolean }> {}
@@ -38,12 +38,12 @@ interface HomepageState {
   error: string;
   successMessage: boolean;
   openSelectorDialog: boolean;
-  userPastPTOs: Array<IUserPTOWithCalcDays>;
-  userFuturePTOs: Array<IUserPTOWithCalcDays>;
+  userPastAbsences: Array<IUserAbsenceWithWorkingDays>;
+  userFutureAbsences: Array<IUserAbsenceWithWorkingDays>;
 }
 
 class Homepage extends Component<HomepageProps, HomepageState> {
-  @resolve(TYPES.PTO) private PTOService!: IPTOService;
+  @resolve(TYPES.Absence) private AbsenceService!: IAbsenceService;
 
   constructor(props: HomepageProps) {
     super(props);
@@ -52,8 +52,8 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       error: "",
       successMessage: false,
       openSelectorDialog: false,
-      userPastPTOs: [],
-      userFuturePTOs: [],
+      userPastAbsences: [],
+      userFutureAbsences: [],
     };
   }
 
@@ -64,11 +64,11 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       loading: true,
     });
     try {
-      const userPTOs = await this.getUserPTOs();
+      const userAbsences = await this.getUserAbsences();
 
       this.setState({
-        userFuturePTOs: userPTOs.userFuturePTOs,
-        userPastPTOs: userPTOs.userPastPTOs,
+        userFutureAbsences: userAbsences.userFutureAbsences,
+        userPastAbsences: userAbsences.userPastAbsences,
       });
     } catch (error) {
       this.setState({
@@ -87,20 +87,20 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     }
     return (
       <div className="homepage-root">
-        <h1 className="homepage-header">Absence</h1>
-        {this.state.userFuturePTOs.length === 0 && this.state.userPastPTOs.length === 0
-          ? this.renderNoPTOsView()
-          : this.renderPTOsTable()}
+        <h1 className="homepage-header">My Absences</h1>
+        {this.state.userFutureAbsences.length === 0 && this.state.userPastAbsences.length === 0
+          ? this.renderNoUserAbsencesView()
+          : this.renderUserAbsencesTable()}
         {this.renderSnackbar()}
         {this.renderSelectDialog()}
       </div>
     );
   }
 
-  renderAddPTOButton(): JSX.Element {
+  renderAddAbsenceButton(): JSX.Element {
     return (
       <Button
-        className="homepage-add-pto-button"
+        className="homepage-add-absence-button"
         onClick={() => this.handleToggleSelectDialog(true)}
         variant="outlined"
         color="primary"
@@ -110,14 +110,14 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  renderPTOsTable(): JSX.Element {
+  renderUserAbsencesTable(): JSX.Element {
     return (
       <div>
-        {this.renderAddPTOButton()}
+        {this.renderAddAbsenceButton()}
         {this.renderHeaderAndFooter(true)}
-        {this.renderPTOsSeparator()}
+        {this.renderSeparator()}
         {this.renderHeaderAndFooter(false)}
-        {this.renderAddPTOButton()}
+        {this.renderAddAbsenceButton()}
       </div>
     );
   }
@@ -129,11 +129,11 @@ class Homepage extends Component<HomepageProps, HomepageState> {
           {header ? (
             <>
               <TableHead>{this.renderTableHeaderAndFooterCells()}</TableHead>
-              <TableBody>{this.state.userFuturePTOs.map(this.mappingFunc)}</TableBody>
+              <TableBody>{this.state.userFutureAbsences.map(this.mappingFunc)}</TableBody>
             </>
           ) : (
             <>
-              <TableBody>{this.state.userPastPTOs.map(this.mappingFunc)}</TableBody>
+              <TableBody>{this.state.userPastAbsences.map(this.mappingFunc)}</TableBody>
               <TableFooter className="homepage-table-footer">{this.renderTableHeaderAndFooterCells()}</TableFooter>
             </>
           )}
@@ -146,13 +146,16 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     return (
       <TableRow>
         <TableCell width="10%" align="left">
+          <b>Type</b>
+        </TableCell>
+        <TableCell width="10%" align="left">
           <b>From</b>
         </TableCell>
         <TableCell width="10%" align="left">
           <b>To</b>
         </TableCell>
         <TableCell width="8%" align="left">
-          <b>PTO days</b>
+          <b>Working days</b>
         </TableCell>
         <TableCell width="8%" align="left">
           <b>Total days</b>
@@ -185,8 +188,8 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  renderPTOsSeparator(): JSX.Element {
-    if (this.state.userFuturePTOs.length === 0 || this.state.userPastPTOs.length === 0) return <></>;
+  renderSeparator(): JSX.Element {
+    if (this.state.userFutureAbsences.length === 0 || this.state.userPastAbsences.length === 0) return <></>;
     return (
       <div className="or-spacer">
         <div className="mask"></div>
@@ -197,7 +200,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  renderNoPTOsView(): JSX.Element {
+  renderNoUserAbsencesView(): JSX.Element {
     if (this.state.loading) {
       return <CircularProgress />;
     }
@@ -224,8 +227,11 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  private mappingFunc = (el: IUserPTOWithCalcDays): JSX.Element => (
+  private mappingFunc = (el: IUserAbsenceWithWorkingDays): JSX.Element => (
     <TableRow hover key={el.id}>
+      <TableCell width="10%" align="left">
+        {el.type}
+      </TableCell>
       <TableCell width="10%" align="left">
         {el.from_date}
       </TableCell>
@@ -233,23 +239,23 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         {el.to_date}
       </TableCell>
       <TableCell width="8%" align="left">
-        {el.PTODays}
+        {el.workingDays}
       </TableCell>
       <TableCell width="8%" align="left">
         {el.totalDays}
       </TableCell>
       <TableCell width="5%" align="left">
-        <Button color="primary" onClick={() => this.props.history.push(`/pto/${el.id}`)}>
+        <Button color="primary" onClick={() => this.props.history.push(`/absence/${el.id}`)}>
           view
         </Button>
       </TableCell>
       <TableCell width="5%" align="left">
-        <Button color="primary" onClick={() => this.handleEditClick(el.id)}>
+        <Button color="primary" onClick={() => this.handleEditClick(el.id, el.type)}>
           edit
         </Button>
       </TableCell>
       <TableCell width="30%" align="left">
-        {el.comment}
+        {el.comment ? el.comment : <div className="homepage-absence-comment">not available</div>}
       </TableCell>
     </TableRow>
   );
@@ -260,8 +266,9 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     });
   }
 
-  handleEditClick(currentPTOId: string): void {
-    this.props.history.push(`/edit/${currentPTOId}`);
+  handleEditClick(currentAbsenceId: string, type: string): void {
+    const absenceType = StringUtil.zipString(type);
+    this.props.history.push(`/edit/${absenceType}/${currentAbsenceId}`);
   }
 
   private openSnackbar(isOpen: boolean): void {
@@ -277,18 +284,18 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     }
   }
 
-  private async getUserPTOs() {
-    const userPTOs = await this.PTOService.getUserPTOs();
-    const userFuturePTOs = userPTOs
+  private async getUserAbsences() {
+    const userAbsences = await this.AbsenceService.getUserAbsences();
+    const userFutureAbsences = userAbsences
       .filter((el) => el.from_date > DateUtil.todayStringified())
       .sort(DateUtil.dateSorting);
-    const userPastPTOs = userPTOs
+    const userPastAbsences = userAbsences
       .filter((el) => el.from_date <= DateUtil.todayStringified())
       .sort(DateUtil.dateSorting);
 
     return {
-      userFuturePTOs,
-      userPastPTOs,
+      userFutureAbsences,
+      userPastAbsences,
     };
   }
 }

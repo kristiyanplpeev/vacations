@@ -1,4 +1,4 @@
-import { PositionsEnum, TeamsEnum } from "common/constants";
+import { AbsencesEnum, PositionsEnum, TeamsEnum } from "common/constants";
 
 export interface IUser {
   id: string;
@@ -14,16 +14,16 @@ export interface IUserWithTeamAndPosition extends IUser {
   position: PositionsEnum;
 }
 
-export interface IPTOPeriod {
+export interface IAbsencePeriod {
   startingDate: string;
   endingDate: string;
 }
 
-export interface IPTO extends IPTOPeriod {
+export interface IAbsence extends IAbsencePeriod {
   comment: string;
 }
 
-export interface IPTOWithId extends IPTO {
+export interface IAbsenceWithId extends IAbsence {
   id: string;
 }
 
@@ -37,19 +37,20 @@ export interface ITextBox {
   textBoxInvalid: boolean;
 }
 
-export interface IUserPTO {
+export interface IUserAbsence {
   id: string;
+  type: string;
   from_date: string;
   to_date: string;
   comment: string;
 }
 
-export interface IUserPTOWithCalcDays extends IUserPTO {
-  PTODays: number;
+export interface IUserAbsenceWithWorkingDays extends IUserAbsence {
+  workingDays: number;
   totalDays: number;
 }
 
-export interface IUserPTOFullDetails extends IUserPTO {
+export interface IUserAbsenceWithEachDayStatus extends IUserAbsence {
   employee: IUser;
   eachDayStatus: HolidayDays;
 }

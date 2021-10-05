@@ -1,32 +1,63 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
-import { IsDateString, IsString, IsUUID } from 'class-validator';
+import {
+  IsDateString,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import DateUtil from '../../utils/DateUtil';
-import { AbsenceTypesEnum } from '../../common/constants';
-import { AbsencePeriodWithStatus } from '../../holidays/interfaces';
+import {
+  AbsenceTypesEnum,
+  invalidDateFormatMessage,
+} from '../../common/constants';
+import { AbsencePeriodEachDay } from '../../holidays/interfaces';
 import { Userdb } from '../../model/user.entity';
 
 export class AbsenceTypeDto {
   type: AbsenceTypesEnum;
 }
 
+export class AbsenceStartingDateDto extends AbsenceTypeDto {
+  @IsDateString({}, { message: invalidDateFormatMessage })
+  start: string;
+}
+
+export class AbsencePeriodWithEndDateDto {
+  @IsDateString({}, { message: invalidDateFormatMessage })
+  start: string;
+
+  @IsDateString({}, { message: invalidDateFormatMessage })
+  end: string;
+}
+
 export class AbsencePeriodDto extends AbsenceTypeDto {
+  @IsDateString({}, { message: invalidDateFormatMessage })
   startingDate: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: invalidDateFormatMessage })
   endingDate?: string;
 }
 export class AbsenceDetailsDto extends AbsencePeriodDto {
+  @IsOptional()
+  @MaxLength(1000)
+  @MinLength(1)
+  @IsString()
   comment?: string;
 }
 export class GetByIdDto {
-  @IsUUID('all', { message: 'Invalid PTO id' })
+  @IsUUID('all', { message: 'Invalid absence id' })
   id: string;
 }
 
-export class EditPTODto extends AbsenceDetailsDto {
-  @IsUUID('all', { message: 'PTO id is invalid' })
+export class EditAbsenceDto extends AbsenceDetailsDto {
+  @IsUUID('all', { message: 'Absence id is invalid' })
   id: string;
 }
 
-export class PTOResponseDto {
+export class AbsenceResponseDto {
   id: string;
   type: string;
   @Transform(({ value }) => DateUtil.dateToString(value))
@@ -37,22 +68,22 @@ export class PTOResponseDto {
   employee: Userdb;
 }
 
-export class PTODaysStatusResponseDto {
+export class AbsenceDaysStatusResponseDto {
+  @Transform(({ value }) => DateUtil.dateToString(value))
   date: string;
   status: string;
 }
 
-export class PTOWithTotalDaysResponseDto {
+export class AbsenceWithWorkingDaysResponseDto extends AbsenceResponseDto {
   totalDays: number;
-  PTODays: number;
-  @Transform(({ value }) => DateUtil.dateToString(value))
-  from_date: string;
-  @Transform(({ value }) => DateUtil.dateToString(value))
-  to_date: string;
-  comment: string;
-  id: string;
+  workingDays: number;
 }
 
-export class PTOWithEachDay extends PTOResponseDto {
-  eachDayStatus: AbsencePeriodWithStatus;
+export class AbsenceWithEachDay extends AbsenceResponseDto {
+  eachDayStatus: AbsencePeriodEachDay;
+}
+
+export class EndingDateResponseDto {
+  @Transform(({ value }) => DateUtil.dateToString(value))
+  endingDate: string;
 }

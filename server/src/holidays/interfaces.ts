@@ -1,14 +1,14 @@
 import { AbsenceTypesEnum } from '../common/constants';
 import { Userdb } from '../model/user.entity';
 
-export interface HolidayPeriod {
+export interface AbsencePeriod {
   startingDate: Date;
   endingDate: Date;
 }
 
-export type AbsencePeriodWithStatus = Array<{ date: Date; status: string }>;
+export type AbsencePeriodEachDay = Array<{ date: Date; status: string }>;
 
-export interface PTO {
+export interface Absence {
   id: string;
   type: AbsenceTypesEnum;
   from_date: Date;
@@ -17,33 +17,21 @@ export interface PTO {
   employee: Userdb;
 }
 
-export interface AbsencePeriod {
-  startingDate: Date;
-  endingDate?: Date;
-}
-
-export interface AbsenceDetails extends AbsencePeriod {
+export interface AbsenceDetailsOptional {
   id?: string;
   type: AbsenceTypesEnum;
-  comment?: string;
+  startingDate: Date;
+  endingDate?: Date;
+  comment?: string | null;
 }
 
-export interface PTODetailsWithEachDay {
-  id: string;
-  from_date: Date;
-  to_date: Date;
-  comment: string;
-  employee: Userdb;
-  eachDayStatus: AbsencePeriodWithStatus;
+export interface AbsenceDetailsWithEachDay extends Absence {
+  eachDayStatus: AbsencePeriodEachDay;
 }
 
-export interface PTODetailsWithTotalDays {
-  id: string;
-  from_date: Date;
-  to_date: Date;
-  comment: string;
+export interface AbsenceDetailsWithTotalDays extends Absence {
   totalDays: number;
-  PTODays: number;
+  workingDays: number;
 }
 
 export interface Holiday {

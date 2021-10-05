@@ -5,34 +5,34 @@ import Grid from "@material-ui/core/Grid";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
-import "./PTODetails.css";
+import "./AbsenceDetails.css";
 import { dayStatus } from "common/constants";
-import { IUserPTO, IUser, HolidayDays } from "common/interfaces";
+import { IUserAbsence, IUser, HolidayDays } from "common/interfaces";
+import AbsenceCard from "components/AbsenceDetails/AbsenceCard/AbsenceCard";
 import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import Error from "components/common/Error/Error";
-import PTOCard from "components/PTODetails/PTOCard/PTOCard";
-import { IPTOService } from "inversify/interfaces";
+import { IAbsenceService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
-interface PTODetailsMatchProps {
+interface AbsenceDetailsMatchProps {
   id: string;
 }
 
-interface PTODetailsProps extends RouteComponentProps<PTODetailsMatchProps> {}
+interface AbsenceDetailsProps extends RouteComponentProps<AbsenceDetailsMatchProps> {}
 
-interface PTODetailsState {
+interface AbsenceDetailsState {
   error: string;
   loading: boolean;
-  PTOInfo: IUserPTO;
+  absenceDetails: IUserAbsence;
   employee: IUser;
   eachDayStatus: HolidayDays;
   workingDays: number;
 }
 
-class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
-  @resolve(TYPES.PTO) private PTOService!: IPTOService;
+class AbsenceDetails extends Component<AbsenceDetailsProps, AbsenceDetailsState> {
+  @resolve(TYPES.Absence) private absenceService!: IAbsenceService;
 
-  constructor(props: PTODetailsProps) {
+  constructor(props: AbsenceDetailsProps) {
     super(props);
     this.state = {
       error: "",
@@ -45,8 +45,9 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
         lastName: "",
         picture: "",
       },
-      PTOInfo: {
+      absenceDetails: {
         id: "",
+        type: "",
         from_date: "",
         to_date: "",
         comment: "",
@@ -61,19 +62,20 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
       this.setState({
         loading: true,
       });
-      const PTOId = this.props.match.params.id;
-      const PTOFullInfo = await this.PTOService.PTODetailed(PTOId);
-      const workingDays = this.calculateWorkingDays(PTOFullInfo.eachDayStatus);
+      const absenceId = this.props.match.params.id;
+      const absenceDetails = await this.absenceService.DetailedAbsence(absenceId);
+      const workingDays = this.calculateWorkingDays(absenceDetails.eachDayStatus);
 
       this.setState({
-        employee: PTOFullInfo.employee,
-        PTOInfo: {
-          id: PTOFullInfo.id,
-          from_date: PTOFullInfo.from_date,
-          to_date: PTOFullInfo.to_date,
-          comment: PTOFullInfo.comment,
+        employee: absenceDetails.employee,
+        absenceDetails: {
+          id: absenceDetails.id,
+          type: absenceDetails.type,
+          from_date: absenceDetails.from_date,
+          to_date: absenceDetails.to_date,
+          comment: absenceDetails.comment,
         },
-        eachDayStatus: PTOFullInfo.eachDayStatus,
+        eachDayStatus: absenceDetails.eachDayStatus,
         workingDays,
       });
     } catch (error) {
@@ -90,22 +92,25 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
       return <Error message={this.state.error} />;
     }
     return (
-      <div className="pto-details-container">
-        <h1 className="pto-details-header">View Vacation</h1>
+      <div className="absence-details-container">
+        <h1 className="absence-details-header">View Vacation</h1>
         <Grid container spacing={3}>
           <Grid item xs={6}>
             {this.state.loading ? (
               <CircularProgress />
             ) : (
-              <PTOCard
+              <AbsenceCard
                 employee={this.state.employee}
-                PTOInfo={this.state.PTOInfo}
+                absenceDetails={this.state.absenceDetails}
                 workingDays={this.state.workingDays}
               />
             )}
           </Grid>
           <Grid item xs={6}>
-            <DatesCalculator startingDate={this.state.PTOInfo.from_date} endingDate={this.state.PTOInfo.to_date} />
+            <DatesCalculator
+              startingDate={this.state.absenceDetails.from_date}
+              endingDate={this.state.absenceDetails.to_date}
+            />
           </Grid>
         </Grid>
       </div>
@@ -117,4 +122,4 @@ class PTODetails extends Component<PTODetailsProps, PTODetailsState> {
   }
 }
 
-export default PTODetails;
+export default AbsenceDetails;

@@ -18,7 +18,7 @@
   line-height: 1.5;
 }
 
-.homepage-add-pto-button.MuiButtonBase-root {
+.homepage-add-absence-button.MuiButtonBase-root {
   margin: 2% 0%;
   float: left;
 }
@@ -29,6 +29,10 @@
 
 .homepage-main-divider {
   color: black;
+}
+
+.homepage-absence-comment {
+  opacity: 0.5;
 }
 
 .or-spacer {

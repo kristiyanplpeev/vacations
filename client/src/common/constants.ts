@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const BASE_URL = "http://localhost:5000/";
 
 export const dayStatus = {
@@ -47,13 +48,13 @@ export enum PositionsEnum {
 export enum AbsencesEnum {
   paidLeave = "Paid",
   unpaidLeave = "Unpaid",
-  weddingLeave = "Own wedding",
+  weddingLeave = "Wedding",
   bereavementLeave = "Bereavement",
   bloodDonationLeave = "Blood donation",
   courtLeave = "Court",
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const errorHandle = (err: any): string => {
   if (err.response) {
     return err.response.data.message;
