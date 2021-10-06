@@ -37,7 +37,7 @@ const mockedPropsInvalid = {
   },
 };
 
-const PTOServiceMock = {
+const absenceServiceMock = {
   addAbsence: () => Promise.resolve(undefined),
 };
 
@@ -49,7 +49,7 @@ const getSelector = (value: string) => `[data-unit-test="${value}"]`;
 
 const getContainer = () => {
   myContainer.snapshot();
-  myContainer.rebind(TYPES.Absence).toConstantValue(PTOServiceMock);
+  myContainer.rebind(TYPES.Absence).toConstantValue(absenceServiceMock);
 
   return myContainer;
 };
@@ -134,7 +134,7 @@ describe("Absence Form ", () => {
     // assert
     expect(commentInput).toHaveLength(0);
   });
-  it("Should render warning after clicking Add button with invalid PTO period", () => {
+  it("Should render warning after clicking Add button with invalid absence period", () => {
     // arrange
     const containerMock = getContainer();
     const component = getPaidAndUnpaidAbsenceComponent(
@@ -155,7 +155,7 @@ describe("Absence Form ", () => {
     // assert
     expect(warning).toHaveLength(1);
   });
-  it("Should render warning after clicking Add button with invalid PTO comment", () => {
+  it("Should render warning after clicking Add button with invalid comment", () => {
     // arrange
     const containerMock = getContainer();
     const component = getPaidAndUnpaidAbsenceComponent(mockedProps.startingDate, mockedProps.endingDate, containerMock);
@@ -172,7 +172,7 @@ describe("Absence Form ", () => {
     // assert
     expect(warning).toHaveLength(1);
   });
-  it("Should not render warning after clicking Add button with valid PTO data", () => {
+  it("Should not render warning after clicking Add button with valid absence data", () => {
     // arrange
     const containerMock = getContainer();
     const component = getPaidAndUnpaidAbsenceComponent(mockedProps.startingDate, mockedProps.endingDate, containerMock);
