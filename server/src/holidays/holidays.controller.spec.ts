@@ -33,10 +33,10 @@ describe('HolidaysController', () => {
   };
 
   const mockAbsenceDetails = {
+    type: AbsenceTypesEnum.paidLeave,
     from_date: new Date('2021/05/01'),
     to_date: new Date('2021/05/09'),
     comment: 'PTO',
-    status: 'requested',
     employee: 'kristiyan.peev@atscale.com',
   };
 
@@ -56,19 +56,19 @@ describe('HolidaysController', () => {
   const mockEmployeeHolidaysCalc = [
     {
       id: '8389e44d-d807-4580-a9bf-ac59c07f1c4f',
+      type: AbsenceTypesEnum.paidLeave,
       from_date: new Date('2021-08-04'),
       to_date: new Date('2021-08-04'),
       comment: 'PTO',
-      status: 'requested',
       totalDays: 1,
       PTODays: 1,
     },
     {
       id: '89b04b55-f047-4ce1-87f2-21f849ccd398',
+      type: AbsenceTypesEnum.paidLeave,
       from_date: new Date('2021-08-05'),
       to_date: new Date('2021-08-05'),
       comment: 'PTO',
-      status: 'requested',
       totalDays: 1,
       PTODays: 1,
     },
@@ -80,10 +80,10 @@ describe('HolidaysController', () => {
 
   const mockAbsenceWithEachDay = {
     id: '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
+    type: AbsenceTypesEnum.paidLeave,
     from_date: new Date('2021-07-07'),
     to_date: new Date('2021-07-08'),
     comment: 'PTO',
-    status: 'requested',
     employee: {
       id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
       googleId: '106956791077954804246',
