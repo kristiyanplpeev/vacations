@@ -13,14 +13,12 @@ export class HolidaysService {
     @InjectRepository(Holidaydb) private holidayRepo: Repository<Holidaydb>,
   ) {}
 
-  getConstantHolidays = async (
-    absencePeriod: AbsencePeriod,
+  getConstantHolidaysByYear = async (
+    absenceStartingDateYear: number,
   ): Promise<Array<Holiday>> => {
     const constantHolidays = await this.holidayRepo.find({
       where: { movable: false },
     });
-
-    const absenceStartingDateYear = absencePeriod.startingDate.getFullYear();
 
     const constantHolidaysForCurrentYear = constantHolidays
       .map((el) => el.toHoliday())
@@ -121,8 +119,8 @@ export class HolidaysService {
       endingDate,
     };
     const datesBetween = DateUtil.getPeriodBetweenDates(absenceStartAndEndDate);
-    const constantHolidays = await this.getConstantHolidays(
-      absenceStartAndEndDate,
+    const constantHolidays = await this.getConstantHolidaysByYear(
+      startingDate.getFullYear(),
     );
 
     const movableHolidays = await this.getMovableHolidaysForTheSubmittedPeriod(

@@ -79,8 +79,8 @@ export abstract class AbsenceTypes {
     for (let i = 0; i < employeeAbsences.length; i++) {
       if (
         !(
-          endingDate < employeeAbsences[i].from_date ||
-          startingDate > employeeAbsences[i].to_date
+          endingDate < employeeAbsences[i].startingDate ||
+          startingDate > employeeAbsences[i].endingDate
         )
       ) {
         overlapIndex = i;
@@ -90,8 +90,8 @@ export abstract class AbsenceTypes {
     if (overlapIndex >= 0) {
       throw new BadRequestException(
         `The period you submitted is overlapping with another vacation from ${DateUtil.dateToString(
-          employeeAbsences[overlapIndex].from_date,
-        )} to ${DateUtil.dateToString(employeeAbsences[overlapIndex].to_date)}`,
+          employeeAbsences[overlapIndex].startingDate,
+        )} to ${DateUtil.dateToString(employeeAbsences[overlapIndex].endingDate)}`,
       );
     }
   }

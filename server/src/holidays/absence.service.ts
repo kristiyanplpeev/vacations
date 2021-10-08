@@ -2,7 +2,10 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Absencedb } from '../model/absence.entity';
 import { Userdb } from '../model/user.entity';
-import { Repository } from 'typeorm';
+import {
+  CustomRepositoryCannotInheritRepositoryError,
+  Repository,
+} from 'typeorm';
 import { HolidaysService } from './holidays.service';
 import {
   AbsenceDetailsWithTotalDays,
@@ -61,37 +64,38 @@ export class AbsencesService {
     return endDate;
   }
 
+  async calculateAbsenceWorkingDays(
+    absences: Array<Absence>,
+  ): Promise<Array<AbsenceDetailsWithTotalDays>> {
+    const userAbsencesWithCalculatedWorkingDays = absences.map(async (el) => {
+      const eachDayStatus = await this.holidaysService.calculateDays(
+        el.startingDate,
+        el.endingDate,
+      );
+      const workDays = eachDayStatus.filter(
+        (elem) => elem.status === DayStatus.workday,
+      );
+      return {
+        ...el,
+        totalDays: eachDayStatus.length,
+        workingDays: workDays.length,
+      };
+    });
+    
+    return await Promise.all(userAbsencesWithCalculatedWorkingDays);
+  }
+
   public async getUserAbsences(
     user: User,
   ): Promise<Array<AbsenceDetailsWithTotalDays>> {
     Guard.isValidUUID(user.id, `Invalid user id: ${user.id}`);
-    const userHolidays = await this.absenceRepo.find({
+    const userHolidaysDb = await this.absenceRepo.find({
       where: { employee: user.id },
       relations: [UserRelations.employee],
     });
+    const userHolidays = userHolidaysDb.map((el) => el.toAbsence());
 
-    const userAbsencesWithCalculatedWorkingDays = userHolidays
-      .map((el) => el.toAbsence())
-      .map(async (el) => {
-        const eachDayStatus = await this.holidaysService.calculateDays(
-          el.from_date,
-          el.to_date,
-        );
-        if (Array.isArray(eachDayStatus)) {
-          const workDays = eachDayStatus.filter(
-            (elem) => elem.status === DayStatus.workday,
-          );
-          return {
-            ...el,
-            totalDays: eachDayStatus.length,
-            workingDays: workDays.length,
-          };
-        }
-      });
-    const resolvedUserAbsences = await Promise.all(
-      userAbsencesWithCalculatedWorkingDays,
-    );
-    return resolvedUserAbsences;
+    return await this.calculateAbsenceWorkingDays(userHolidays);
   }
 
   private async getAbsenceDetails(absenceId: string): Promise<Absence> {
@@ -109,8 +113,8 @@ export class AbsencesService {
     const absenceInfo = await this.getAbsenceDetails(absenceId);
 
     const eachDayStatus = await this.holidaysService.calculateDays(
-      absenceInfo.from_date,
-      absenceInfo.to_date,
+      absenceInfo.startingDate,
+      absenceInfo.endingDate,
     );
     const AbsenceWithPeriodEachDayStatus = { ...absenceInfo, eachDayStatus };
     return AbsenceWithPeriodEachDayStatus;

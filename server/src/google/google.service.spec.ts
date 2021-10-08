@@ -6,15 +6,15 @@ import { GoogleController } from './google.controller';
 import { GoogleService } from './google.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
-import { mockedUser, userFromdb } from '../common/holidaysMockedData';
+import { mockedUser, userDb } from '../common/holidaysMockedData';
 
 describe('GoogleService', () => {
   let service: GoogleService;
 
   const mockUserRepository = {
-    findOne: jest.fn(() => Promise.resolve(userFromdb(mockedUser))),
+    findOne: jest.fn(() => Promise.resolve(userDb(mockedUser))),
     create: jest.fn(() => Promise.resolve(undefined)),
-    save: jest.fn(() => Promise.resolve(userFromdb(mockedUser))),
+    save: jest.fn(() => Promise.resolve(userDb(mockedUser))),
   };
 
   const mockJWTRepository = {
@@ -49,25 +49,19 @@ describe('GoogleService', () => {
 
   describe('validateUser', () => {
     it('should return info about user', async () => {
-      const spy = jest.spyOn(service, 'validateUser');
       const result = await service.validateUser(mockedUser);
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockedUser);
     });
   });
   describe('createUser', () => {
     it('should return info about user', async () => {
-      const spy = jest.spyOn(service, 'createUser');
       const result = await service.createUser(mockedUser);
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockedUser);
     });
   });
   describe('login', () => {
     it('should return access token', () => {
-      const spy = jest.spyOn(service, 'login');
       const result = service.login(mockedUser);
-      expect(spy).toHaveBeenCalled();
       expect(result).toHaveProperty('access_token');
     });
   });

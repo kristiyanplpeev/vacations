@@ -25,8 +25,8 @@ export class Absencedb extends BaseEntity {
     return {
       id: this.id,
       type: this.type,
-      from_date: new Date(this.from_date),
-      to_date: new Date(this.to_date),
+      startingDate: new Date(this.from_date),
+      endingDate: new Date(this.to_date),
       comment: this.comment,
       employee: this.employee,
     };

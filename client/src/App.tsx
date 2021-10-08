@@ -12,7 +12,7 @@ import AdminPanel from "components/AdminPanel/AdminPanel";
 import BulkChangeUsers from "components/BulkChangeUsers/BulkChangeUsers";
 import Header from "components/Header/Header";
 import Homepage from "components/Homepage/Homepage";
-import NewAbsence from "components/NewAbsence/NewAbsence";
+import AddAndEditAbsence from "components/NewAbsence/AddAndEditAbsence";
 import SideBar from "components/SideBar/SideBar";
 import UsersList from "components/UsersList/UsersList";
 import { IAuthenticationActionCreator } from "inversify/interfaces";
@@ -65,13 +65,13 @@ class App extends Component<AppProps, AppState> {
               path="/new/:type"
               exact
               isAuthenticated={this.props.user.isAuthenticated}
-              component={NewAbsence}
+              component={AddAndEditAbsence}
             />
             <PrivateRoute
               path="/edit/:type/:id"
               exact
               isAuthenticated={this.props.user.isAuthenticated}
-              component={NewAbsence}
+              component={AddAndEditAbsence}
             />
             <PrivateRoute
               path="/absence/:id"

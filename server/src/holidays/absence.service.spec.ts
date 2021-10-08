@@ -7,45 +7,56 @@ import { Holidaydb } from '../model/holiday.entity';
 import { HolidaysController } from './holidays.controller';
 import { HolidaysService } from './holidays.service';
 import {
-  mockSavedHoliday,
-  mockAbsenceInfo,
+  mockAbsenceDb,
   constantHolidays,
   mockedUser,
-  absenceDb,
   mockEmployeeAbsencesDb,
-  mockEmployeeHolidaysCalculated,
+  toAbsence,
+  absenceCalculatedWorkingDays,
 } from '../common/holidaysMockedData';
 import { UnauthorizedException } from '@nestjs/common';
 import { AbsenceFactory } from './absenceTypes/absenceTypes';
-import { AbsenceTypesEnum } from '../common/constants';
+import { AbsenceTypesEnum, DayStatus } from '../common/constants';
+
+const absenceDb = (absence: any) => ({
+  ...absence,
+  toAbsence() {
+    return toAbsence(absence);
+  },
+});
 
 const convertStringsIntoDates = (obj: any) => ({
   ...obj,
-  from_date: new Date(obj.from_date),
-  to_date: new Date(obj.to_date),
+  startingDate: new Date(obj.startingDate),
+  endingDate: new Date(obj.endingDate),
 });
 
-const mockUserWIthIdMatchingAbsenceEmployeeId = {
+const getUserWithId = (newId: string) => ({
   ...mockedUser,
-  id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
-};
+  id: newId,
+});
 
 const mockCalculatedPeriod = [
   {
     date: new Date('2021-08-04'),
-    status: 'weekday',
+    status: DayStatus.workday,
   },
 ];
+
+const getDayWithStatus = (dayStatus: DayStatus) => ({
+  date: new Date(),
+  status: dayStatus,
+});
 
 describe('absenceService', () => {
   let service: AbsencesService;
   let factory: AbsenceFactory;
 
   const mockAbsenceRepository = {
-    save: jest.fn(() => Promise.resolve(absenceDb(mockSavedHoliday))),
+    save: jest.fn(() => Promise.resolve(absenceDb(mockAbsenceDb))),
     create: jest.fn(() => Promise.resolve(undefined)),
     find: jest.fn(() => Promise.resolve(mockEmployeeAbsencesDb)),
-    findOne: jest.fn(() => Promise.resolve(absenceDb(mockAbsenceInfo))),
+    findOne: jest.fn(() => Promise.resolve(absenceDb(mockAbsenceDb))),
   };
   const mockUserRepository = {
     create: jest.fn(() => Promise.resolve(undefined)),
@@ -55,7 +66,7 @@ describe('absenceService', () => {
   };
 
   const mockHolidaysService = {
-    calculateDays: jest.fn((body) => {
+    calculateDays: jest.fn(() => {
       return mockCalculatedPeriod;
     }),
   };
@@ -106,17 +117,25 @@ describe('absenceService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
-  describe('getUserAbsences', () => {
+  describe('calculateAbsenceWorkingDays', () => {
     it('should return user absences', async () => {
       //arrange
-      const spy = jest.spyOn(service, 'getUserAbsences');
+      jest
+        .spyOn(mockHolidaysService, 'calculateDays')
+        .mockReturnValue([
+          getDayWithStatus(DayStatus.workday),
+          getDayWithStatus(DayStatus.weekend),
+        ]);
 
       //act
-      const result = await service.getUserAbsences(mockedUser);
+      const result = await service.calculateAbsenceWorkingDays([
+        toAbsence(mockAbsenceDb),
+      ]);
 
       //assert
-      expect(spy).toHaveBeenCalled();
-      expect(result).toEqual(mockEmployeeHolidaysCalculated);
+      expect(result).toEqual([
+        absenceCalculatedWorkingDays(toAbsence(mockAbsenceDb), 1, 2),
+      ]);
     });
   });
 
@@ -124,19 +143,21 @@ describe('absenceService', () => {
     it('should return absence details with calculated each day status', async () => {
       //arrange
       const eachDayStatus = [
-        { date: new Date('2021-08-04'), status: 'weekday' },
+        getDayWithStatus(DayStatus.workday),
+        getDayWithStatus(DayStatus.weekend),
       ];
-      const spy = jest.spyOn(service, 'getAbsenceWithEachDayStatus');
+      jest
+        .spyOn(mockHolidaysService, 'calculateDays')
+        .mockReturnValue(eachDayStatus);
 
       //act
       const result = await service.getAbsenceWithEachDayStatus(
-        '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
+        mockAbsenceDb.id,
       );
 
       //assert
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual({
-        ...convertStringsIntoDates(mockAbsenceInfo),
+        ...convertStringsIntoDates(toAbsence(mockAbsenceDb)),
         eachDayStatus,
       });
     });
@@ -145,9 +166,9 @@ describe('absenceService', () => {
   describe('editAbsence', () => {
     it('should return detailed edited absence information', async () => {
       //arrange
-      const spy = jest.spyOn(service, 'editAbsence');
+      const absenceId = '0505c3d8-2fb5-4952-a0e7-1b49334f578d';
       const absence = factory.create({
-        id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
+        id: absenceId,
         type: AbsenceTypesEnum.paidLeave,
         startingDate: new Date('2021-08-05'),
         endingDate: new Date('2021-08-05'),
@@ -157,27 +178,27 @@ describe('absenceService', () => {
       //act
       const result = await service.editAbsence(
         absence,
-        mockUserWIthIdMatchingAbsenceEmployeeId,
-        mockSavedHoliday.id,
+        getUserWithId('fc799a20-5885-4390-98ce-7c868c3b3338'),
+        absenceId,
       );
       //assert
-      expect(spy).toHaveBeenCalled();
-      expect(result).toEqual(mockSavedHoliday);
+      expect(result).toEqual(toAbsence(mockAbsenceDb));
     });
     it('should throw when user id and absence employee id does not match', async () => {
       //arrange
+      const absenceId = '0505c3d8-2fb5-4952-a0e7-1b49334f578d';
       const absence = factory.create({
-        id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
+        id: absenceId,
         type: AbsenceTypesEnum.paidLeave,
         startingDate: new Date('2021-08-05'),
         endingDate: new Date('2021-08-05'),
         comment: 'Out of office',
       });
       expect.hasAssertions();
-      
+
       try {
         //act
-        await service.editAbsence(absence, mockedUser, mockSavedHoliday.id);
+        await service.editAbsence(absence, mockedUser, absenceId);
       } catch (error) {
         //assert
         expect(error).toBeInstanceOf(UnauthorizedException);

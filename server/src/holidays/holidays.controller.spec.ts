@@ -3,9 +3,13 @@ import { HolidaysService } from './holidays.service';
 import { HolidaysController } from './holidays.controller';
 import { AbsencesService } from './absence.service';
 import {
-  mockEditedAbsenceDetails,
-  mockSavedHoliday,
+  mockAbsenceDb,
   mockHolidayPeriodDates,
+  toAbsence,
+  mockedUser,
+  absenceDto,
+  absenceCalculatedWorkingDays,
+  mockEmployeeHolidays,
 } from '../common/holidaysMockedData';
 import { AbsenceTypesEnum } from '../common/constants';
 import { AbsenceFactory } from './absenceTypes/absenceTypes';
@@ -16,8 +20,8 @@ describe('HolidaysController', () => {
 
   const convertDatesToString = (obj: any) => ({
     ...obj,
-    from_date: DateUtil.dateToString(obj.from_date),
-    to_date: DateUtil.dateToString(obj.to_date),
+    startingDate: DateUtil.dateToString(obj.startingDate),
+    endingDate: DateUtil.dateToString(obj.endingDate),
   });
 
   const mockHolidayPeriodResponse = mockHolidayPeriodDates.map((el) => ({
@@ -25,53 +29,11 @@ describe('HolidaysController', () => {
     date: DateUtil.dateToString(el.date),
   }));
 
-  const mockHolidayInfo = {
-    type: AbsenceTypesEnum.paidLeave,
-    startingDate: '2021-08-12',
-    endingDate: '2021-08-14',
-    comment: 'PTO',
-  };
-
-  const mockAbsenceDetails = {
-    type: AbsenceTypesEnum.paidLeave,
-    from_date: new Date('2021/05/01'),
-    to_date: new Date('2021/05/09'),
-    comment: 'PTO',
-    employee: 'kristiyan.peev@atscale.com',
-  };
-
-  const mockAbsenceDetailsResponse = convertDatesToString(mockAbsenceDetails);
-
-  const mockedUser = {
-    id: '749da264-0641-4d80-b6be-fe1c38ae2f93',
-    googleId: '106956791077954804246',
-    email: 'kristiyan.peev@atscale.com',
-    firstName: 'Kristiyan',
-    lastName: 'Peev',
-    picture:
-      'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
-    PTO: [],
-  };
+  const mockAbsenceDetails = toAbsence(mockAbsenceDb);
 
   const mockEmployeeHolidaysCalc = [
-    {
-      id: '8389e44d-d807-4580-a9bf-ac59c07f1c4f',
-      type: AbsenceTypesEnum.paidLeave,
-      from_date: new Date('2021-08-04'),
-      to_date: new Date('2021-08-04'),
-      comment: 'PTO',
-      totalDays: 1,
-      PTODays: 1,
-    },
-    {
-      id: '89b04b55-f047-4ce1-87f2-21f849ccd398',
-      type: AbsenceTypesEnum.paidLeave,
-      from_date: new Date('2021-08-05'),
-      to_date: new Date('2021-08-05'),
-      comment: 'PTO',
-      totalDays: 1,
-      PTODays: 1,
-    },
+    absenceCalculatedWorkingDays(toAbsence(mockEmployeeHolidays[0]), 1, 1),
+    absenceCalculatedWorkingDays(toAbsence(mockEmployeeHolidays[1]), 1, 1),
   ];
 
   const mockEmployeeHolidaysCalcResponse = mockEmployeeHolidaysCalc.map((el) =>
@@ -79,27 +41,16 @@ describe('HolidaysController', () => {
   );
 
   const mockAbsenceWithEachDay = {
-    id: '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
-    type: AbsenceTypesEnum.paidLeave,
-    from_date: new Date('2021-07-07'),
-    to_date: new Date('2021-07-08'),
-    comment: 'PTO',
-    employee: {
-      id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
-      googleId: '106956791077954804246',
-      email: 'kristiyan.peev@atscale.com',
-      firstName: 'Kristiyan',
-      lastName: 'Peev',
-      picture:
-        'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
-    },
+    ...toAbsence(mockAbsenceDb),
     eachDayStatus: [
       { date: '2021-07-07', status: 'workday' },
       { date: '2021-07-08', status: 'workday' },
     ],
   };
 
-  const mockSavedHolidayResponse = convertDatesToString(mockSavedHoliday);
+  const mockSavedHolidayResponse = convertDatesToString(
+    toAbsence(mockAbsenceDb),
+  );
 
   const mockAbsenceWithEachDayResponse = convertDatesToString(
     mockAbsenceWithEachDay,
@@ -119,7 +70,7 @@ describe('HolidaysController', () => {
       return mockEmployeeHolidaysCalc;
     }),
     getAbsenceWithEachDayStatus: jest.fn(() => mockAbsenceWithEachDay),
-    editAbsence: jest.fn(() => mockSavedHoliday),
+    editAbsence: jest.fn(() => toAbsence(mockAbsenceDb)),
   };
 
   beforeEach(async () => {
@@ -150,51 +101,45 @@ describe('HolidaysController', () => {
         start: '2021-08-12',
         end: '2021-08-14',
       };
-      const spy = jest.spyOn(controller, 'calculateHolidayPeriod');
 
       //act
       const result = await controller.calculateHolidayPeriod(dto);
 
       //assert
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockHolidayPeriodResponse);
     });
   });
   describe('postNewAbsence', () => {
     it('should return posted absence details', async () => {
       //arrange
-      const spy = jest.spyOn(controller, 'postNewAbsence');
+      const mockAbsence = {
+        type: AbsenceTypesEnum.paidLeave,
+        startingDate: '2021-08-12',
+        endingDate: '2021-08-14',
+        comment: 'PTO',
+      };
 
       //act
-      const result = await controller.postNewAbsence(mockHolidayInfo, {
+      const result = await controller.postNewAbsence(mockAbsence, {
         user: 'mock',
       });
 
       //assert
-      expect(spy).toHaveBeenCalled();
-      expect(result).toEqual(mockAbsenceDetailsResponse);
+      expect(result).toEqual(convertDatesToString(mockAbsenceDetails));
     });
   });
   describe('getUserAbsences', () => {
     it('should return posted holiday info', async () => {
-      //arrange
-      const spy = jest.spyOn(controller, 'getUserAbsences');
-
       //act
       const result = await controller.getUserAbsences({ user: mockedUser });
 
       //assert
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockEmployeeHolidaysCalcResponse);
     });
 
     describe('getAbsenceDetailsWithEachDayStatus', () => {
       it('should return detailed absence information', async () => {
         //arrange
-        const spy = jest.spyOn(
-          controller,
-          'getAbsenceDetailsWithEachDayStatus',
-        );
 
         //act
         const result = await controller.getAbsenceDetailsWithEachDayStatus({
@@ -202,7 +147,6 @@ describe('HolidaysController', () => {
         });
 
         //assert
-        expect(spy).toHaveBeenCalled();
         expect(result).toEqual(mockAbsenceWithEachDayResponse);
       });
     });
@@ -210,15 +154,16 @@ describe('HolidaysController', () => {
     describe('editAbsence', () => {
       it('should return detailed edited absence information', async () => {
         //arrange
-        const spy = jest.spyOn(controller, 'editAbsence');
 
         //act
-        const result = await controller.editAbsence(mockEditedAbsenceDetails, {
-          user: mockedUser,
-        });
+        const result = await controller.editAbsence(
+          convertDatesToString(absenceDto),
+          {
+            user: mockedUser,
+          },
+        );
 
         //assert
-        expect(spy).toHaveBeenCalled();
         expect(result).toEqual(mockSavedHolidayResponse);
       });
     });

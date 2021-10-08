@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export const BASE_URL = "http://localhost:5000/";
 
 export const dayStatus = {
@@ -54,14 +53,15 @@ export enum AbsencesEnum {
   courtLeave = "Court",
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const errorHandle = (err: any): string => {
-  if (err.response) {
-    return err.response.data.message;
-  } else {
-    return errMessage;
-  }
+export const leaveTypesWithURLs = {
+  paidLeave: { leave: AbsencesEnum.paidLeave, url: "paid" },
+  unpaidLeave: { leave: AbsencesEnum.unpaidLeave, url: "unpaid" },
+  weddingLeave: { leave: AbsencesEnum.weddingLeave, url: "wedding" },
+  bereavementLeave: { leave: AbsencesEnum.bereavementLeave, url: "bereavement" },
+  bloodDonationLeave: { leave: AbsencesEnum.bloodDonationLeave, url: "blood-donation" },
+  courtLeave: { leave: AbsencesEnum.courtLeave, url: "court" },
 };
+
 export const anyTeam = "any team";
 
 export const anyPosition = "any position";

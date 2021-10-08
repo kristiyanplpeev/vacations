@@ -23,7 +23,7 @@ import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext } from "react-router";
 
-import { AbsencesEnum } from "common/constants";
+import { AbsencesEnum, leaveTypesWithURLs } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import { IUserAbsenceWithWorkingDays } from "common/interfaces";
 import { StringUtil } from "common/StringUtil";
@@ -175,14 +175,23 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         <DialogTitle>Specify the type of leave you want to request?</DialogTitle>
         <Divider className="homepage-main-divider" />
         <List>
-          {Object.values(AbsencesEnum).map((el) => (
-            <>
-              <ListItem button key={el} onClick={() => this.props.history.push(`/new/${StringUtil.zipString(el)}`)}>
-                <ListItemText primary={el} />
-              </ListItem>
-              <Divider />
-            </>
-          ))}
+          {Object.values(AbsencesEnum).map((el) => {
+            const absenceUrl = Object.values(leaveTypesWithURLs).find((absence) => absence.leave === el);
+            if (!absenceUrl) {
+              this.setState({
+                error: `Type ${el} is not supported`,
+              });
+              return;
+            }
+            return (
+              <>
+                <ListItem button key={el} onClick={() => this.props.history.push(`/new/${absenceUrl.url}`)}>
+                  <ListItemText primary={el} />
+                </ListItem>
+                <Divider />
+              </>
+            );
+          })}
         </List>
       </Dialog>
     );
@@ -233,10 +242,10 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         {el.type}
       </TableCell>
       <TableCell width="10%" align="left">
-        {el.from_date}
+        {el.startingDate}
       </TableCell>
       <TableCell width="10%" align="left">
-        {el.to_date}
+        {el.endingDate}
       </TableCell>
       <TableCell width="8%" align="left">
         {el.workingDays}
@@ -267,8 +276,14 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   }
 
   handleEditClick(currentAbsenceId: string, type: string): void {
-    const absenceType = StringUtil.zipString(type);
-    this.props.history.push(`/edit/${absenceType}/${currentAbsenceId}`);
+    const absenceUrl = Object.values(leaveTypesWithURLs).find((absence) => absence.leave === type);
+    if (!absenceUrl) {
+      this.setState({
+        error: "Selected type is not supported",
+      });
+      return;
+    }
+    this.props.history.push(`/edit/${absenceUrl.url}/${currentAbsenceId}`);
   }
 
   private openSnackbar(isOpen: boolean): void {
@@ -287,10 +302,10 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   private async getUserAbsences() {
     const userAbsences = await this.AbsenceService.getUserAbsences();
     const userFutureAbsences = userAbsences
-      .filter((el) => el.from_date > DateUtil.todayStringified())
+      .filter((el) => el.startingDate > DateUtil.todayStringified())
       .sort(DateUtil.dateSorting);
     const userPastAbsences = userAbsences
-      .filter((el) => el.from_date <= DateUtil.todayStringified())
+      .filter((el) => el.startingDate <= DateUtil.todayStringified())
       .sort(DateUtil.dateSorting);
 
     return {

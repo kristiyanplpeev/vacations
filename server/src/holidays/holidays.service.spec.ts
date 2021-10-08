@@ -7,16 +7,20 @@ import { HolidaysController } from './holidays.controller';
 import { HolidaysService } from './holidays.service';
 import { AbsencesService } from './absence.service';
 import {
-  mockSavedHoliday,
   mockEmployeeHolidays,
-  mockAbsenceInfo,
+  mockAbsenceDb,
   constantHolidays,
   movableHolidays,
   mockReturnedPeriod,
   constantHolidaysDb,
-  constantHolidaysResult,
 } from '../common/holidaysMockedData';
 import { AbsenceFactory } from './absenceTypes/absenceTypes';
+
+
+const constantHolidaysForCurrentAndNextYear = (holidays, currentYear) => [
+  { ...holidays, date: new Date(`${currentYear}-01-01`) },
+  { ...holidays, date: new Date(`${currentYear + 1}-01-01`) },
+];
 
 describe('HolidaysService', () => {
   let service: HolidaysService;
@@ -25,10 +29,10 @@ describe('HolidaysService', () => {
     find: jest.fn(() => Promise.resolve(constantHolidaysDb)),
   };
   const mockAbsenceRepository = {
-    save: jest.fn(() => Promise.resolve(mockSavedHoliday)),
+    save: jest.fn(() => Promise.resolve(mockAbsenceDb)),
     create: jest.fn(() => Promise.resolve(undefined)),
     find: jest.fn(() => Promise.resolve(mockEmployeeHolidays)),
-    findOne: jest.fn(() => Promise.resolve(mockAbsenceInfo)),
+    findOne: jest.fn(() => Promise.resolve(mockAbsenceDb)),
   };
   const mockUserRepository = {
     create: jest.fn(() => Promise.resolve(undefined)),
@@ -66,18 +70,18 @@ describe('HolidaysService', () => {
   describe('getConstantHolidays', () => {
     it('should return dates of constant holidays in the year of the starting date and next year', async () => {
       //arrange
-      const dto = {
-        startingDate: new Date('2022-08-12'),
-        endingDate: new Date('2022-08-14'),
-      };
-      const spy = jest.spyOn(service, 'getConstantHolidays');
+      const startingDateYear = 2022;
 
       //act
-      const result = await service.getConstantHolidays(dto);
+      const result = await service.getConstantHolidaysByYear(startingDateYear);
 
-      //assert
-      expect(spy).toHaveBeenCalled();
-      expect(result).toEqual(constantHolidaysResult);
+      //asserts
+      expect(result).toEqual(
+        constantHolidaysForCurrentAndNextYear(
+          constantHolidays[0],
+          startingDateYear,
+        ),
+      );
     });
   });
   describe('getDatesWithAllHolidaysAndWeekends', () => {
@@ -97,7 +101,6 @@ describe('HolidaysService', () => {
           status: 'workday',
         },
       ];
-      const spy = jest.spyOn(service, 'getDatesWithAllHolidaysAndWeekends');
 
       //act
       const result = service.getDatesWithAllHolidaysAndWeekends(
@@ -107,7 +110,6 @@ describe('HolidaysService', () => {
       );
 
       //assert
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockReturnedPeriod);
     });
   });
@@ -118,7 +120,6 @@ describe('HolidaysService', () => {
         startingDate: new Date('2021-08-12'),
         endingDate: new Date('2021-08-14'),
       };
-      const spy = jest.spyOn(service, 'calculateDays');
 
       //act
       const result = await service.calculateDays(
@@ -127,7 +128,6 @@ describe('HolidaysService', () => {
       );
 
       //assert
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockReturnedPeriod);
     });
   });

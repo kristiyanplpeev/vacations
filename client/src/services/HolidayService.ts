@@ -1,7 +1,8 @@
 import axios from "axios";
 import { injectable } from "inversify";
 
-import { applicationJSON, BASE_URL, errorHandle } from "common/constants";
+import { applicationJSON, BASE_URL } from "common/constants";
+import { ErrorUtil } from "common/ErrorUtil";
 import { IAbsencePeriod, HolidayDays } from "common/interfaces";
 import { IHolidayService, IAuthService } from "inversify/interfaces";
 import "reflect-metadata";
@@ -30,7 +31,7 @@ class HolidayService implements IHolidayService {
       const res = await axios.get(`${BASE_URL}holidays/calc/${startingDate}/${endingDate}`, this.getConfig());
       return res.data;
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 }

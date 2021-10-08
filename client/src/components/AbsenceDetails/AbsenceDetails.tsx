@@ -48,8 +48,8 @@ class AbsenceDetails extends Component<AbsenceDetailsProps, AbsenceDetailsState>
       absenceDetails: {
         id: "",
         type: "",
-        from_date: "",
-        to_date: "",
+        startingDate: "",
+        endingDate: "",
         comment: "",
       },
       eachDayStatus: [],
@@ -71,8 +71,8 @@ class AbsenceDetails extends Component<AbsenceDetailsProps, AbsenceDetailsState>
         absenceDetails: {
           id: absenceDetails.id,
           type: absenceDetails.type,
-          from_date: absenceDetails.from_date,
-          to_date: absenceDetails.to_date,
+          startingDate: absenceDetails.startingDate,
+          endingDate: absenceDetails.endingDate,
           comment: absenceDetails.comment,
         },
         eachDayStatus: absenceDetails.eachDayStatus,
@@ -108,8 +108,8 @@ class AbsenceDetails extends Component<AbsenceDetailsProps, AbsenceDetailsState>
           </Grid>
           <Grid item xs={6}>
             <DatesCalculator
-              startingDate={this.state.absenceDetails.from_date}
-              endingDate={this.state.absenceDetails.to_date}
+              startingDate={this.state.absenceDetails.startingDate}
+              endingDate={this.state.absenceDetails.endingDate}
             />
           </Grid>
         </Grid>

@@ -7,35 +7,34 @@ import Typography from "@material-ui/core/Typography";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext } from "react-router";
 
-import { AbsencesEnum } from "common/constants";
+import { AbsencesEnum, leaveTypesWithURLs } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import { OptionalWithNull } from "common/interfaces";
-import { StringUtil } from "common/StringUtil";
 import DatesCalculator from "components/common/DatesCalculator/DatesCalculator";
 import Error from "components/common/Error/Error";
 import AbsenceFactory from "components/NewAbsence/AbsenceForm/AbsenceForm";
-import "./NewAbsence.css";
+import "./AddAndEditAbsence.css";
 import { IAbsenceService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
-export interface AbsenceFormMatchProps {
+export interface AddAndEditAbsenceMatchProps {
   id: string;
   type: string;
 }
 
-interface NewAbsenceProps
-  extends RouteComponentProps<AbsenceFormMatchProps, StaticContext, { showSnackbar: boolean }> {}
+interface AddAndEditAbsenceProps
+  extends RouteComponentProps<AddAndEditAbsenceMatchProps, StaticContext, { showSnackbar: boolean }> {}
 
-interface NewAbsenceState {
+interface AddAndEditAbsenceState {
   startingDate: string;
   endingDate: string;
   error: string;
 }
 
-class NewAbsence extends Component<NewAbsenceProps, NewAbsenceState> {
+class AddAndEditAbsence extends Component<AddAndEditAbsenceProps, AddAndEditAbsenceState> {
   @resolve(TYPES.Absence) protected readonly AbsenceService!: IAbsenceService;
 
-  constructor(props: NewAbsenceProps) {
+  constructor(props: AddAndEditAbsenceProps) {
     super(props);
     this.state = {
       startingDate: DateUtil.todayStringified(),
@@ -45,13 +44,22 @@ class NewAbsence extends Component<NewAbsenceProps, NewAbsenceState> {
   }
 
   render(): JSX.Element {
+    const absenceType = Object.values(leaveTypesWithURLs).find(
+      (absence) => absence.url === this.props.match.params.type,
+    );
     if (this.state.error) {
       return <Error message={this.state.error} />;
+    }
+    if (!absenceType) {
+      this.setState({
+        error: "The selected absence type is not supported.",
+      });
+      return <></>;
     }
     return (
       <div className="new-absence-container">
         <h1>
-          {this.editMode() ? "Edit" : "Add new"} {StringUtil.unzipAbsenceType(this.props.match.params.type)} Leave
+          {this.editMode() ? "Edit" : "Add new"} {absenceType.leave} Leave
         </h1>
         <Grid container spacing={3}>
           <Grid item xs={6}>
@@ -137,4 +145,4 @@ class NewAbsence extends Component<NewAbsenceProps, NewAbsenceState> {
   };
 }
 
-export default NewAbsence;
+export default AddAndEditAbsence;

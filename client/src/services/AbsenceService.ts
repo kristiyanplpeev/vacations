@@ -1,7 +1,8 @@
 import axios from "axios";
 import { injectable } from "inversify";
 
-import { AbsencesEnum, applicationJSON, BASE_URL, errorHandle } from "common/constants";
+import { AbsencesEnum, applicationJSON, BASE_URL } from "common/constants";
+import { ErrorUtil } from "common/ErrorUtil";
 import { IUserAbsenceWithWorkingDays, IUserAbsenceWithEachDayStatus } from "common/interfaces";
 import { IAbsenceService, IAuthService } from "inversify/interfaces";
 import "reflect-metadata";
@@ -25,23 +26,17 @@ class AbsenceService implements IAbsenceService {
     ),
   });
 
-  addAbsence = async (
-    type: AbsencesEnum,
-    startingDate: string,
-    endingDate: string,
-    comment: string,
-  ): Promise<void | { warning: string }> => {
+  addAbsence = async (type: AbsencesEnum, startingDate: string, endingDate: string, comment: string): Promise<void> => {
     const data = {
       type,
       startingDate,
       endingDate,
       comment,
     };
-    console.log(data);
     try {
       await axios.post(`${BASE_URL}holidays`, data, this.getConfig());
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 
@@ -62,7 +57,7 @@ class AbsenceService implements IAbsenceService {
     try {
       await axios.post(`${BASE_URL}holidays/edit`, data, this.getConfig());
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 
@@ -70,7 +65,7 @@ class AbsenceService implements IAbsenceService {
     try {
       return (await axios.get(`${BASE_URL}holidays/end/${type}/${startingDate}`, this.getConfig())).data;
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 
@@ -78,7 +73,7 @@ class AbsenceService implements IAbsenceService {
     try {
       return (await axios.get(`${BASE_URL}holidays/users`, this.getConfig())).data;
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 
@@ -86,7 +81,7 @@ class AbsenceService implements IAbsenceService {
     try {
       return (await axios.get(`${BASE_URL}holidays/${absenceId}`, this.getConfig())).data;
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 
@@ -94,7 +89,7 @@ class AbsenceService implements IAbsenceService {
     try {
       return (await axios.get(`${BASE_URL}holidays/details/${absenceId}`, this.getConfig())).data;
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 }

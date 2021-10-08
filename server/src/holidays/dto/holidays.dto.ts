@@ -61,9 +61,9 @@ export class AbsenceResponseDto {
   id: string;
   type: string;
   @Transform(({ value }) => DateUtil.dateToString(value))
-  from_date: string;
+  startingDate: string;
   @Transform(({ value }) => DateUtil.dateToString(value))
-  to_date: string;
+  endingDate: string;
   comment: string;
   employee: Userdb;
 }

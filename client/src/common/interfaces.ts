@@ -40,8 +40,8 @@ export interface ITextBox {
 export interface IUserAbsence {
   id: string;
   type: string;
-  from_date: string;
-  to_date: string;
+  startingDate: string;
+  endingDate: string;
   comment: string;
 }
 

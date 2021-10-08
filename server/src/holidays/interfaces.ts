@@ -11,8 +11,8 @@ export type AbsencePeriodEachDay = Array<{ date: Date; status: string }>;
 export interface Absence {
   id: string;
   type: AbsenceTypesEnum;
-  from_date: Date;
-  to_date: Date;
+  startingDate: Date;
+  endingDate: Date;
   comment: string;
   employee: Userdb;
 }

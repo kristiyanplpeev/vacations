@@ -115,7 +115,7 @@ const MyDocument = (props: MyDocumentProps): JSX.Element => (
       <Text style={styles.department}>Отдел: Engineering/ Front-end</Text>
       <Text
         style={styles.message}
-      >{`Ще бъда в отпуск от ${props.absenceDetails.from_date} до ${props.absenceDetails.to_date}, общо ${props.workingDays} работни дни.`}</Text>
+      >{`Ще бъда в отпуск от ${props.absenceDetails.startingDate} до ${props.absenceDetails.endingDate}, общо ${props.workingDays} работни дни.`}</Text>
       <Text style={styles.message}>Моля да ми бъде разрешено да ползвам годишен отпуск:</Text>
       <View style={styles.view}>
         <Image style={styles.checkbox} src={checkedBox} />

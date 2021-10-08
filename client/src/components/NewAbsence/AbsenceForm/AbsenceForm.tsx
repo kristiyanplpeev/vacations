@@ -11,10 +11,9 @@ import MuiPickersUtilsProvider from "@material-ui/pickers/MuiPickersUtilsProvide
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext } from "react-router";
 
-import { AbsencesEnum, errMessage } from "common/constants";
+import { AbsencesEnum, errMessage, leaveTypesWithURLs } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import { ITextBox, OptionalWithNull } from "common/interfaces";
-import { StringUtil } from "common/StringUtil";
 import ButtonWithLoader from "components/common/ButtonWithLoader/ButtonWithLoader";
 import { IAbsenceService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
@@ -24,21 +23,17 @@ export interface AbsenceFormMatchProps {
   id: string;
   type: string;
 }
-
 export default class AbsenceFactory {
   static create(absenceType: string): React.ComponentType<AbsenceFormProps> {
     if (
-      absenceType === StringUtil.zipString(AbsencesEnum.weddingLeave) ||
-      absenceType === StringUtil.zipString(AbsencesEnum.bereavementLeave) ||
-      absenceType === StringUtil.zipString(AbsencesEnum.bloodDonationLeave)
+      absenceType === leaveTypesWithURLs.weddingLeave.url ||
+      absenceType === leaveTypesWithURLs.bereavementLeave.url ||
+      absenceType === leaveTypesWithURLs.bloodDonationLeave.url
     ) {
       return AbsenceWithCalculatedEndDate;
-    } else if (
-      absenceType === StringUtil.zipString(AbsencesEnum.paidLeave) ||
-      absenceType === StringUtil.zipString(AbsencesEnum.unpaidLeave)
-    ) {
+    } else if (absenceType === leaveTypesWithURLs.paidLeave.url || absenceType === leaveTypesWithURLs.unpaidLeave.url) {
       return PaidAndUnpaid;
-    } else if (absenceType === StringUtil.zipString(AbsencesEnum.courtLeave)) {
+    } else if (absenceType === leaveTypesWithURLs.courtLeave.url) {
       return Court;
     }
     throw new Error("Invalid absence type.");
@@ -94,12 +89,12 @@ export abstract class AbsenceForm extends Component<AbsenceFormProps, AbsenceFor
       try {
         const absenceDetailed = await this.AbsenceService.getRequestedAbsenceById(this.props.match.params.id);
         this.props.setStartingDate(
-          new Date(absenceDetailed.from_date),
-          absenceDetailed.from_date,
+          new Date(absenceDetailed.startingDate),
+          absenceDetailed.startingDate,
           false,
           this.getAbsenceType(),
         );
-        this.props.setEndingDate(new Date(absenceDetailed.to_date), absenceDetailed.to_date);
+        this.props.setEndingDate(new Date(absenceDetailed.endingDate), absenceDetailed.endingDate);
         this.setState({
           comment: { ...this.state.comment, value: absenceDetailed.comment },
         });
@@ -199,8 +194,13 @@ export abstract class AbsenceForm extends Component<AbsenceFormProps, AbsenceFor
   }
 
   protected getAbsenceType(): AbsencesEnum {
-    const absences = Object.values(AbsencesEnum);
-    return absences.filter((el) => StringUtil.zipString(el) === this.props.match.params.type)[0];
+    const absenceUrl = Object.values(leaveTypesWithURLs).find(
+      (absence) => absence.url === this.props.match.params.type,
+    );
+    if (absenceUrl) {
+      return absenceUrl.leave;
+    }
+    throw new Error("Selected absence type is not supported!");
   }
 
   protected areInputsValid(): boolean {
@@ -265,8 +265,9 @@ export abstract class AbsenceForm extends Component<AbsenceFormProps, AbsenceFor
   abstract render(): JSX.Element;
 }
 
-class AbsenceWithCalculatedEndDate extends AbsenceForm {
+export class AbsenceWithCalculatedEndDate extends AbsenceForm {
   async componentDidMount(): Promise<void> {
+    await super.componentDidMount();
     if (!this.props.editMode()) {
       this.setState({
         loadingOnMount: true,
@@ -327,6 +328,7 @@ export class PaidAndUnpaid extends AbsenceWithNonCalculatedEndDate {
         <Grid item xs={12}>
           <TextField
             className="absence-form-text-fields card-content"
+            name="asd"
             data-unit-test="comment-input"
             error={this.state.comment.textBoxInvalid}
             id="outlined-multiline-static"

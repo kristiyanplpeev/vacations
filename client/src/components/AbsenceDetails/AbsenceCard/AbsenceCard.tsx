@@ -14,6 +14,7 @@ import "./AbsenceCard.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { RouteComponentProps, withRouter } from "react-router";
 
+import { leaveTypesWithURLs } from "common/constants";
 import { IUserAbsence, IUser } from "common/interfaces";
 import { StringUtil } from "common/StringUtil";
 import MyDocument from "components/AbsenceDetails/PDFDocu/AtscaleLeaveRequest";
@@ -48,13 +49,13 @@ class AbsenceCard extends Component<AbsenceCardProps> {
   renderInfoCard(): Array<JSX.Element> {
     const absenceDetails = {
       type: this.props.absenceDetails.type,
-      from: this.props.absenceDetails.from_date,
-      to: this.props.absenceDetails.to_date,
+      from: this.props.absenceDetails.startingDate,
+      to: this.props.absenceDetails.endingDate,
       comment: this.props.absenceDetails.comment,
     };
     return Object.entries(absenceDetails).map((field) => {
       const [key, value] = field;
-      const keyCapitalized = this.stringCapitalize(key);
+      const keyCapitalized = StringUtil.stringCapitalize(key);
       if (!value) {
         return <></>;
       }
@@ -152,16 +153,16 @@ class AbsenceCard extends Component<AbsenceCardProps> {
   }
 
   handleEditClick(): void {
-    const absenceType = StringUtil.zipString(this.props.absenceDetails.type);
-    this.props.history.push(`/edit/${absenceType}/${this.props.absenceDetails.id}`);
-  }
-
-  private stringCapitalize(string: string): string {
-    if (string.length > 0) {
-      return string[0].toUpperCase() + string.substring(1);
-    } else {
-      return string;
+    const absenceUrl = Object.values(leaveTypesWithURLs).find(
+      (absence) => absence.leave === this.props.absenceDetails.type,
+    );
+    if (!absenceUrl) {
+      this.setState({
+        error: "Selected type is not supported",
+      });
+      return;
     }
+    this.props.history.push(`/edit/${absenceUrl.url}/${this.props.absenceDetails.id}`);
   }
 }
 

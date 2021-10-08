@@ -28,7 +28,7 @@ export const RouteComponentPropsMock: RouteComponentProps<
   },
   match: {
     isExact: true,
-    params: { id: "3bc6ce5f-a500-4252-8571-e91a9ee54fc8", type: "paidleave" },
+    params: { id: "3bc6ce5f-a500-4252-8571-e91a9ee54fc8", type: "wedding" },
     path: "/dashboard/id/:id",
     url: "/dashboard/id/3bc6ce5f-a500-4252-8571-e91a9ee54fc8",
   },
