@@ -3,8 +3,8 @@ import React from "react";
 import { Page, Text, View, Document, StyleSheet, Image, Font } from "@react-pdf/renderer";
 
 import { DateUtil } from "common/DateUtil";
-import { IUserPTO, IUser } from "common/interfaces";
-import font from "components/PTODetails/PDFDocu/roboto-medium-webfont.ttf";
+import { IUserAbsence, IUser } from "common/interfaces";
+import font from "components/AbsenceDetails/PDFDocu/roboto-medium-webfont.ttf";
 
 // Create styles
 const styles = StyleSheet.create({
@@ -99,7 +99,7 @@ const checkedBox = process.env.PUBLIC_URL + "/checkedBox.png";
 
 interface MyDocumentProps {
   employee: IUser;
-  PTOInfo: IUserPTO;
+  absenceDetails: IUserAbsence;
   workingDays: number;
 }
 
@@ -115,7 +115,7 @@ const MyDocument = (props: MyDocumentProps): JSX.Element => (
       <Text style={styles.department}>Отдел: Engineering/ Front-end</Text>
       <Text
         style={styles.message}
-      >{`Ще бъда в отпуск от ${props.PTOInfo.from_date} до ${props.PTOInfo.to_date}, общо ${props.workingDays} работни дни.`}</Text>
+      >{`Ще бъда в отпуск от ${props.absenceDetails.startingDate} до ${props.absenceDetails.endingDate}, общо ${props.workingDays} работни дни.`}</Text>
       <Text style={styles.message}>Моля да ми бъде разрешено да ползвам годишен отпуск:</Text>
       <View style={styles.view}>
         <Image style={styles.checkbox} src={checkedBox} />

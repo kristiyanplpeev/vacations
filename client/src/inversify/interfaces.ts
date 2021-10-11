@@ -1,12 +1,11 @@
 import { Dispatch } from "redux";
 
+import { AbsencesEnum } from "common/constants";
 import {
-  IPTOPeriod,
+  IAbsencePeriod,
   HolidayDays,
-  IPTO,
-  IUserPTOWithCalcDays,
-  IUserPTOFullDetails,
-  IPTOWithId,
+  IUserAbsenceWithWorkingDays,
+  IUserAbsenceWithEachDayStatus,
   IUserWithTeamAndPosition,
   ITeams,
   IPositions,
@@ -20,7 +19,7 @@ export interface IAuthService {
 }
 
 export interface IHolidayService {
-  getDatesStatus({ startingDate, endingDate }: IPTOPeriod): Promise<HolidayDays>;
+  getDatesStatus({ startingDate, endingDate }: IAbsencePeriod): Promise<HolidayDays>;
 }
 
 export interface IAuthenticationActionCreator {
@@ -32,12 +31,24 @@ export interface IAuthenticationActionCreator {
   checkIfUserIsLoggedInDispatch(): (dispatch: Dispatch<AppActions>) => void;
 }
 
-export interface IPTOService {
-  addPTO({ startingDate, endingDate, comment }: IPTO): Promise<void | { warning: string }>;
-  getUserPTOs(): Promise<Array<IUserPTOWithCalcDays>>;
-  PTODetailed(PTOId: string): Promise<IUserPTOFullDetails>;
-  getRequestedPTOById(PTOId: string): Promise<IUserPTOFullDetails>;
-  editPTO({ startingDate, endingDate, comment, id }: IPTOWithId): Promise<void>;
+export interface IAbsenceService {
+  addAbsence(
+    type: AbsencesEnum,
+    startingDate: string,
+    endingDate?: string,
+    comment?: string,
+  ): Promise<void | { warning: string }>;
+  getUserAbsences(): Promise<Array<IUserAbsenceWithWorkingDays>>;
+  getAbsenceEndDate(type: AbsencesEnum, startingDate: string): Promise<{ endingDate: string }>;
+  DetailedAbsence(absenceId: string): Promise<IUserAbsenceWithEachDayStatus>;
+  getRequestedAbsenceById(absenceId: string): Promise<IUserAbsenceWithEachDayStatus>;
+  editAbsence(
+    id: string,
+    type: AbsencesEnum,
+    startingDate: string,
+    endingDate?: string,
+    comment?: string,
+  ): Promise<void>;
 }
 
 export interface IUserService {

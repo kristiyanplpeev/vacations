@@ -1,3 +1,4 @@
+import { Holiday } from '../holidays/interfaces';
 import { Entity, Column } from 'typeorm';
 import { BaseEntity } from './base.entity';
 
@@ -11,4 +12,13 @@ export class Holidaydb extends BaseEntity {
 
   @Column({ type: 'varchar', length: 300 })
   comment: string;
+
+  toHoliday(): Holiday {
+    return {
+      id: this.id,
+      date: new Date(this.date),
+      movable: this.movable,
+      comment: this.comment,
+    };
+  }
 }

@@ -32,10 +32,10 @@ class Header extends Component<Props, HeaderState> {
         <AppBar className="app-bar" position="static">
           <Toolbar>
             <Button onClick={() => this.props.history.push("/home")} color="inherit">
-              My PTOs
+              My absences
             </Button>
             <Button onClick={() => {}} color="inherit">
-              Team PTOs
+              Team absences
             </Button>
             <Button onClick={() => this.props.history.push("/admin")} color="inherit">
               Admin

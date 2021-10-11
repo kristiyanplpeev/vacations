@@ -1,7 +1,7 @@
 const TYPES = {
   Auth: Symbol.for("Auth"),
   Holidays: Symbol.for("Holidays"),
-  PTO: Symbol.for("PTO"),
+  Absence: Symbol.for("Absence"),
   user: Symbol.for("user"),
   AuthAction: Symbol.for("AuthAction"),
 };

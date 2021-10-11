@@ -1,0 +1,28 @@
+.absence-card-small-card {
+  margin: 2%;
+  text-align: left;
+}
+
+.absence-card-header.MuiTypography-root {
+  margin: 0% 5%;
+  text-align: left;
+}
+
+.absence-card-chip.MuiChip-root {
+  margin-bottom: 2%;
+  font-size: 1.25rem;
+  border: none;
+}
+
+div.absence-card-chip-avatar.MuiAvatar-root {
+  width: 36px;
+  height: 36px;
+}
+
+.absence-card-buttons.MuiButtonBase-root {
+  margin: 4% auto;
+}
+
+.absence-card-content.MuiCardContent-root:last-child {
+  padding-bottom: 13px;
+}

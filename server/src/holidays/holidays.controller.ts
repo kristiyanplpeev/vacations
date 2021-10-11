@@ -8,80 +8,127 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { HolidaysService } from './holidays.service';
-import { PTOsService } from './pto.service';
+import { AbsencesService } from './absence.service';
 import { JwtAuthGuard } from '../google/guards';
 import {
-  EditPTODto,
-  getPTObyIdDto,
-  HolidayInfoDto,
-  HolidayPeriodDto,
-  PTODaysStatusResponseDto,
-  PTOResponseDto,
-  PTOWithEachDay,
-  PTOWithTotalDaysResponseDto,
+  EditAbsenceDto,
+  GetByIdDto,
+  AbsenceDetailsDto,
+  AbsenceDaysStatusResponseDto,
+  AbsenceResponseDto,
+  AbsenceWithEachDay,
+  AbsenceWithWorkingDaysResponseDto,
+  AbsencePeriodWithEndDateDto,
+  AbsenceStartingDateDto,
+  EndingDateResponseDto,
 } from './dto/holidays.dto';
 import { plainToClass } from 'class-transformer';
+import { AbsenceDetailsOptional } from './interfaces';
+import { AbsenceFactory } from './absenceTypes/absenceTypes';
+import Guard from '../utils/Guard';
+
+const convertDatesInBody = (body: any): AbsenceDetailsOptional => {
+  return {
+    ...body,
+    startingDate: new Date(body.startingDate),
+    ...(body.endingDate && { endingDate: new Date(body.endingDate) }),
+  };
+};
 
 @Controller('holidays')
 export class HolidaysController {
   constructor(
     private readonly holidaysService: HolidaysService,
-    private readonly PTOService: PTOsService,
+    private readonly absenceService: AbsencesService,
+    private readonly absenceFactory: AbsenceFactory,
   ) {}
 
-  @Post('calc')
+  @Get('calc/:start/:end')
   @UseGuards(JwtAuthGuard)
   public async calculateHolidayPeriod(
-    @Body() body: HolidayPeriodDto,
-  ): Promise<Array<PTODaysStatusResponseDto>> {
-    const daysWithStatus = await this.holidaysService.calculateDays(body);
-    return plainToClass(PTODaysStatusResponseDto, daysWithStatus);
+    @Param() params: AbsencePeriodWithEndDateDto,
+  ): Promise<Array<AbsenceDaysStatusResponseDto>> {
+    const daysWithStatus = await this.holidaysService.calculateDays(
+      new Date(params.start),
+      new Date(params.end),
+    );
+    return plainToClass(AbsenceDaysStatusResponseDto, daysWithStatus);
+  }
+
+  @Get('end/:type/:start')
+  @UseGuards(JwtAuthGuard)
+  public async getEndDate(
+    @Param() params: AbsenceStartingDateDto,
+  ): Promise<EndingDateResponseDto> {
+    const absenceDetails = {
+      type: params.type,
+      startingDate: new Date(params.start),
+    };
+
+    const absence = this.absenceFactory.create(absenceDetails);
+    const endingDate = await this.absenceService.getEndingDate(absence);
+
+    return plainToClass(EndingDateResponseDto, { endingDate });
   }
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  public async postHoliday(
-    @Body() body: HolidayInfoDto,
+  public async postNewAbsence(
+    @Body() body: AbsenceDetailsDto,
     @Req() req,
-  ): Promise<PTOResponseDto> {
-    const postedPTO = await this.PTOService.postPTO(body, req.user);
-    return plainToClass(PTOResponseDto, postedPTO);
+  ): Promise<AbsenceResponseDto> {
+    const absenceDetails = convertDatesInBody(body);
+    const absence = this.absenceFactory.create(absenceDetails);
+    const postedAbsence = await this.absenceService.postAbsence(
+      absence,
+      req.user,
+    );
+    return plainToClass(AbsenceResponseDto, postedAbsence);
   }
 
   @Get('users')
   @UseGuards(JwtAuthGuard)
-  public async getUserPTOs(
+  public async getUserAbsences(
     @Req() req,
-  ): Promise<Array<PTOWithTotalDaysResponseDto>> {
-    const userPTOs = await this.PTOService.getUserPTOs(req.user);
-    return plainToClass(PTOWithTotalDaysResponseDto, userPTOs);
+  ): Promise<Array<AbsenceWithWorkingDaysResponseDto>> {
+    const userAbsences = await this.absenceService.getUserAbsences(req.user);
+    return plainToClass(AbsenceWithWorkingDaysResponseDto, userAbsences);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  public async getPTOById(
-    @Param() params: getPTObyIdDto,
-  ): Promise<PTOWithEachDay> {
-    const PTO = await this.PTOService.getPTOById(params.id);
-    return plainToClass(PTOWithEachDay, PTO);
+  public async getAbsenceDetailsWithEachDayStatus(
+    @Param() params: GetByIdDto,
+  ): Promise<AbsenceWithEachDay> {
+    const absence = await this.absenceService.getAbsenceWithEachDayStatus(
+      params.id,
+    );
+    return plainToClass(AbsenceWithEachDay, absence);
   }
 
   @Get('details/:id')
   @UseGuards(JwtAuthGuard)
-  public async getRequestedPTOById(
-    @Param() params: getPTObyIdDto,
-  ): Promise<PTOResponseDto> {
-    const PTO = await this.PTOService.getRequestedPTOById(params.id);
-    return plainToClass(PTOResponseDto, PTO);
+  public async getAbsenceDetailsById(
+    @Param() params: GetByIdDto,
+  ): Promise<AbsenceResponseDto> {
+    const absence = await this.absenceService.getAbsenceDetailsById(params.id);
+    return plainToClass(AbsenceResponseDto, absence);
   }
 
   @Post('edit')
   @UseGuards(JwtAuthGuard)
-  public async editPTO(
-    @Body() body: EditPTODto,
+  public async editAbsence(
+    @Body() body: EditAbsenceDto,
     @Req() req,
-  ): Promise<PTOResponseDto> {
-    const editedPTO = await this.PTOService.editPTO(body, req.user);
-    return plainToClass(PTOResponseDto, editedPTO);
+  ): Promise<AbsenceResponseDto> {
+    const editedAbsence = convertDatesInBody(body);
+    const absence = this.absenceFactory.create(editedAbsence);
+
+    const editedAbsenceFromDb = await this.absenceService.editAbsence(
+      absence,
+      req.user,
+      editedAbsence.id,
+    );
+    return plainToClass(AbsenceResponseDto, editedAbsenceFromDb);
   }
 }

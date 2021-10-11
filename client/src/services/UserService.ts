@@ -1,7 +1,8 @@
 import axios from "axios";
 import { injectable } from "inversify";
 
-import { anyPosition, anyTeam, applicationJSON, BASE_URL, errorHandle } from "common/constants";
+import { anyPosition, anyTeam, applicationJSON, BASE_URL } from "common/constants";
+import { ErrorUtil } from "common/ErrorUtil";
 import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import { IAuthService, IUserService } from "inversify/interfaces";
 import "reflect-metadata";
@@ -33,7 +34,7 @@ class UserService implements IUserService {
 
       return (await axios.get(`${BASE_URL}users?${query}`, this.getConfig())).data;
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 
@@ -41,7 +42,7 @@ class UserService implements IUserService {
     try {
       return (await axios.get(`${BASE_URL}users/byId?usersIds=${usersIds}`, this.getConfig())).data;
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 
@@ -49,7 +50,7 @@ class UserService implements IUserService {
     try {
       return (await axios.get(`${BASE_URL}users/teams`, this.getConfig())).data;
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 
@@ -57,7 +58,7 @@ class UserService implements IUserService {
     try {
       return (await axios.get(`${BASE_URL}users/positions`, this.getConfig())).data;
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 
@@ -69,7 +70,7 @@ class UserService implements IUserService {
       };
       await axios.post(`${BASE_URL}users/teams`, data, this.getConfig());
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 
@@ -81,7 +82,7 @@ class UserService implements IUserService {
       };
       await axios.post(`${BASE_URL}users/positions`, data, this.getConfig());
     } catch (error) {
-      throw new Error(errorHandle(error));
+      throw new Error(ErrorUtil.errorHandle(error));
     }
   };
 }

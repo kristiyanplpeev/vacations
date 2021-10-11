@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 
-import { Popover } from "@material-ui/core";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
@@ -11,21 +10,23 @@ import Typography from "@material-ui/core/Typography";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import DescriptionIcon from "@material-ui/icons/Description";
 import EditIcon from "@material-ui/icons/Edit";
-import "./PTOCard.css";
+import "./AbsenceCard.css";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { RouteComponentProps, withRouter } from "react-router";
 
-import { IUserPTO, IUser } from "common/interfaces";
-import MyDocument from "components/PTODetails/PDFDocu/AtscaleLeaveRequest";
+import { leaveTypesWithURLs } from "common/constants";
+import { IUserAbsence, IUser } from "common/interfaces";
+import { StringUtil } from "common/StringUtil";
+import MyDocument from "components/AbsenceDetails/PDFDocu/AtscaleLeaveRequest";
 
-interface PTOCardProps extends RouteComponentProps {
-  PTOInfo: IUserPTO;
+interface AbsenceCardProps extends RouteComponentProps {
+  absenceDetails: IUserAbsence;
   employee: IUser;
   workingDays: number;
 }
 
-class PTOCard extends Component<PTOCardProps> {
-  constructor(props: PTOCardProps) {
+class AbsenceCard extends Component<AbsenceCardProps> {
+  constructor(props: AbsenceCardProps) {
     super(props);
   }
 
@@ -34,7 +35,7 @@ class PTOCard extends Component<PTOCardProps> {
     return (
       <Card>
         <CardContent>
-          <Typography className="pto-card-header" variant="h5" component="h2">
+          <Typography className="absence-card-header" variant="h5" component="h2">
             Details
           </Typography>
           {this.renderEmployee(this.props.employee)}
@@ -46,18 +47,22 @@ class PTOCard extends Component<PTOCardProps> {
   }
 
   renderInfoCard(): Array<JSX.Element> {
-    const PTOInfo = {
-      from: this.props.PTOInfo.from_date,
-      to: this.props.PTOInfo.to_date,
-      comment: this.props.PTOInfo.comment,
+    const absenceDetails = {
+      type: this.props.absenceDetails.type,
+      from: this.props.absenceDetails.startingDate,
+      to: this.props.absenceDetails.endingDate,
+      comment: this.props.absenceDetails.comment,
     };
-    return Object.entries(PTOInfo).map((field) => {
+    return Object.entries(absenceDetails).map((field) => {
       const [key, value] = field;
-      const keyCapitalized = this.stringCapitalize(key);
+      const keyCapitalized = StringUtil.stringCapitalize(key);
+      if (!value) {
+        return <></>;
+      }
       return (
         <Grid item xs={12} key={key}>
-          <Card className="pto-card-small-card">
-            <CardContent className="pto-card-content">
+          <Card className="absence-card-small-card">
+            <CardContent className="absence-card-content">
               <Grid container spacing={2}>
                 <Grid item xs={3}>
                   <Typography variant="h6" gutterBottom>
@@ -80,8 +85,8 @@ class PTOCard extends Component<PTOCardProps> {
   renderEmployee(user: IUser): JSX.Element {
     return (
       <Grid item xs={12}>
-        <Card className="pto-card-small-card">
-          <CardContent className="pto-card-content">
+        <Card className="absence-card-small-card">
+          <CardContent className="absence-card-content">
             <Grid container spacing={2}>
               <Grid item xs={3}>
                 <Typography variant="h6" gutterBottom>
@@ -90,8 +95,8 @@ class PTOCard extends Component<PTOCardProps> {
               </Grid>
               <Grid item xs={9}>
                 <Chip
-                  className="pto-card-chip"
-                  avatar={<Avatar className="pto-card-chip-avatar" alt={user.firstName[0]} src={user.picture} />}
+                  className="absence-card-chip"
+                  avatar={<Avatar className="absence-card-chip-avatar" alt={user.firstName[0]} src={user.picture} />}
                   label={user.email}
                   variant="outlined"
                 />
@@ -109,7 +114,7 @@ class PTOCard extends Component<PTOCardProps> {
       <Grid container spacing={3}>
         <Grid item xs={4}>
           <Button
-            className="pto-card-buttons"
+            className="absence-card-buttons"
             variant="outlined"
             color="secondary"
             onClick={() => this.props.history.push("/home")}
@@ -122,20 +127,20 @@ class PTOCard extends Component<PTOCardProps> {
             document={
               <MyDocument
                 employee={this.props.employee}
-                PTOInfo={this.props.PTOInfo}
+                absenceDetails={this.props.absenceDetails}
                 workingDays={this.props.workingDays}
               />
             }
             fileName={`${this.props.employee.firstName} ${this.props.employee.lastName} Vacation.pdf`}
           >
-            <Button className="pto-card-buttons" variant="outlined" color="primary">
+            <Button className="absence-card-buttons" variant="outlined" color="primary">
               <DescriptionIcon /> Generate pdf
             </Button>
           </PDFDownloadLink>
         </Grid>
         <Grid item xs={4}>
           <Button
-            className="pto-card-buttons"
+            className="absence-card-buttons"
             onClick={() => this.handleEditClick()}
             variant="outlined"
             color="primary"
@@ -148,16 +153,17 @@ class PTOCard extends Component<PTOCardProps> {
   }
 
   handleEditClick(): void {
-    this.props.history.push(`/edit/${this.props.PTOInfo.id}`);
-  }
-
-  private stringCapitalize(string: string): string {
-    if (string.length > 0) {
-      return string[0].toUpperCase() + string.substring(1);
-    } else {
-      return string;
+    const absenceUrl = Object.values(leaveTypesWithURLs).find(
+      (absence) => absence.leave === this.props.absenceDetails.type,
+    );
+    if (!absenceUrl) {
+      this.setState({
+        error: "Selected type is not supported",
+      });
+      return;
     }
+    this.props.history.push(`/edit/${absenceUrl.url}/${this.props.absenceDetails.id}`);
   }
 }
 
-export default withRouter(PTOCard);
+export default withRouter(AbsenceCard);

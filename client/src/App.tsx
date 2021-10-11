@@ -7,12 +7,12 @@ import { RouteComponentProps, withRouter } from "react-router";
 import { Switch, Route, Redirect } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 
+import AbsenceDetails from "components/AbsenceDetails/AbsenceDetails";
 import AdminPanel from "components/AdminPanel/AdminPanel";
 import BulkChangeUsers from "components/BulkChangeUsers/BulkChangeUsers";
 import Header from "components/Header/Header";
 import Homepage from "components/Homepage/Homepage";
-import NewPTO from "components/NewPTO/NewPTO";
-import PTODetails from "components/PTODetails/PTODetails";
+import AddAndEditAbsence from "components/NewAbsence/AddAndEditAbsence";
 import SideBar from "components/SideBar/SideBar";
 import UsersList from "components/UsersList/UsersList";
 import { IAuthenticationActionCreator } from "inversify/interfaces";
@@ -61,13 +61,23 @@ class App extends Component<AppProps, AppState> {
             <Route path="/login" component={Login} />
             <Route path="/redirecting" component={Redirecting} />
             <PrivateRoute path="/home" exact isAuthenticated={this.props.user.isAuthenticated} component={Homepage} />
-            <PrivateRoute path="/new" exact isAuthenticated={this.props.user.isAuthenticated} component={NewPTO} />
-            <PrivateRoute path="/edit/:id" exact isAuthenticated={this.props.user.isAuthenticated} component={NewPTO} />
             <PrivateRoute
-              path="/pto/:id"
+              path="/new/:type"
               exact
               isAuthenticated={this.props.user.isAuthenticated}
-              component={PTODetails}
+              component={AddAndEditAbsence}
+            />
+            <PrivateRoute
+              path="/edit/:type/:id"
+              exact
+              isAuthenticated={this.props.user.isAuthenticated}
+              component={AddAndEditAbsence}
+            />
+            <PrivateRoute
+              path="/absence/:id"
+              exact
+              isAuthenticated={this.props.user.isAuthenticated}
+              component={AbsenceDetails}
             />
             <PrivateRoute
               path="/admin"

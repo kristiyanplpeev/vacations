@@ -1,8 +1,9 @@
 import axios from "axios";
 import { injectable } from "inversify";
 
-import { BASE_URL } from "common/constants";
-import { IPTOPeriod, HolidayDays } from "common/interfaces";
+import { applicationJSON, BASE_URL } from "common/constants";
+import { ErrorUtil } from "common/ErrorUtil";
+import { IAbsencePeriod, HolidayDays } from "common/interfaces";
 import { IHolidayService, IAuthService } from "inversify/interfaces";
 import "reflect-metadata";
 // eslint-disable-next-line import/no-cycle
@@ -13,18 +14,25 @@ import { TYPES } from "inversify/types";
 class HolidayService implements IHolidayService {
   private authService = myContainer.get<IAuthService>(TYPES.Auth);
 
-  getDatesStatus = async ({ startingDate, endingDate }: IPTOPeriod): Promise<HolidayDays> => {
-    const headers = {
-      "Content-Type": "application/json",
-      // eslint-disable-next-line prettier/prettier
-      Authorization: `Bearer ${this.authService.getToken()}`,
-    };
-    const data = {
-      startingDate,
-      endingDate,
-    };
-    const res = await axios.post(`${BASE_URL}holidays/calc`, data, { headers });
-    return res.data;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private getConfig = (headers?: any) => ({
+    headers: Object.assign(
+      {
+        "Content-Type": applicationJSON,
+        // eslint-disable-next-line prettier/prettier
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+      headers,
+    ),
+  });
+
+  getDatesStatus = async ({ startingDate, endingDate }: IAbsencePeriod): Promise<HolidayDays> => {
+    try {
+      const res = await axios.get(`${BASE_URL}holidays/calc/${startingDate}/${endingDate}`, this.getConfig());
+      return res.data;
+    } catch (error) {
+      throw new Error(ErrorUtil.errorHandle(error));
+    }
   };
 }
 

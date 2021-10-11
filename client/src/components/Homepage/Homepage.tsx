@@ -1,7 +1,12 @@
 import React, { Component } from "react";
 
-import { Button } from "@material-ui/core";
+import { Button, Divider } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
 import Paper from "@material-ui/core/Paper";
 import Snackbar from "@material-ui/core/Snackbar";
 import Table from "@material-ui/core/Table";
@@ -18,10 +23,12 @@ import "./Homepage.css";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext } from "react-router";
 
+import { AbsencesEnum, leaveTypesWithURLs } from "common/constants";
 import { DateUtil } from "common/DateUtil";
-import { IUserPTOWithCalcDays } from "common/interfaces";
+import { IUserAbsenceWithWorkingDays } from "common/interfaces";
+import { StringUtil } from "common/StringUtil";
 import Error from "components/common/Error/Error";
-import { IPTOService } from "inversify/interfaces";
+import { IAbsenceService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
 interface HomepageProps extends RouteComponentProps<null, StaticContext, { showSnackbar: boolean }> {}
@@ -30,12 +37,13 @@ interface HomepageState {
   loading: boolean;
   error: string;
   successMessage: boolean;
-  userPastPTOs: Array<IUserPTOWithCalcDays>;
-  userFuturePTOs: Array<IUserPTOWithCalcDays>;
+  openSelectorDialog: boolean;
+  userPastAbsences: Array<IUserAbsenceWithWorkingDays>;
+  userFutureAbsences: Array<IUserAbsenceWithWorkingDays>;
 }
 
 class Homepage extends Component<HomepageProps, HomepageState> {
-  @resolve(TYPES.PTO) private PTOService!: IPTOService;
+  @resolve(TYPES.Absence) private AbsenceService!: IAbsenceService;
 
   constructor(props: HomepageProps) {
     super(props);
@@ -43,8 +51,9 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       loading: false,
       error: "",
       successMessage: false,
-      userPastPTOs: [],
-      userFuturePTOs: [],
+      openSelectorDialog: false,
+      userPastAbsences: [],
+      userFutureAbsences: [],
     };
   }
 
@@ -55,11 +64,11 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       loading: true,
     });
     try {
-      const userPTOs = await this.getUserPTOs();
+      const userAbsences = await this.getUserAbsences();
 
       this.setState({
-        userFuturePTOs: userPTOs.userFuturePTOs,
-        userPastPTOs: userPTOs.userPastPTOs,
+        userFutureAbsences: userAbsences.userFutureAbsences,
+        userPastAbsences: userAbsences.userPastAbsences,
       });
     } catch (error) {
       this.setState({
@@ -78,36 +87,37 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     }
     return (
       <div className="homepage-root">
-        <h1 className="homepage-header">Paid Time Off</h1>
-        {this.state.userFuturePTOs.length === 0 && this.state.userPastPTOs.length === 0
-          ? this.renderNoPTOsView()
-          : this.renderPTOsTable()}
+        <h1 className="homepage-header">My Absences</h1>
+        {this.state.userFutureAbsences.length === 0 && this.state.userPastAbsences.length === 0
+          ? this.renderNoUserAbsencesView()
+          : this.renderUserAbsencesTable()}
         {this.renderSnackbar()}
+        {this.renderSelectDialog()}
       </div>
     );
   }
 
-  renderAddPTOButton(): JSX.Element {
+  renderAddAbsenceButton(): JSX.Element {
     return (
       <Button
-        className="homepage-add-pto-button"
-        onClick={() => this.props.history.push("/new")}
+        className="homepage-add-absence-button"
+        onClick={() => this.handleToggleSelectDialog(true)}
         variant="outlined"
         color="primary"
       >
-        Add PTO
+        Add absence
       </Button>
     );
   }
 
-  renderPTOsTable(): JSX.Element {
+  renderUserAbsencesTable(): JSX.Element {
     return (
       <div>
-        {this.renderAddPTOButton()}
+        {this.renderAddAbsenceButton()}
         {this.renderHeaderAndFooter(true)}
-        {this.renderPTOsSeparator()}
+        {this.renderSeparator()}
         {this.renderHeaderAndFooter(false)}
-        {this.renderAddPTOButton()}
+        {this.renderAddAbsenceButton()}
       </div>
     );
   }
@@ -119,11 +129,11 @@ class Homepage extends Component<HomepageProps, HomepageState> {
           {header ? (
             <>
               <TableHead>{this.renderTableHeaderAndFooterCells()}</TableHead>
-              <TableBody>{this.state.userFuturePTOs.map(this.mappingFunc)}</TableBody>
+              <TableBody>{this.state.userFutureAbsences.map(this.mappingFunc)}</TableBody>
             </>
           ) : (
             <>
-              <TableBody>{this.state.userPastPTOs.map(this.mappingFunc)}</TableBody>
+              <TableBody>{this.state.userPastAbsences.map(this.mappingFunc)}</TableBody>
               <TableFooter className="homepage-table-footer">{this.renderTableHeaderAndFooterCells()}</TableFooter>
             </>
           )}
@@ -136,13 +146,16 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     return (
       <TableRow>
         <TableCell width="10%" align="left">
+          <b>Type</b>
+        </TableCell>
+        <TableCell width="10%" align="left">
           <b>From</b>
         </TableCell>
         <TableCell width="10%" align="left">
           <b>To</b>
         </TableCell>
         <TableCell width="8%" align="left">
-          <b>PTO days</b>
+          <b>Working days</b>
         </TableCell>
         <TableCell width="8%" align="left">
           <b>Total days</b>
@@ -156,8 +169,36 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  renderPTOsSeparator(): JSX.Element | null {
-    if (this.state.userFuturePTOs.length === 0 || this.state.userPastPTOs.length === 0) return null;
+  renderSelectDialog(): JSX.Element {
+    return (
+      <Dialog onClose={() => this.handleToggleSelectDialog(false)} open={this.state.openSelectorDialog}>
+        <DialogTitle>Specify the type of leave you want to request?</DialogTitle>
+        <Divider className="homepage-main-divider" />
+        <List>
+          {Object.values(AbsencesEnum).map((el) => {
+            const absenceUrl = Object.values(leaveTypesWithURLs).find((absence) => absence.leave === el);
+            if (!absenceUrl) {
+              this.setState({
+                error: `Type ${el} is not supported`,
+              });
+              return;
+            }
+            return (
+              <>
+                <ListItem button key={el} onClick={() => this.props.history.push(`/new/${absenceUrl.url}`)}>
+                  <ListItemText primary={el} />
+                </ListItem>
+                <Divider />
+              </>
+            );
+          })}
+        </List>
+      </Dialog>
+    );
+  }
+
+  renderSeparator(): JSX.Element {
+    if (this.state.userFutureAbsences.length === 0 || this.state.userPastAbsences.length === 0) return <></>;
     return (
       <div className="or-spacer">
         <div className="mask"></div>
@@ -168,7 +209,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  renderNoPTOsView(): JSX.Element {
+  renderNoUserAbsencesView(): JSX.Element {
     if (this.state.loading) {
       return <CircularProgress />;
     }
@@ -180,53 +221,69 @@ class Homepage extends Component<HomepageProps, HomepageState> {
           </Typography>
           <SentimentSatisfiedSharpIcon fontSize="large" />
         </div>
-        <Button onClick={() => this.props.history.push("/new")} variant="outlined" color="primary">
-          REQUEST VACATION
+        <Button onClick={() => this.handleToggleSelectDialog(true)} variant="outlined" color="primary">
+          REQUEST ABSENCE
         </Button>
       </div>
     );
   }
 
-  private mappingFunc = (el: IUserPTOWithCalcDays): JSX.Element => (
+  renderSnackbar(): JSX.Element {
+    return (
+      <Snackbar open={this.state.successMessage} onClose={() => this.openSnackbar(false)} autoHideDuration={2000}>
+        <Alert severity="success">Your absence has been successfully submitted!</Alert>
+      </Snackbar>
+    );
+  }
+
+  private mappingFunc = (el: IUserAbsenceWithWorkingDays): JSX.Element => (
     <TableRow hover key={el.id}>
       <TableCell width="10%" align="left">
-        {el.from_date}
+        {el.type}
       </TableCell>
       <TableCell width="10%" align="left">
-        {el.to_date}
+        {el.startingDate}
+      </TableCell>
+      <TableCell width="10%" align="left">
+        {el.endingDate}
       </TableCell>
       <TableCell width="8%" align="left">
-        {el.PTODays}
+        {el.workingDays}
       </TableCell>
       <TableCell width="8%" align="left">
         {el.totalDays}
       </TableCell>
       <TableCell width="5%" align="left">
-        <Button color="primary" onClick={() => this.props.history.push(`/pto/${el.id}`)}>
+        <Button color="primary" onClick={() => this.props.history.push(`/absence/${el.id}`)}>
           view
         </Button>
       </TableCell>
       <TableCell width="5%" align="left">
-        <Button color="primary" onClick={() => this.handleEditClick(el.id)}>
+        <Button color="primary" onClick={() => this.handleEditClick(el.id, el.type)}>
           edit
         </Button>
       </TableCell>
       <TableCell width="30%" align="left">
-        {el.comment}
+        {el.comment ? el.comment : <div className="homepage-absence-comment">not available</div>}
       </TableCell>
     </TableRow>
   );
 
-  renderSnackbar(): JSX.Element {
-    return (
-      <Snackbar open={this.state.successMessage} onClose={() => this.openSnackbar(false)} autoHideDuration={2000}>
-        <Alert severity="success">Your PTO has been successfully submitted!</Alert>
-      </Snackbar>
-    );
+  handleToggleSelectDialog(state: boolean): void {
+    this.setState({
+      openSelectorDialog: state,
+    });
   }
 
-  handleEditClick(currentPTOId: string): void {
-    this.props.history.push(`/edit/${currentPTOId}`);
+  handleEditClick(currentAbsenceId: string, type: string): void {
+    const absenceUrl = Object.values(leaveTypesWithURLs).find((absence) => absence.leave === type);
+    if (!absenceUrl) {
+      this.setState({
+        error: "Selected type is not supported",
+      });
+      return;
+    }
+    this.props.history.push(`/edit/${absenceUrl.url}/${currentAbsenceId}`);
   }
 
   private openSnackbar(isOpen: boolean): void {
@@ -242,18 +299,18 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     }
   }
 
-  private async getUserPTOs() {
-    const userPTOs = await this.PTOService.getUserPTOs();
-    const userFuturePTOs = userPTOs
-      .filter((el) => el.from_date > DateUtil.todayStringified())
+  private async getUserAbsences() {
+    const userAbsences = await this.AbsenceService.getUserAbsences();
+    const userFutureAbsences = userAbsences
+      .filter((el) => el.startingDate > DateUtil.todayStringified())
       .sort(DateUtil.dateSorting);
-    const userPastPTOs = userPTOs
-      .filter((el) => el.from_date <= DateUtil.todayStringified())
+    const userPastAbsences = userAbsences
+      .filter((el) => el.startingDate <= DateUtil.todayStringified())
       .sort(DateUtil.dateSorting);
 
     return {
-      userFuturePTOs,
-      userPastPTOs,
+      userFutureAbsences,
+      userPastAbsences,
     };
   }
 }

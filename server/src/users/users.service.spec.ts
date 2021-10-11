@@ -5,7 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Userdb } from '../model/user.entity';
 import { Teamsdb } from '../model/teams.entity';
 import { Positionsdb } from '../model/positions.entity';
-import { mockedUser, userFromdb } from '../common/holidaysMockedData';
+import { mockedUser, userDb } from '../common/holidaysMockedData';
 import { PositionsEnum, TeamsEnum } from '../common/constants';
 import { User } from 'src/google/utils/interfaces';
 
@@ -34,7 +34,7 @@ describe('UsersService', () => {
   const mockUserRepository = {
     find: jest.fn(() => Promise.resolve([mockedUser])),
     save: jest.fn(() =>
-      Promise.resolve([userFromdb(getMockedUser(mockTeam, undefined))]),
+      Promise.resolve([userDb(getMockedUser(mockTeam, undefined))]),
     ),
   };
   const mockPositionsRepository = {
@@ -67,13 +67,11 @@ describe('UsersService', () => {
   describe('setUsersTeamsAndPositions', () => {
     it('should return user team and position as string', async () => {
       //arrange
-      const spy = jest.spyOn(service, 'setUsersTeamsAndPositions');
 
       //act
       const result = service.setUsersTeamsAndPositions([mockedUser]);
 
       //assert
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual([
         getMockedUser(TeamsEnum.noTeam, PositionsEnum.noPosition),
       ]);
@@ -83,7 +81,6 @@ describe('UsersService', () => {
   describe('updateTeams', () => {
     it('should return user with updated team', async () => {
       //arrange
-      const spy = jest.spyOn(service, 'updateTeams');
 
       //act
       const result = await service.updateTeams(
@@ -92,7 +89,6 @@ describe('UsersService', () => {
       );
 
       //assert
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual([getMockedUser(mockTeam, undefined)]);
     });
   });
@@ -100,24 +96,20 @@ describe('UsersService', () => {
   describe('getTeamById', () => {
     it('should return null when input is no team', async () => {
       //arrange
-      const spy = jest.spyOn(service, 'getTeamById');
 
       //act
       const result = await service.getTeamById(TeamsEnum.noTeam);
 
       //assert
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual(null);
     });
     it('should return team when input is valid id', async () => {
       //arrange
-      const spy = jest.spyOn(service, 'getTeamById');
 
       //act
       const result = await service.getTeamById(mockTeam.id);
 
       //assert
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockTeam);
     });
   });
@@ -125,24 +117,20 @@ describe('UsersService', () => {
   describe('getPositionById', () => {
     it('should return null when input is no position', async () => {
       //arrange
-      const spy = jest.spyOn(service, 'getPositionById');
 
       //act
       const result = await service.getPositionById(PositionsEnum.noPosition);
 
       //assert
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual(null);
     });
     it('should return position when input is valid id', async () => {
       //arrange
-      const spy = jest.spyOn(service, 'getPositionById');
 
       //act
       const result = await service.getPositionById(mockPosition.id);
 
       //assert
-      expect(spy).toHaveBeenCalled();
       expect(result).toEqual(mockPosition);
     });
   });

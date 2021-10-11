@@ -44,14 +44,24 @@ export enum PositionsEnum {
   noPosition = "no position",
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const errorHandle = (err: any): string => {
-  if (err.response) {
-    return err.response.data.message;
-  } else {
-    return errMessage;
-  }
+export enum AbsencesEnum {
+  paidLeave = "Paid",
+  unpaidLeave = "Unpaid",
+  weddingLeave = "Wedding",
+  bereavementLeave = "Bereavement",
+  bloodDonationLeave = "Blood donation",
+  courtLeave = "Court",
+}
+
+export const leaveTypesWithURLs = {
+  paidLeave: { leave: AbsencesEnum.paidLeave, url: "paid" },
+  unpaidLeave: { leave: AbsencesEnum.unpaidLeave, url: "unpaid" },
+  weddingLeave: { leave: AbsencesEnum.weddingLeave, url: "wedding" },
+  bereavementLeave: { leave: AbsencesEnum.bereavementLeave, url: "bereavement" },
+  bloodDonationLeave: { leave: AbsencesEnum.bloodDonationLeave, url: "blood-donation" },
+  courtLeave: { leave: AbsencesEnum.courtLeave, url: "court" },
 };
+
 export const anyTeam = "any team";
 
 export const anyPosition = "any position";
