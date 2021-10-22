@@ -30,7 +30,7 @@ import Tabs from "@mui/material/Tabs";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import "./Homepage.css";
-import { isWithinInterval, isWeekend, subDays, min } from "date-fns";
+import { isWithinInterval, subDays } from "date-fns";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext } from "react-router";
 
@@ -462,7 +462,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     this.props.history.push(`/edit/${absenceUrl.url}/${currentAbsenceId}`);
   }
 
-  private openSnackbar(isOpen: boolean): void {
+  openSnackbar(isOpen: boolean): void {
     if (this.props.location.state?.showSnackbar && isOpen) {
       this.setState({
         successMessage: true,
@@ -475,16 +475,19 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     }
   }
 
-  private async getUserAbsences() {
+  async getUserAbsences(): Promise<{
+    userFutureAbsences: Array<IUserAbcenseWithDate>;
+    userPastAbsences: Array<IUserAbcenseWithDate>;
+  }> {
     const userAbsences = await this.absenceService.getUserAbsences();
-    const userFutureAbsences = userAbsences
-      .filter((el) => el.startingDate > DateUtil.todayStringified())
-      .sort(DateUtil.dateSorting)
-      .map(this.mapUserAbsences);
-    const userPastAbsences = userAbsences
-      .filter((el) => el.startingDate <= DateUtil.todayStringified())
-      .sort(DateUtil.dateSorting)
-      .map(this.mapUserAbsences);
+    const userFutureAbsences = this.filterAndMapUserAbsences(
+      userAbsences,
+      (el) => el.startingDate > DateUtil.todayStringified(),
+    );
+    const userPastAbsences = this.filterAndMapUserAbsences(
+      userAbsences,
+      (el) => el.startingDate <= DateUtil.todayStringified(),
+    );
 
     return {
       userFutureAbsences,
@@ -492,11 +495,17 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     };
   }
 
-  private mapUserAbsences(absence: IUserAbsenceWithWorkingDays): IUserAbcenseWithDate {
-    return { ...absence, startingDate: new Date(absence.startingDate), endingDate: new Date(absence.endingDate) };
+  filterAndMapUserAbsences(
+    absences: Array<IUserAbsenceWithWorkingDays>,
+    filterFunc: (absence: IUserAbsenceWithWorkingDays) => boolean,
+  ): Array<IUserAbcenseWithDate> {
+    return absences
+      .filter(filterFunc)
+      .sort(DateUtil.dateSorting)
+      .map((a) => ({ ...a, startingDate: new Date(a.startingDate), endingDate: new Date(a.endingDate) }));
   }
 
-  private getEmployeesNames(date: Date, absences: Array<IUserAbsenceWithEachDayStatus>): Array<string> {
+  getEmployeesNames(date: Date, absences: Array<IUserAbsenceWithEachDayStatus>): Array<string> {
     return absences
       .filter((absence) => {
         const start = subDays(new Date(absence.startingDate), 1);
@@ -507,7 +516,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       .map((a) => a.employee.firstName);
   }
 
-  private checkIfDayIsHoliday(date: Date): boolean {
+  checkIfDayIsHoliday(date: Date): boolean {
     const holiday = this.state.holidays.find((holiday) => holiday.date === date.toLocaleDateString("en-CA"));
     if (holiday) {
       return holiday.status !== "workday";

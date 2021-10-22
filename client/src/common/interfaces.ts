@@ -1,4 +1,4 @@
-import { AbsencesEnum, PositionsEnum, TeamsEnum } from "common/constants";
+import { PositionsEnum, TeamsEnum } from "common/constants";
 
 export interface IUser {
   id: string;
