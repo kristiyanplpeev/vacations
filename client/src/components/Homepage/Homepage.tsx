@@ -30,11 +30,11 @@ import Tabs from "@mui/material/Tabs";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import "./Homepage.css";
-import { isWithinInterval, isWeekend } from "date-fns";
+import { isWithinInterval, isWeekend, subDays, min } from "date-fns";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext } from "react-router";
 
-import { AbsencesEnum, leaveTypesWithURLs } from "common/constants";
+import { AbsencesEnum, leaveTypesWithURLs, ViewsEnum } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import { IUserAbsenceWithEachDayStatus, IUserAbsenceWithWorkingDays } from "common/interfaces";
 import { HolidayDays } from "common/interfaces";
@@ -64,6 +64,16 @@ const DateRangePickerDay = styled(MuiDateRangePickerDay, {
   };
 }) as React.ComponentType<DateRangePickerDayProps<Date>>;
 
+interface IUserAbcenseWithDate {
+  id: string;
+  type: string;
+  startingDate: Date;
+  endingDate: Date;
+  comment: string;
+  workingDays: number;
+  totalDays: number;
+}
+
 interface HomepageProps extends RouteComponentProps<null, StaticContext, { showSnackbar: boolean }> {}
 
 interface HomepageState {
@@ -71,9 +81,9 @@ interface HomepageState {
   error: string;
   successMessage: boolean;
   openSelectorDialog: boolean;
-  userPastAbsences: Array<IUserAbsenceWithWorkingDays>;
-  userFutureAbsences: Array<IUserAbsenceWithWorkingDays>;
-  view: string;
+  userPastAbsences: Array<IUserAbcenseWithDate>;
+  userFutureAbsences: Array<IUserAbcenseWithDate>;
+  view: ViewsEnum;
   holidays: HolidayDays;
 }
 
@@ -90,7 +100,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       openSelectorDialog: false,
       userPastAbsences: [],
       userFutureAbsences: [],
-      view: "table",
+      view: ViewsEnum.table,
       holidays: [],
     };
   }
@@ -101,15 +111,15 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       loading: true,
     });
 
-    this.getAbsences();
-    this.getHolidays();
+    await this.loadAbsences();
+    await this.loadHolidaysForThreeMonths();
 
     this.setState({
       loading: false,
     });
   }
 
-  async getHolidays(): Promise<void> {
+  async loadHolidaysForThreeMonths(): Promise<void> {
     try {
       const date = new Date();
       const startingDate = new Date(date.getFullYear(), date.getMonth(), 1).toLocaleDateString("en-CA");
@@ -125,7 +135,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     }
   }
 
-  async getAbsences(): Promise<void> {
+  async loadAbsences(): Promise<void> {
     try {
       const userAbsences = await this.getUserAbsences();
 
@@ -190,8 +200,8 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     return (
       <Grid item style={{ marginLeft: "30px" }}>
         <Tabs indicatorColor="secondary" value={view} onChange={this.handleTabChange}>
-          <Tab value={"table"} label={"Table View"} />
-          <Tab value={"calendar"} label={"Calendar View"} />
+          <Tab value={ViewsEnum.table} label={"Table View"} />
+          <Tab value={ViewsEnum.calendar} label={"Calendar View"} />
         </Tabs>
       </Grid>
     );
@@ -199,10 +209,10 @@ class Homepage extends Component<HomepageProps, HomepageState> {
 
   renderHeaderAndFooter(header: boolean): JSX.Element {
     const { view } = this.state;
-    if (view === "table") {
+    if (view === ViewsEnum.table) {
       return this.renderTables(header);
-    } else if (view === "calendar") {
-      return this.renderCalendars(header);
+    } else if (header && view === ViewsEnum.calendar) {
+      return this.renderCalendar();
     }
     return <></>;
   }
@@ -227,27 +237,27 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  renderCalendars(header: boolean): JSX.Element {
-    return (
-      <>
-        {header ? (
-          <>
-            {this.state.userFutureAbsences.map((absence: IUserAbsenceWithWorkingDays) => {
-              return this.renderCalendar(absence);
-            })}
-          </>
-        ) : (
-          <>
-            {this.state.userPastAbsences.map((absence: IUserAbsenceWithWorkingDays) => {
-              return this.renderCalendar(absence);
-            })}
-          </>
-        )}
-      </>
-    );
+  getPeriods(): Array<{ start: Date; end: Date }> {
+    const mappingFunc = (absence: IUserAbcenseWithDate) => {
+      // In order to correctly display the period, you need to pass
+      // the day before the startingDate to the DateRangePicker component from Material UI
+      const start = subDays(absence.startingDate, 1);
+
+      return {
+        start,
+        end: absence.endingDate,
+      };
+    };
+
+    const futurePeriods = this.state.userFutureAbsences.map(mappingFunc);
+    const pastPeriods = this.state.userPastAbsences.map(mappingFunc);
+
+    return futurePeriods.concat(pastPeriods);
   }
 
-  renderCalendar(absences: IUserAbsenceWithWorkingDays | Array<IUserAbsenceWithEachDayStatus>): JSX.Element {
+  renderCalendar(): JSX.Element {
+    const periods = this.getPeriods();
+
     return (
       <StaticDateRangePicker
         displayStaticWrapperAs="desktop"
@@ -259,9 +269,9 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         label="date range"
         value={[null, null]}
         onChange={() => null}
-        renderDay={(date: Date, dateRangePickerDayProps: DateRangePickerDayProps<Date>) =>
-          this.renderAbsenceDay(date, dateRangePickerDayProps, absences)
-        }
+        renderDay={(date: Date, dateRangePickerDayProps: DateRangePickerDayProps<Date>) => {
+          return this.renderAbsenceDay(date, dateRangePickerDayProps, periods);
+        }}
         renderInput={(startProps, endProps) => (
           <React.Fragment>
             <TextField {...startProps} />
@@ -273,22 +283,19 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  private renderAbsenceDay(
+  renderAbsenceDay(
     date: Date,
     dateRangePickerDayProps: DateRangePickerDayProps<Date>,
-    absences: IUserAbsenceWithWorkingDays | Array<IUserAbsenceWithEachDayStatus>,
+    periods: Array<{ start: Date; end: Date }>,
+    absences?: Array<IUserAbsenceWithEachDayStatus>,
   ): JSX.Element {
-    const [start, end] = Array.isArray(absences)
-      ? this.calculateStartEndDatesForMultipleEmployees(absences)
-      : this.calculateStartEndDatesForSingleEmployee(absences);
-
-    const dayIsBetween = isWithinInterval(date, { start, end });
+    const dayIsBetween = periods.some((p) => isWithinInterval(date, { start: p.start, end: p.end }));
     const dayIsHoliday = this.checkIfDayIsHoliday(date);
     const className = dayIsBetween && !dayIsHoliday ? "absence" : "non-absence";
     dateRangePickerDayProps.inlist = dayIsHoliday;
     dateRangePickerDayProps.isHighlighting = dayIsBetween;
 
-    if (Array.isArray(absences) && dayIsBetween && !dayIsHoliday && !dateRangePickerDayProps.outsideCurrentMonth) {
+    if (absences && dayIsBetween && !dayIsHoliday && !dateRangePickerDayProps.outsideCurrentMonth) {
       const names = this.getEmployeesNames(date, absences);
 
       return (
@@ -359,7 +366,9 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   }
 
   renderSeparator(): JSX.Element {
-    if (this.state.userFutureAbsences.length === 0 || this.state.userPastAbsences.length === 0) return <></>;
+    const { userFutureAbsences, userPastAbsences, view } = this.state;
+
+    if (!userFutureAbsences.length || !userPastAbsences.length || view === ViewsEnum.calendar) return <></>;
     return (
       <div className="or-spacer">
         <div className="mask"></div>
@@ -397,16 +406,16 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     );
   }
 
-  private mappingFunc = (el: IUserAbsenceWithWorkingDays): JSX.Element => (
+  private mappingFunc = (el: IUserAbcenseWithDate): JSX.Element => (
     <TableRow hover key={el.id}>
       <TableCell width="10%" align="left">
         {el.type}
       </TableCell>
       <TableCell width="10%" align="left">
-        {el.startingDate}
+        {el.startingDate.toLocaleDateString("en-CA")}
       </TableCell>
       <TableCell width="10%" align="left">
-        {el.endingDate}
+        {el.endingDate.toLocaleDateString("en-CA")}
       </TableCell>
       <TableCell width="8%" align="left">
         {el.workingDays}
@@ -430,7 +439,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     </TableRow>
   );
 
-  handleTabChange = (event: React.SyntheticEvent, newView: string): void => {
+  handleTabChange = (event: React.SyntheticEvent, newView: ViewsEnum): void => {
     this.setState({
       view: newView,
     });
@@ -470,10 +479,12 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     const userAbsences = await this.absenceService.getUserAbsences();
     const userFutureAbsences = userAbsences
       .filter((el) => el.startingDate > DateUtil.todayStringified())
-      .sort(DateUtil.dateSorting);
+      .sort(DateUtil.dateSorting)
+      .map(this.mapUserAbsences);
     const userPastAbsences = userAbsences
       .filter((el) => el.startingDate <= DateUtil.todayStringified())
-      .sort(DateUtil.dateSorting);
+      .sort(DateUtil.dateSorting)
+      .map(this.mapUserAbsences);
 
     return {
       userFutureAbsences,
@@ -481,62 +492,28 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     };
   }
 
+  private mapUserAbsences(absence: IUserAbsenceWithWorkingDays): IUserAbcenseWithDate {
+    return { ...absence, startingDate: new Date(absence.startingDate), endingDate: new Date(absence.endingDate) };
+  }
+
   private getEmployeesNames(date: Date, absences: Array<IUserAbsenceWithEachDayStatus>): Array<string> {
     return absences
       .filter((absence) => {
-        const [start, end] = this.calculateStartEndDatesForSingleEmployee(absence);
+        const start = subDays(new Date(absence.startingDate), 1);
+        const end = new Date(absence.endingDate);
 
         return isWithinInterval(date, { start, end });
       })
       .map((a) => a.employee.firstName);
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   private checkIfDayIsHoliday(date: Date): boolean {
-    let isHoliday = false;
-    for (const holiday of this.state.holidays) {
-      if (holiday.date === date.toLocaleDateString("en-CA")) {
-        if (holiday.status !== "workday") {
-          isHoliday = true;
-        }
-
-        break;
-      }
+    const holiday = this.state.holidays.find((holiday) => holiday.date === date.toLocaleDateString("en-CA"));
+    if (holiday) {
+      return holiday.status !== "workday";
     }
 
-    return isHoliday;
-  }
-
-  private calculateStartEndDatesForMultipleEmployees(absences: Array<IUserAbsenceWithEachDayStatus>): Array<Date> {
-    const [initialStart, initialEnd] = this.calculateStartEndDatesForSingleEmployee(absences[0]);
-
-    const [start, end] = absences.reduce(
-      (currentStartEnd, absence) => {
-        const start = new Date(absence.startingDate);
-        const end = new Date(absence.endingDate);
-
-        if (currentStartEnd[0] > start) {
-          currentStartEnd[0] = start;
-        } else if (currentStartEnd[1] < end) {
-          currentStartEnd[1] = end;
-        }
-
-        return currentStartEnd;
-      },
-      [initialStart, initialEnd],
-    );
-
-    return [start, end];
-  }
-
-  private calculateStartEndDatesForSingleEmployee(
-    absence: IUserAbsenceWithWorkingDays | IUserAbsenceWithEachDayStatus,
-  ): Array<Date> {
-    const start = new Date(absence.startingDate);
-    start.setDate(start.getDate() - 1);
-    const end = new Date(absence.endingDate);
-
-    return [start, end];
+    return false;
   }
 }
 

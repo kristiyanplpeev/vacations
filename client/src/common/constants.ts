@@ -53,6 +53,11 @@ export enum AbsencesEnum {
   courtLeave = "Court",
 }
 
+export enum ViewsEnum {
+  table = "table",
+  calendar = "calendar",
+}
+
 export const leaveTypesWithURLs = {
   paidLeave: { leave: AbsencesEnum.paidLeave, url: "paid" },
   unpaidLeave: { leave: AbsencesEnum.unpaidLeave, url: "unpaid" },
