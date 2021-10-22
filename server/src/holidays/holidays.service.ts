@@ -85,11 +85,14 @@ export class HolidaysService {
       }
       return [...acc, el];
     }, []);
-
     const datesWithAllHolidaysAndWeekends = constantHolidays.reduce(
       (dates, constantHoliday) => {
         for (let i = 0; i < dates.length; i++) {
-          if (constantHoliday.date.getTime() == dates[i].date.getTime()) {
+          if (
+            constantHoliday.date.getDate() === dates[i].date.getDate() &&
+            constantHoliday.date.getMonth() === dates[i].date.getMonth() &&
+            constantHoliday.date.getFullYear() === dates[i].date.getFullYear()
+          ) {
             if (dates[i].status === DayStatus.workday) {
               dates[i].status = constantHoliday.comment;
             } else {

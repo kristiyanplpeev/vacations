@@ -83,3 +83,11 @@
   font-style: normal;
   color: #999;
 }
+
+.absence .css-qhrdzm-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day.Mui-disabled {
+  color: white
+}
+
+.non-absence .css-qhrdzm-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day.Mui-disabled {
+  color: black
+}

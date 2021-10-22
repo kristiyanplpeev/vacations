@@ -1,6 +1,8 @@
 import React, { Component, ReactNode } from "react";
 
 import "./App.css";
+import DateFnsAdapter from "@mui/lab/AdapterDateFns";
+import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import { Provider } from "inversify-react";
 import { connect } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router";
@@ -53,52 +55,54 @@ class App extends Component<AppProps, AppState> {
     if (!this.state.allowRender) return null;
     return (
       <div className="App">
-        <Provider container={myContainer}>
-          <Header />
-          {this.props.location.pathname.includes("/admin") && <SideBar />}
-          <Switch>
-            <Redirect path="/" exact to="/home" />
-            <Route path="/login" component={Login} />
-            <Route path="/redirecting" component={Redirecting} />
-            <PrivateRoute path="/home" exact isAuthenticated={this.props.user.isAuthenticated} component={Homepage} />
-            <PrivateRoute
-              path="/new/:type"
-              exact
-              isAuthenticated={this.props.user.isAuthenticated}
-              component={AddAndEditAbsence}
-            />
-            <PrivateRoute
-              path="/edit/:type/:id"
-              exact
-              isAuthenticated={this.props.user.isAuthenticated}
-              component={AddAndEditAbsence}
-            />
-            <PrivateRoute
-              path="/absence/:id"
-              exact
-              isAuthenticated={this.props.user.isAuthenticated}
-              component={AbsenceDetails}
-            />
-            <PrivateRoute
-              path="/admin"
-              exact
-              isAuthenticated={this.props.user.isAuthenticated}
-              component={AdminPanel}
-            />
-            <PrivateRoute
-              path="/admin/users"
-              exact
-              isAuthenticated={this.props.user.isAuthenticated}
-              component={UsersList}
-            />
-            <PrivateRoute
-              path="/admin/change/:ids"
-              exact
-              isAuthenticated={this.props.user.isAuthenticated}
-              component={BulkChangeUsers}
-            />
-          </Switch>
-        </Provider>
+        <LocalizationProvider dateAdapter={DateFnsAdapter}>
+          <Provider container={myContainer}>
+            <Header />
+            {this.props.location.pathname.includes("/admin") && <SideBar />}
+            <Switch>
+              <Redirect path="/" exact to="/home" />
+              <Route path="/login" component={Login} />
+              <Route path="/redirecting" component={Redirecting} />
+              <PrivateRoute path="/home" exact isAuthenticated={this.props.user.isAuthenticated} component={Homepage} />
+              <PrivateRoute
+                path="/new/:type"
+                exact
+                isAuthenticated={this.props.user.isAuthenticated}
+                component={AddAndEditAbsence}
+              />
+              <PrivateRoute
+                path="/edit/:type/:id"
+                exact
+                isAuthenticated={this.props.user.isAuthenticated}
+                component={AddAndEditAbsence}
+              />
+              <PrivateRoute
+                path="/absence/:id"
+                exact
+                isAuthenticated={this.props.user.isAuthenticated}
+                component={AbsenceDetails}
+              />
+              <PrivateRoute
+                path="/admin"
+                exact
+                isAuthenticated={this.props.user.isAuthenticated}
+                component={AdminPanel}
+              />
+              <PrivateRoute
+                path="/admin/users"
+                exact
+                isAuthenticated={this.props.user.isAuthenticated}
+                component={UsersList}
+              />
+              <PrivateRoute
+                path="/admin/change/:ids"
+                exact
+                isAuthenticated={this.props.user.isAuthenticated}
+                component={BulkChangeUsers}
+              />
+            </Switch>
+          </Provider>
+        </LocalizationProvider>
       </div>
     );
   }
