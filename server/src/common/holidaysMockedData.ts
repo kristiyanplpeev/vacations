@@ -48,20 +48,6 @@ export const movableHolidaysDb = movableHolidays.map((el) => ({
   },
 }));
 
-export const mockReturnedPeriod = [
-  {
-    date: new Date('2021-08-12'),
-    status: 'workday',
-  },
-  {
-    date: new Date('2021-08-13'),
-    status: 'workday',
-  },
-  {
-    date: new Date('2021-08-14'),
-    status: 'weekend',
-  },
-];
 export const mockEmployeeHolidays = [
   {
     id: '8389e44d-d807-4580-a9bf-ac59c07f1c4f',

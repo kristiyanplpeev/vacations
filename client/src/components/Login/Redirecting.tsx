@@ -2,14 +2,13 @@ import React, { Component, ReactNode } from "react";
 
 import { CircularProgress } from "@material-ui/core";
 import Backdrop from "@material-ui/core/Backdrop";
-import { resolve } from "inversify-react";
 import { connect } from "react-redux";
 import { RouteComponentProps } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 
 import "reflect-metadata";
 import Error from "components/common/Error/Error";
-import { IAuthenticationActionCreator, IAuthService } from "inversify/interfaces";
+import { IAuthenticationActionCreator } from "inversify/interfaces";
 import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
 import { AppActions, ApplicationState, IUserState } from "store/user/types";
@@ -23,8 +22,6 @@ interface RedirectingState {
 type Props = RedirectingProps & RouteComponentProps & LinkDispatchProps & LinkStateProps;
 
 class Redirecting extends Component<Props, RedirectingState> {
-  @resolve(TYPES.Auth) authService!: IAuthService;
-
   public constructor(props: Props) {
     super(props);
     this.state = {
@@ -32,9 +29,9 @@ class Redirecting extends Component<Props, RedirectingState> {
     };
   }
 
-  componentDidMount = (): void => {
+  componentDidMount = async (): Promise<void> => {
     try {
-      this.props.logInUser();
+      await this.props.logInUser();
     } catch (error) {
       this.setState({
         error: error.message,
@@ -64,7 +61,7 @@ interface LinkStateProps {
   userInfo: IUserState;
 }
 interface LinkDispatchProps {
-  logInUser: () => void;
+  logInUser: () => Promise<void>;
 }
 
 const mapStateToProps = ({ userInfoReducer }: ApplicationState): LinkStateProps => {

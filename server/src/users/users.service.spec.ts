@@ -16,29 +16,29 @@ describe('UsersService', () => {
     return { ...mockedUser, team, position };
   };
 
-  const mockTeam = {
-    id: '20149997-736d-4e71-bd1c-4392cb5d4b76',
-    team: TeamsEnum.orchestrator,
-    user: [],
-  };
-
-  const mockPosition = {
+  const getTeamDb = (team) => ({
     id: 'cd2debe5-fdae-4bc8-9991-6cce9f6ca40e',
-    team: PositionsEnum.regular,
+    team,
     user: [],
-  };
+  });
+
+  const getPositionDb = (position) => ({
+    id: 'cd2debe5-fdae-4bc8-9991-6cce9f6ca40e',
+    position,
+    user: [],
+  });
 
   const mockTeamsRepository = {
-    findOne: jest.fn(() => Promise.resolve(mockTeam)),
+    findOne: jest.fn(() => Promise.resolve(getTeamDb(TeamsEnum.orchestrator))),
   };
   const mockUserRepository = {
     find: jest.fn(() => Promise.resolve([mockedUser])),
     save: jest.fn(() =>
-      Promise.resolve([userDb(getMockedUser(mockTeam, undefined))]),
+      Promise.resolve([userDb(getMockedUser(getTeamDb(TeamsEnum.orchestrator), undefined))]),
     ),
   };
   const mockPositionsRepository = {
-    findOne: jest.fn(() => Promise.resolve(mockPosition)),
+    findOne: jest.fn(() => Promise.resolve(getPositionDb(PositionsEnum.regular))),
   };
 
   beforeEach(async () => {
@@ -89,7 +89,7 @@ describe('UsersService', () => {
       );
 
       //assert
-      expect(result).toEqual([getMockedUser(mockTeam, undefined)]);
+      expect(result).toEqual([getMockedUser(getTeamDb(TeamsEnum.orchestrator), undefined)]);
     });
   });
 
@@ -107,10 +107,10 @@ describe('UsersService', () => {
       //arrange
 
       //act
-      const result = await service.getTeamById(mockTeam.id);
+      const result = await service.getTeamById(getTeamDb(TeamsEnum.orchestrator).id);
 
       //assert
-      expect(result).toEqual(mockTeam);
+      expect(result).toEqual(getTeamDb(TeamsEnum.orchestrator));
     });
   });
 
@@ -128,10 +128,10 @@ describe('UsersService', () => {
       //arrange
 
       //act
-      const result = await service.getPositionById(mockPosition.id);
+      const result = await service.getPositionById(getPositionDb(PositionsEnum.regular).id);
 
       //assert
-      expect(result).toEqual(mockPosition);
+      expect(result).toEqual(getPositionDb(PositionsEnum.regular));
     });
   });
 });

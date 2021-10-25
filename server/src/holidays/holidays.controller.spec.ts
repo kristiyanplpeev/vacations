@@ -98,8 +98,8 @@ describe('HolidaysController', () => {
     it('should return days and statuses for absence period', async () => {
       //arrange
       const dto = {
-        start: '2021-08-12',
-        end: '2021-08-14',
+        from: '2021-08-12',
+        to: '2021-08-14',
       };
 
       //act

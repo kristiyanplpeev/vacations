@@ -3,6 +3,7 @@ const TYPES = {
   Holidays: Symbol.for("Holidays"),
   Absence: Symbol.for("Absence"),
   user: Symbol.for("user"),
+  Rest: Symbol.for("Rest"),
   AuthAction: Symbol.for("AuthAction"),
 };
 

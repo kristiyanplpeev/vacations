@@ -25,7 +25,6 @@ import {
 import { plainToClass } from 'class-transformer';
 import { AbsenceDetailsOptional } from './interfaces';
 import { AbsenceFactory } from './absenceTypes/absenceTypes';
-import Guard from '../utils/Guard';
 
 const convertDatesInBody = (body: any): AbsenceDetailsOptional => {
   return {
@@ -43,26 +42,26 @@ export class HolidaysController {
     private readonly absenceFactory: AbsenceFactory,
   ) {}
 
-  @Get('calc/:start/:end')
+  @Get(':from/:to/dates')
   @UseGuards(JwtAuthGuard)
   public async calculateHolidayPeriod(
     @Param() params: AbsencePeriodWithEndDateDto,
   ): Promise<Array<AbsenceDaysStatusResponseDto>> {
     const daysWithStatus = await this.holidaysService.calculateDays(
-      new Date(params.start),
-      new Date(params.end),
+      new Date(params.from),
+      new Date(params.to),
     );
     return plainToClass(AbsenceDaysStatusResponseDto, daysWithStatus);
   }
 
-  @Get('end/:type/:start')
+  @Get(':type/end-date/:from')
   @UseGuards(JwtAuthGuard)
   public async getEndDate(
     @Param() params: AbsenceStartingDateDto,
   ): Promise<EndingDateResponseDto> {
     const absenceDetails = {
       type: params.type,
-      startingDate: new Date(params.start),
+      startingDate: new Date(params.from),
     };
 
     const absence = this.absenceFactory.create(absenceDetails);
@@ -106,7 +105,7 @@ export class HolidaysController {
     return plainToClass(AbsenceWithEachDay, absence);
   }
 
-  @Get('details/:id')
+  @Get(':id/details')
   @UseGuards(JwtAuthGuard)
   public async getAbsenceDetailsById(
     @Param() params: GetByIdDto,

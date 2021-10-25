@@ -21,15 +21,15 @@ export class AbsenceTypeDto {
 
 export class AbsenceStartingDateDto extends AbsenceTypeDto {
   @IsDateString({}, { message: invalidDateFormatMessage })
-  start: string;
+  from: string;
 }
 
 export class AbsencePeriodWithEndDateDto {
   @IsDateString({}, { message: invalidDateFormatMessage })
-  start: string;
+  from: string;
 
   @IsDateString({}, { message: invalidDateFormatMessage })
-  end: string;
+  to: string;
 }
 
 export class AbsencePeriodDto extends AbsenceTypeDto {

@@ -1,89 +1,62 @@
-import axios from "axios";
 import { injectable } from "inversify";
 
-import { anyPosition, anyTeam, applicationJSON, BASE_URL } from "common/constants";
-import { ErrorUtil } from "common/ErrorUtil";
+import { anyPosition, anyTeam } from "common/constants";
 import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
-import { IAuthService, IUserService } from "inversify/interfaces";
+import { IAuthService, IRestClient, IUserService } from "inversify/interfaces";
 import "reflect-metadata";
 // eslint-disable-next-line import/no-cycle
 import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
+import { IUserDetails } from "store/user/types";
+
+interface IToken {
+  access_token: string;
+}
 
 @injectable()
 class UserService implements IUserService {
   private authService = myContainer.get<IAuthService>(TYPES.Auth);
+  private restClient = myContainer.get<IRestClient>(TYPES.Rest);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private getConfig = (headers?: any) => ({
-    headers: Object.assign(
-      {
-        "Content-Type": applicationJSON,
-        // eslint-disable-next-line prettier/prettier
-        Authorization: `Bearer ${this.authService.getToken()}`,
-      },
-      headers,
-    ),
-  });
+  logInUser = async (): Promise<IUserDetails> => {
+    const res = await this.restClient.get<IToken>("auth/users", { withCredentials: true });
+    localStorage.setItem("token", res.access_token);
+    return this.authService.extractUser(res.access_token);
+  };
 
   getAllUsers = async (teamId?: string, positionId?: string): Promise<Array<IUserWithTeamAndPosition>> => {
-    try {
-      const team = teamId !== anyTeam ? `teamId=${teamId}` : "";
-      const position = positionId !== anyPosition ? `positionId=${positionId}` : "";
-      const query = [team, position].filter((el) => el).join("&");
-
-      return (await axios.get(`${BASE_URL}users?${query}`, this.getConfig())).data;
-    } catch (error) {
-      throw new Error(ErrorUtil.errorHandle(error));
-    }
+    const team = teamId !== anyTeam ? `teamId=${teamId}` : "";
+    const position = positionId !== anyPosition ? `positionId=${positionId}` : "";
+    const query = [team, position].filter((el) => el).join("&");
+    return await this.restClient.get(`users?${query}`);
   };
 
   getUsersByIds = async (usersIds: string): Promise<Array<IUserWithTeamAndPosition>> => {
-    try {
-      return (await axios.get(`${BASE_URL}users/byId?usersIds=${usersIds}`, this.getConfig())).data;
-    } catch (error) {
-      throw new Error(ErrorUtil.errorHandle(error));
-    }
+    return await this.restClient.get(`users/byId?usersIds=${usersIds}`);
   };
 
   getTeams = async (): Promise<Array<ITeams>> => {
-    try {
-      return (await axios.get(`${BASE_URL}users/teams`, this.getConfig())).data;
-    } catch (error) {
-      throw new Error(ErrorUtil.errorHandle(error));
-    }
+    return await this.restClient.get(`users/teams`);
   };
 
   getPositions = async (): Promise<Array<IPositions>> => {
-    try {
-      return (await axios.get(`${BASE_URL}users/positions`, this.getConfig())).data;
-    } catch (error) {
-      throw new Error(ErrorUtil.errorHandle(error));
-    }
+    return await this.restClient.get(`users/positions`);
   };
 
   updateUsersTeam = async (users: Array<string>, newTeamId: string): Promise<void> => {
-    try {
-      const data = {
-        users,
-        teamId: newTeamId,
-      };
-      await axios.post(`${BASE_URL}users/teams`, data, this.getConfig());
-    } catch (error) {
-      throw new Error(ErrorUtil.errorHandle(error));
-    }
+    const data = {
+      users,
+      teamId: newTeamId,
+    };
+    await this.restClient.post(`users/teams`, { data });
   };
 
   updateUsersPosition = async (users: Array<string>, newPositionId: string): Promise<void> => {
-    try {
-      const data = {
-        users,
-        positionId: newPositionId,
-      };
-      await axios.post(`${BASE_URL}users/positions`, data, this.getConfig());
-    } catch (error) {
-      throw new Error(ErrorUtil.errorHandle(error));
-    }
+    const data = {
+      users,
+      positionId: newPositionId,
+    };
+    await this.restClient.post(`users/positions`, { data });
   };
 }
 
