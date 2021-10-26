@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Absencedb } from '../model/absence.entity';
 import { Userdb } from '../model/user.entity';
 import { Holidaydb } from '../model/holiday.entity';
-import { HolidaysController } from './holidays.controller';
+import { AbsencesController } from './absences.controller';
 import { HolidaysService } from './holidays.service';
 import {
   mockAbsenceDb,
@@ -85,7 +85,7 @@ describe('absenceService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [HolidaysController],
+      controllers: [AbsencesController],
       providers: [
         HolidaysService,
         AbsencesService,

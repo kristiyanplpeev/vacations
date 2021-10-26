@@ -3,7 +3,7 @@ import { Action, Dispatch } from "redux";
 import { ThunkAction } from "redux-thunk";
 
 import { noLoggedUser, user } from "common/constants";
-import { IAuthenticationActionCreator, IAuthService } from "inversify/interfaces";
+import { IAuthenticationActionCreator, IAuthService, IUserService } from "inversify/interfaces";
 // eslint-disable-next-line import/no-cycle
 import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
@@ -14,9 +14,10 @@ export type AppThunk = ThunkAction<void, ApplicationState, null, Action<string>>
 @injectable()
 class AuthenticationActionCreator implements IAuthenticationActionCreator {
   private authService = myContainer.get<IAuthService>(TYPES.Auth);
+  private userService = myContainer.get<IUserService>(TYPES.user);
 
   logInUser = async (): Promise<AppActions> => {
-    const userDetails = await this.authService.logInUser();
+    const userDetails = await this.userService.logInUser();
     const payload = {
       isAuthenticated: true,
       user: userDetails,

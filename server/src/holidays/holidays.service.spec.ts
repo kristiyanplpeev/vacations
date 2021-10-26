@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Absencedb } from '../model/absence.entity';
 import { Userdb } from '../model/user.entity';
 import { Holidaydb } from '../model/holiday.entity';
-import { HolidaysController } from './holidays.controller';
+import { AbsencesController } from './absences.controller';
 import { HolidaysService } from './holidays.service';
 import { AbsencesService } from './absence.service';
 import {
@@ -11,16 +11,24 @@ import {
   mockAbsenceDb,
   constantHolidays,
   movableHolidays,
-  mockReturnedPeriod,
   constantHolidaysDb,
 } from '../common/holidaysMockedData';
 import { AbsenceFactory } from './absenceTypes/absenceTypes';
-
+import DateUtil from '../utils/DateUtil';
+import { DayStatus } from '../common/constants';
 
 const constantHolidaysForCurrentAndNextYear = (holidays, currentYear) => [
   { ...holidays, date: new Date(`${currentYear}-01-01`) },
   { ...holidays, date: new Date(`${currentYear + 1}-01-01`) },
 ];
+
+const getPeriod = (startingDate, endingDate) => {
+  const period = DateUtil.getPeriodBetweenDates({ startingDate, endingDate });
+  return period.map((date) => ({
+    date: date,
+    status: DayStatus.workday,
+  }));
+};
 
 describe('HolidaysService', () => {
   let service: HolidaysService;
@@ -40,7 +48,7 @@ describe('HolidaysService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [HolidaysController],
+      controllers: [AbsencesController],
       providers: [
         HolidaysService,
         AbsencesService,
@@ -89,15 +97,15 @@ describe('HolidaysService', () => {
       //arrange
       const datesInPeriod = [
         {
+          date: new Date('2021-08-11'),
+          status: 'workday',
+        },
+        {
           date: new Date('2021-08-12'),
           status: 'workday',
         },
         {
           date: new Date('2021-08-13'),
-          status: 'workday',
-        },
-        {
-          date: new Date('2021-08-14'),
           status: 'workday',
         },
       ];
@@ -110,15 +118,15 @@ describe('HolidaysService', () => {
       );
 
       //assert
-      expect(result).toEqual(mockReturnedPeriod);
+      expect(result).toEqual(getPeriod(new Date('2021-08-11'), new Date('2021-08-13')));
     });
   });
   describe('calculateDays', () => {
     it('should return holiday days with status', async () => {
       //arrange
       const dto = {
-        startingDate: new Date('2021-08-12'),
-        endingDate: new Date('2021-08-14'),
+        startingDate: new Date('2021-08-11'),
+        endingDate: new Date('2021-08-13'),
       };
 
       //act
@@ -128,7 +136,7 @@ describe('HolidaysService', () => {
       );
 
       //assert
-      expect(result).toEqual(mockReturnedPeriod);
+      expect(result).toEqual(getPeriod(new Date('2021-08-11'), new Date('2021-08-13')));
     });
   });
 });

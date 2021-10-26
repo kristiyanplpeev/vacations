@@ -4,6 +4,8 @@ import {
   Get,
   Param,
   Post,
+  Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -11,16 +13,16 @@ import { HolidaysService } from './holidays.service';
 import { AbsencesService } from './absence.service';
 import { JwtAuthGuard } from '../google/guards';
 import {
-  EditAbsenceDto,
   GetByIdDto,
   AbsenceDetailsDto,
   AbsenceDaysStatusResponseDto,
   AbsenceResponseDto,
   AbsenceWithEachDay,
   AbsenceWithWorkingDaysResponseDto,
+  EndingDateResponseDto,
+  AbsenceTypeDto,
   AbsencePeriodWithEndDateDto,
   AbsenceStartingDateDto,
-  EndingDateResponseDto,
 } from './dto/holidays.dto';
 import { plainToClass } from 'class-transformer';
 import { AbsenceDetailsOptional } from './interfaces';
@@ -35,34 +37,35 @@ const convertDatesInBody = (body: any): AbsenceDetailsOptional => {
   };
 };
 
-@Controller('holidays')
-export class HolidaysController {
+@Controller('absences')
+export class AbsencesController {
   constructor(
     private readonly holidaysService: HolidaysService,
     private readonly absenceService: AbsencesService,
     private readonly absenceFactory: AbsenceFactory,
   ) {}
 
-  @Get('calc/:start/:end')
+  @Get('dates')
   @UseGuards(JwtAuthGuard)
   public async calculateHolidayPeriod(
-    @Param() params: AbsencePeriodWithEndDateDto,
+    @Query() query: AbsencePeriodWithEndDateDto,
   ): Promise<Array<AbsenceDaysStatusResponseDto>> {
     const daysWithStatus = await this.holidaysService.calculateDays(
-      new Date(params.start),
-      new Date(params.end),
+      new Date(query.from),
+      new Date(query.to),
     );
     return plainToClass(AbsenceDaysStatusResponseDto, daysWithStatus);
   }
 
-  @Get('end/:type/:start')
+  @Get(':type/end-date')
   @UseGuards(JwtAuthGuard)
   public async getEndDate(
-    @Param() params: AbsenceStartingDateDto,
+    @Param() params: AbsenceTypeDto,
+    @Query() query: AbsenceStartingDateDto,
   ): Promise<EndingDateResponseDto> {
     const absenceDetails = {
       type: params.type,
-      startingDate: new Date(params.start),
+      startingDate: new Date(query.from),
     };
 
     const absence = this.absenceFactory.create(absenceDetails);
@@ -86,7 +89,7 @@ export class HolidaysController {
     return plainToClass(AbsenceResponseDto, postedAbsence);
   }
 
-  @Get('users')
+  @Get()
   @UseGuards(JwtAuthGuard)
   public async getUserAbsences(
     @Req() req,
@@ -97,7 +100,7 @@ export class HolidaysController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  public async getAbsenceDetailsWithEachDayStatus(
+  public async getAbsenceWithEachDay(
     @Param() params: GetByIdDto,
   ): Promise<AbsenceWithEachDay> {
     const absence = await this.absenceService.getAbsenceWithEachDayStatus(
@@ -106,7 +109,7 @@ export class HolidaysController {
     return plainToClass(AbsenceWithEachDay, absence);
   }
 
-  @Get('details/:id')
+  @Get(':id/details')
   @UseGuards(JwtAuthGuard)
   public async getAbsenceDetailsById(
     @Param() params: GetByIdDto,
@@ -115,19 +118,23 @@ export class HolidaysController {
     return plainToClass(AbsenceResponseDto, absence);
   }
 
-  @Post('edit')
+  @Put(':id')
   @UseGuards(JwtAuthGuard)
   public async editAbsence(
-    @Body() body: EditAbsenceDto,
+    @Param() params: GetByIdDto,
+    @Body() body: AbsenceDetailsDto,
     @Req() req,
   ): Promise<AbsenceResponseDto> {
     const editedAbsence = convertDatesInBody(body);
-    const absence = this.absenceFactory.create(editedAbsence);
+    const absence = this.absenceFactory.create({
+      id: params.id,
+      ...editedAbsence,
+    });
 
     const editedAbsenceFromDb = await this.absenceService.editAbsence(
       absence,
       req.user,
-      editedAbsence.id,
+      params.id,
     );
     return plainToClass(AbsenceResponseDto, editedAbsenceFromDb);
   }
