@@ -63,7 +63,7 @@ class AbsenceDetails extends Component<AbsenceDetailsProps, AbsenceDetailsState>
         loading: true,
       });
       const absenceId = this.props.match.params.id;
-      const absenceDetails = await this.absenceService.DetailedAbsence(absenceId);
+      const absenceDetails = await this.absenceService.getAbsenceWithEachDay(absenceId);
       const workingDays = this.calculateWorkingDays(absenceDetails.eachDayStatus);
 
       this.setState({

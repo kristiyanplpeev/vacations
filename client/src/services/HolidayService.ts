@@ -12,7 +12,7 @@ class HolidayService implements IHolidayService {
   private restClient = myContainer.get<IRestClient>(TYPES.Rest);
 
   getDatesStatus = async ({ startingDate, endingDate }: IAbsencePeriod): Promise<HolidayDays> => {
-    return await this.restClient.get(`holidays/${startingDate}/${endingDate}/dates`);
+    return await this.restClient.get(`absences/dates?from=${startingDate}&to=${endingDate}`);
   };
 }
 

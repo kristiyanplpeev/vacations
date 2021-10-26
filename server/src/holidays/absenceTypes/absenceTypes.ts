@@ -13,6 +13,7 @@ import {
 } from '../interfaces';
 import DateUtil from '../../utils/DateUtil';
 import { HolidaysService } from '../holidays.service';
+import { areIntervalsOverlapping } from 'date-fns';
 
 @Injectable()
 export class AbsenceFactory {
@@ -70,30 +71,25 @@ export abstract class AbsenceTypes {
     userAbsences: Array<AbsenceDetailsWithTotalDays>,
   ): void {
     //remove currently edited absence from the validation
-    const employeeAbsences = userAbsences.filter(
+    const absencesWithoutCurrentOne = userAbsences.filter(
       (el) => el.id !== this.absenceDetails.id,
     );
 
-    let overlapIndex = -1;
-
-    for (let i = 0; i < employeeAbsences.length; i++) {
+    absencesWithoutCurrentOne.forEach((period) => {
       if (
-        !(
-          endingDate < employeeAbsences[i].startingDate ||
-          startingDate > employeeAbsences[i].endingDate
+        areIntervalsOverlapping(
+          { start: startingDate, end: endingDate },
+          { start: period.startingDate, end: period.endingDate },
+          { inclusive: true },
         )
       ) {
-        overlapIndex = i;
-        break;
+        throw new BadRequestException(
+          `The period you submitted is overlapping with another vacation from ${DateUtil.dateToString(
+            period.startingDate,
+          )} to ${DateUtil.dateToString(period.endingDate)}`,
+        );
       }
-    }
-    if (overlapIndex >= 0) {
-      throw new BadRequestException(
-        `The period you submitted is overlapping with another vacation from ${DateUtil.dateToString(
-          employeeAbsences[overlapIndex].startingDate,
-        )} to ${DateUtil.dateToString(employeeAbsences[overlapIndex].endingDate)}`,
-      );
-    }
+    });
   }
 
   abstract isEndDateCalculable(): boolean;

@@ -19,15 +19,12 @@ export class AbsenceTypeDto {
   type: AbsenceTypesEnum;
 }
 
-export class AbsenceStartingDateDto extends AbsenceTypeDto {
+export class AbsenceStartingDateDto {
   @IsDateString({}, { message: invalidDateFormatMessage })
   from: string;
 }
 
-export class AbsencePeriodWithEndDateDto {
-  @IsDateString({}, { message: invalidDateFormatMessage })
-  from: string;
-
+export class AbsencePeriodWithEndDateDto extends AbsenceStartingDateDto {
   @IsDateString({}, { message: invalidDateFormatMessage })
   to: string;
 }
@@ -52,10 +49,6 @@ export class GetByIdDto {
   id: string;
 }
 
-export class EditAbsenceDto extends AbsenceDetailsDto {
-  @IsUUID('all', { message: 'Absence id is invalid' })
-  id: string;
-}
 
 export class AbsenceResponseDto {
   id: string;

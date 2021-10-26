@@ -87,7 +87,7 @@ export abstract class AbsenceForm extends Component<AbsenceFormProps, AbsenceFor
         loadingOnMount: true,
       });
       try {
-        const absenceDetailed = await this.AbsenceService.getRequestedAbsenceById(this.props.match.params.id);
+        const absenceDetailed = await this.AbsenceService.getAbsence(this.props.match.params.id);
         this.props.setStartingDate(
           new Date(absenceDetailed.startingDate),
           absenceDetailed.startingDate,

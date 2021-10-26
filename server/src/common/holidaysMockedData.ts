@@ -105,7 +105,6 @@ export const toAbsence = (absencedb: any): Absence => ({
 });
 
 export const absenceDto = {
-  id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
   type: AbsenceTypesEnum.paidLeave,
   startingDate: new Date('2021-08-04'),
   endingDate: new Date('2021-08-04'),

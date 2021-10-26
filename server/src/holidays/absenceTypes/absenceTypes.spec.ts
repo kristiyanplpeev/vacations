@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { AbsencesService } from '../absence.service';
 import { HolidaysService } from '../holidays.service';
 import { AbsenceFactory } from '../absenceTypes/absenceTypes';
-import { HolidaysController } from '../holidays.controller';
+import { AbsencesController } from '../absences.controller';
 import { Absencedb } from '../../model/absence.entity';
 import { Userdb } from '../../model/user.entity';
 import { Holidaydb } from '../../model/holiday.entity';
@@ -37,7 +37,7 @@ describe('absenceService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [HolidaysController],
+      controllers: [AbsencesController],
       providers: [
         HolidaysService,
         AbsencesService,

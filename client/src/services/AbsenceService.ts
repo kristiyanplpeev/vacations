@@ -1,7 +1,11 @@
 import { injectable } from "inversify";
 
 import { AbsencesEnum } from "common/constants";
-import { IUserAbsenceWithWorkingDays, IUserAbsenceWithEachDayStatus } from "common/interfaces";
+import {
+  IUserAbsenceWithWorkingDays,
+  IUserAbsenceWithEachDayStatus,
+  IUserAbsenceWithEmployee,
+} from "common/interfaces";
 import { IAbsenceService, IRestClient } from "inversify/interfaces";
 import "reflect-metadata";
 // eslint-disable-next-line import/no-cycle
@@ -19,7 +23,7 @@ class AbsenceService implements IAbsenceService {
       endingDate,
       comment,
     };
-    await this.restClient.post(`holidays`, { data });
+    await this.restClient.post(`absences`, { data });
   };
 
   editAbsence = async (
@@ -30,29 +34,28 @@ class AbsenceService implements IAbsenceService {
     comment?: string,
   ): Promise<void> => {
     const data = {
-      id,
       type,
       startingDate,
       endingDate,
       comment,
     };
-    await this.restClient.post(`holidays/edit`, { data });
+    await this.restClient.put(`absences/${id}`, { data });
   };
 
   getAbsenceEndDate = async (type: AbsencesEnum, startingDate: string): Promise<{ endingDate: string }> => {
-    return await this.restClient.get(`holidays/${type}/end-date/${startingDate}`);
+    return await this.restClient.get(`absences/${type}/end-date?from=${startingDate}`);
   };
 
   getUserAbsences = async (): Promise<Array<IUserAbsenceWithWorkingDays>> => {
-    return await this.restClient.get(`holidays/users`);
+    return await this.restClient.get(`absences`);
   };
 
-  DetailedAbsence = async (absenceId: string): Promise<IUserAbsenceWithEachDayStatus> => {
-    return await this.restClient.get(`holidays/${absenceId}`);
+  getAbsenceWithEachDay = async (absenceId: string): Promise<IUserAbsenceWithEachDayStatus> => {
+    return await this.restClient.get(`absences/${absenceId}`);
   };
 
-  getRequestedAbsenceById = async (absenceId: string): Promise<IUserAbsenceWithEachDayStatus> => {
-    return await this.restClient.get(`holidays/${absenceId}/details`);
+  getAbsence = async (absenceId: string): Promise<IUserAbsenceWithEmployee> => {
+    return await this.restClient.get(`absences/${absenceId}/details`);
   };
 }
 
