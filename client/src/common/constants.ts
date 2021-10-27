@@ -14,7 +14,7 @@ export const user = {
 export const errMessage = "Something went wrong.";
 
 export const emptyUser = {
-  id: "",
+  sub: "",
   googleId: "",
   email: "",
   firstName: "",

@@ -19,6 +19,11 @@ div.absence-card-chip-avatar.MuiAvatar-root {
   height: 36px;
 }
 
+.absence-card-buttons-delete.MuiButtonBase-root {
+  float: right;
+  right: 2%;
+}
+
 .absence-card-buttons.MuiButtonBase-root {
   margin: 4% auto;
 }

@@ -58,6 +58,8 @@ export class AbsenceResponseDto {
   @Transform(({ value }) => DateUtil.dateToString(value))
   endingDate: string;
   comment: string;
+  @Exclude()
+  isDeleted: boolean;
   employee: Userdb;
 }
 

@@ -205,4 +205,33 @@ describe('absenceService', () => {
       }
     });
   });
+
+  describe('deleteAbsence', () => {
+    it('should return detailed information about deleted absence', async () => {
+      //arrange
+      const absenceId = '0505c3d8-2fb5-4952-a0e7-1b49334f578d';
+
+      //act
+      const result = await service.deleteAbsence(
+        getUserWithId('fc799a20-5885-4390-98ce-7c868c3b3338'),
+        absenceId,
+      );
+
+      //assert
+      expect(result).toEqual(toAbsence(mockAbsenceDb));
+    });
+    it('should throw when user id and absence employee id does not match', async () => {
+      //arrange
+      const absenceId = '0505c3d8-2fb5-4952-a0e7-1b49334f578d';
+      expect.hasAssertions();
+
+      try {
+        //act
+        await service.deleteAbsence(mockedUser, absenceId);
+      } catch (error) {
+        //assert
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
+  });
 });
