@@ -80,14 +80,10 @@ export class AbsencesController {
   public async postNewAbsence(
     @Body() body: AbsenceDetailsDto,
     @Req() req,
-  ): Promise<AbsenceResponseDto> {
+  ): Promise<string> {
     const absenceDetails = convertDatesInBody(body);
     const absence = this.absenceFactory.create(absenceDetails);
-    const postedAbsence = await this.absenceService.postAbsence(
-      absence,
-      req.user,
-    );
-    return plainToClass(AbsenceResponseDto, postedAbsence);
+    return await this.absenceService.postAbsence(absence, req.user);
   }
 
   @Get()
@@ -125,19 +121,14 @@ export class AbsencesController {
     @Param() params: GetByIdDto,
     @Body() body: AbsenceDetailsDto,
     @Req() req,
-  ): Promise<AbsenceResponseDto> {
+  ): Promise<string> {
     const editedAbsence = convertDatesInBody(body);
     const absence = this.absenceFactory.create({
       id: params.id,
       ...editedAbsence,
     });
 
-    const editedAbsenceFromDb = await this.absenceService.editAbsence(
-      absence,
-      req.user,
-      params.id,
-    );
-    return plainToClass(AbsenceResponseDto, editedAbsenceFromDb);
+    return await this.absenceService.editAbsence(absence, req.user, params.id);
   }
 
   @Delete(':id')
@@ -145,8 +136,7 @@ export class AbsencesController {
   public async deleteAbsence(
     @Param() params: GetByIdDto,
     @Req() req,
-  ): Promise<AbsenceResponseDto> {
-    const deletedAbsence = await this.absenceService.deleteAbsence(req.user, params.id);
-    return plainToClass(AbsenceResponseDto, deletedAbsence);
+  ): Promise<string> {
+    return await this.absenceService.deleteAbsence(req.user, params.id);
   }
 }

@@ -37,10 +37,7 @@ export class AbsencesService {
     }
   }
 
-  public async postAbsence(
-    absence: AbsenceTypes,
-    user: User,
-  ): Promise<Absence> {
+  public async postAbsence(absence: AbsenceTypes, user: User): Promise<string> {
     const userAbsences = await this.getUserAbsences(user);
     await absence.validate(userAbsences);
     const absenceCalculatedDetails = await absence.getAbsenceDetails();
@@ -54,7 +51,9 @@ export class AbsencesService {
       employee,
     });
 
-    return (await this.absenceRepo.save(newAbsence)).toAbsence();
+    await this.absenceRepo.save(newAbsence);
+
+    return 'Absence added successfully.';
   }
 
   public async getEndingDate(absence: AbsenceTypes): Promise<Date> {
@@ -137,7 +136,7 @@ export class AbsencesService {
     absence: AbsenceTypes,
     user: User,
     absenceId: string,
-  ): Promise<Absence> {
+  ): Promise<string> {
     const userAbsences = await this.getUserAbsences(user);
     await absence.validate(userAbsences);
     const absenceCalculatedDetails = await absence.getAbsenceDetails();
@@ -149,7 +148,11 @@ export class AbsencesService {
     Guard.exists(absencedb, `Absence with id ${absenceId} does not exist.`);
     Guard.should(!absencedb.is_deleted, 'Deleted absences can not be edited.');
     const currentAbsence = absencedb.toAbsence();
-    this.validateAbsenceAuthor(currentAbsence, user, "Only the owner of the absence can edit it.");
+    this.validateAbsenceAuthor(
+      currentAbsence,
+      user,
+      'Only the owner of the absence can edit it.',
+    );
 
     absencedb.from_date = DateUtil.dateToString(
       absenceCalculatedDetails.startingDate,
@@ -158,10 +161,12 @@ export class AbsencesService {
       absenceCalculatedDetails.endingDate,
     );
     absencedb.comment = absenceCalculatedDetails.comment;
-    return (await this.absenceRepo.save(absencedb)).toAbsence();
+    await this.absenceRepo.save(absencedb);
+
+    return 'Absence edited successfully.';
   }
 
-  public async deleteAbsence(user: User, absenceId: string): Promise<Absence> {
+  public async deleteAbsence(user: User, absenceId: string): Promise<string> {
     Guard.isValidUUID(user.id, `Invalid user id: ${user.id}`);
     const absencedb = await this.absenceRepo.findOne({
       where: { id: absenceId },
@@ -172,10 +177,16 @@ export class AbsencesService {
 
     const absence = absencedb.toAbsence();
 
-    this.validateAbsenceAuthor(absence, user, "Only the owner of the absence can delete it.");
+    this.validateAbsenceAuthor(
+      absence,
+      user,
+      'Only the owner of the absence can delete it.',
+    );
 
     absencedb.is_deleted = true;
 
-    return (await this.absenceRepo.save(absencedb)).toAbsence();
+    await this.absenceRepo.save(absencedb);
+
+    return 'Absence deleted successfully.';
   }
 }
