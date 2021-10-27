@@ -38,6 +38,7 @@ import { AbsencesEnum, leaveTypesWithURLs, ViewsEnum } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import { IUserAbsenceWithEachDayStatus, IUserAbsenceWithWorkingDays } from "common/interfaces";
 import { HolidayDays } from "common/interfaces";
+import DeleteAbsenceModal from "components/common/DeleteAbsenceModal/DeleteAbsenceModal";
 import Error from "components/common/Error/Error";
 import { IAbsenceService, IHolidayService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
@@ -85,6 +86,7 @@ interface HomepageState {
   userFutureAbsences: Array<IUserAbcenseWithDate>;
   view: ViewsEnum;
   holidays: HolidayDays;
+  deleteAbsenceId: string;
 }
 
 class Homepage extends Component<HomepageProps, HomepageState> {
@@ -102,6 +104,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       userFutureAbsences: [],
       view: ViewsEnum.table,
       holidays: [],
+      deleteAbsenceId: "",
     };
   }
 
@@ -162,7 +165,18 @@ class Homepage extends Component<HomepageProps, HomepageState> {
           : this.renderUserAbsencesTable()}
         {this.renderSnackbar()}
         {this.renderSelectDialog()}
+        {this.renderDeleteAbsenceConfirmationModal()}
       </div>
+    );
+  }
+
+  renderDeleteAbsenceConfirmationModal(): JSX.Element {
+    return (
+      <DeleteAbsenceModal
+        deleteAbsenceId={this.state.deleteAbsenceId}
+        handleCancelClick={this.handleCancelClick}
+        handleConfirmClick={this.handleConfirmClick}
+      />
     );
   }
 
@@ -313,13 +327,13 @@ class Homepage extends Component<HomepageProps, HomepageState> {
   renderTableHeaderAndFooterCells(): JSX.Element {
     return (
       <TableRow>
-        <TableCell width="10%" align="left">
+        <TableCell width="8%" align="left">
           <b>Type</b>
         </TableCell>
-        <TableCell width="10%" align="left">
+        <TableCell width="8%" align="left">
           <b>From</b>
         </TableCell>
-        <TableCell width="10%" align="left">
+        <TableCell width="8%" align="left">
           <b>To</b>
         </TableCell>
         <TableCell width="8%" align="left">
@@ -328,11 +342,12 @@ class Homepage extends Component<HomepageProps, HomepageState> {
         <TableCell width="8%" align="left">
           <b>Total days</b>
         </TableCell>
-        <TableCell width="10%" align="left"></TableCell>
-        <TableCell width="10%" align="left"></TableCell>
-        <TableCell width="30%" align="left">
+        <TableCell width="8%" align="left"></TableCell>
+        <TableCell width="8%" align="left"></TableCell>
+        <TableCell width="25%" align="left">
           <b>Comment</b>
         </TableCell>
+        <TableCell width="8%" align="left"></TableCell>
       </TableRow>
     );
   }
@@ -408,13 +423,13 @@ class Homepage extends Component<HomepageProps, HomepageState> {
 
   private mappingFunc = (el: IUserAbcenseWithDate): JSX.Element => (
     <TableRow hover key={el.id}>
-      <TableCell width="10%" align="left">
+      <TableCell width="8%" align="left">
         {el.type}
       </TableCell>
-      <TableCell width="10%" align="left">
+      <TableCell width="8%" align="left">
         {el.startingDate.toLocaleDateString("en-CA")}
       </TableCell>
-      <TableCell width="10%" align="left">
+      <TableCell width="8%" align="left">
         {el.endingDate.toLocaleDateString("en-CA")}
       </TableCell>
       <TableCell width="8%" align="left">
@@ -423,18 +438,23 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       <TableCell width="8%" align="left">
         {el.totalDays}
       </TableCell>
-      <TableCell width="5%" align="left">
+      <TableCell width="8%" align="left">
         <Button color="primary" onClick={() => this.props.history.push(`/absence/${el.id}`)}>
           view
         </Button>
       </TableCell>
-      <TableCell width="5%" align="left">
+      <TableCell width="8%" align="left">
         <Button color="primary" onClick={() => this.handleEditClick(el.id, el.type)}>
           edit
         </Button>
       </TableCell>
-      <TableCell width="30%" align="left">
+      <TableCell width="25%" align="left">
         {el.comment ? el.comment : <div className="homepage-absence-comment">not available</div>}
+      </TableCell>
+      <TableCell width="8%" align="left">
+        <Button color="secondary" onClick={() => this.handleDeleteClick(el.id)}>
+          delete
+        </Button>
       </TableCell>
     </TableRow>
   );
@@ -450,6 +470,42 @@ class Homepage extends Component<HomepageProps, HomepageState> {
       openSelectorDialog: state,
     });
   }
+
+  handleDeleteClick(absenceId: string): void {
+    this.setState({
+      deleteAbsenceId: absenceId,
+    });
+  }
+
+  handleCancelClick = (): void => {
+    this.setState({
+      deleteAbsenceId: "",
+    });
+  };
+
+  handleConfirmClick = async (currentAbsenceId: string): Promise<void> => {
+    try {
+      await this.absenceService.deleteAbsence(currentAbsenceId);
+
+      const pastAbsencesWithoutDeletedOne = this.state.userPastAbsences.filter(
+        (absence) => absence.id !== currentAbsenceId,
+      );
+
+      const futureAbsencesWithoutDeletedOne = this.state.userFutureAbsences.filter(
+        (absence) => absence.id !== currentAbsenceId,
+      );
+
+      this.setState({
+        userPastAbsences: pastAbsencesWithoutDeletedOne,
+        userFutureAbsences: futureAbsencesWithoutDeletedOne,
+        deleteAbsenceId: "",
+      });
+    } catch (error) {
+      this.setState({
+        error: error.message,
+      });
+    }
+  };
 
   handleEditClick(currentAbsenceId: string, type: string): void {
     const absenceUrl = Object.values(leaveTypesWithURLs).find((absence) => absence.leave === type);

@@ -14,6 +14,7 @@ export interface Absence {
   startingDate: Date;
   endingDate: Date;
   comment: string;
+  isDeleted: boolean;
   employee: Userdb;
 }
 

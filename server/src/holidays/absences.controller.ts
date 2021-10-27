@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -137,5 +138,15 @@ export class AbsencesController {
       params.id,
     );
     return plainToClass(AbsenceResponseDto, editedAbsenceFromDb);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  public async deleteAbsence(
+    @Param() params: GetByIdDto,
+    @Req() req,
+  ): Promise<AbsenceResponseDto> {
+    const deletedAbsence = await this.absenceService.deleteAbsence(req.user, params.id);
+    return plainToClass(AbsenceResponseDto, deletedAbsence);
   }
 }

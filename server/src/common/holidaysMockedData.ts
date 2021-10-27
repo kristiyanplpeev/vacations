@@ -55,6 +55,7 @@ export const mockEmployeeHolidays = [
     from_date: '2021-08-04',
     to_date: '2021-08-04',
     comment: 'PTO',
+    is_deleted: false,
   },
   {
     id: '89b04b55-f047-4ce1-87f2-21f849ccd398',
@@ -62,6 +63,7 @@ export const mockEmployeeHolidays = [
     from_date: '2021-08-05',
     to_date: '2021-08-05',
     comment: 'PTO',
+    is_deleted: false,
   },
 ];
 
@@ -74,6 +76,7 @@ export const mockEmployeeAbsencesDb = mockEmployeeHolidays.map((el) => ({
       startingDate: new Date(this.from_date),
       endingDate: new Date(this.to_date),
       comment: this.comment,
+      isDeleted: this.is_deleted,
       employee: this.employee,
     };
   },
@@ -84,6 +87,7 @@ export const mockAbsenceDb = {
   from_date: '2021-07-07',
   to_date: '2021-07-08',
   comment: 'PTO',
+  is_deleted: false,
   employee: {
     id: 'fc799a20-5885-4390-98ce-7c868c3b3338',
     googleId: '106956791077954804246',
@@ -101,6 +105,7 @@ export const toAbsence = (absencedb: any): Absence => ({
   startingDate: new Date(absencedb.from_date),
   endingDate: new Date(absencedb.to_date),
   comment: absencedb.comment,
+  isDeleted: absencedb.is_deleted,
   employee: absencedb.employee,
 });
 

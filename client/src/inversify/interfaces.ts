@@ -50,6 +50,7 @@ export interface IAbsenceService {
     endingDate?: string,
     comment?: string,
   ): Promise<void>;
+  deleteAbsence(absenceId: string): Promise<void>;
 }
 
 export interface IUserService {

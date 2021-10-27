@@ -57,6 +57,10 @@ class AbsenceService implements IAbsenceService {
   getAbsence = async (absenceId: string): Promise<IUserAbsenceWithEmployee> => {
     return await this.restClient.get(`absences/${absenceId}/details`);
   };
+
+  deleteAbsence = async (absenceId: string): Promise<void> => {
+    await this.restClient.delete(`absences/${absenceId}`);
+  };
 }
 
 export default AbsenceService;

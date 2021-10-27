@@ -27,11 +27,13 @@ export class AbsencesService {
     private readonly holidaysService: HolidaysService,
   ) {}
 
-  private validateAbsenceAuthor(absence: Absence, user: User): void {
+  private validateAbsenceAuthor(
+    absence: Absence,
+    user: User,
+    message: string,
+  ): void {
     if (user.id !== absence.employee.id) {
-      throw new UnauthorizedException(
-        'Only the owner of the absence can edit it.',
-      );
+      throw new UnauthorizedException(message);
     }
   }
 
@@ -48,6 +50,7 @@ export class AbsencesService {
       from_date: DateUtil.dateToString(absenceCalculatedDetails.startingDate),
       to_date: DateUtil.dateToString(absenceCalculatedDetails.endingDate),
       comment: absenceCalculatedDetails.comment,
+      is_deleted: false,
       employee,
     });
 
@@ -81,7 +84,7 @@ export class AbsencesService {
         workingDays: workDays.length,
       };
     });
-    
+
     return await Promise.all(userAbsencesWithCalculatedWorkingDays);
   }
 
@@ -89,22 +92,27 @@ export class AbsencesService {
     user: User,
   ): Promise<Array<AbsenceDetailsWithTotalDays>> {
     Guard.isValidUUID(user.id, `Invalid user id: ${user.id}`);
-    const userHolidaysDb = await this.absenceRepo.find({
+    const userAbsencesDb = await this.absenceRepo.find({
       where: { employee: user.id },
       relations: [UserRelations.employee],
     });
-    const userHolidays = userHolidaysDb.map((el) => el.toAbsence());
+    const userAbsences = userAbsencesDb.map((el) => el.toAbsence());
 
-    return await this.calculateAbsenceWorkingDays(userHolidays);
+    const nonDeletedUserAbsences = userAbsences.filter(
+      (absence) => absence.isDeleted === false,
+    );
+
+    return await this.calculateAbsenceWorkingDays(nonDeletedUserAbsences);
   }
 
   private async getAbsenceDetails(absenceId: string): Promise<Absence> {
-    const absence = await this.absenceRepo.findOne({
+    const absencedb = await this.absenceRepo.findOne({
       where: { id: absenceId },
       relations: [UserRelations.employee],
     });
-    Guard.exists(absence, `Absence with id ${absenceId} does not exist.`);
-    return absence.toAbsence();
+    Guard.exists(absencedb, `Absence with id ${absenceId} does not exist.`);
+    Guard.should(!absencedb.is_deleted, 'The absence is no longer available.');
+    return absencedb.toAbsence();
   }
 
   public async getAbsenceWithEachDayStatus(
@@ -139,8 +147,9 @@ export class AbsencesService {
       relations: [UserRelations.employee],
     });
     Guard.exists(absencedb, `Absence with id ${absenceId} does not exist.`);
+    Guard.should(!absencedb.is_deleted, 'Deleted absences can not be edited.');
     const currentAbsence = absencedb.toAbsence();
-    this.validateAbsenceAuthor(currentAbsence, user);
+    this.validateAbsenceAuthor(currentAbsence, user, "Only the owner of the absence can edit it.");
 
     absencedb.from_date = DateUtil.dateToString(
       absenceCalculatedDetails.startingDate,
@@ -149,6 +158,24 @@ export class AbsencesService {
       absenceCalculatedDetails.endingDate,
     );
     absencedb.comment = absenceCalculatedDetails.comment;
+    return (await this.absenceRepo.save(absencedb)).toAbsence();
+  }
+
+  public async deleteAbsence(user: User, absenceId: string): Promise<Absence> {
+    Guard.isValidUUID(user.id, `Invalid user id: ${user.id}`);
+    const absencedb = await this.absenceRepo.findOne({
+      where: { id: absenceId },
+      relations: [UserRelations.employee],
+    });
+    Guard.exists(absencedb, `Absence with id ${absenceId} does not exist.`);
+    Guard.should(!absencedb.is_deleted, 'Absence has already been deleted.');
+
+    const absence = absencedb.toAbsence();
+
+    this.validateAbsenceAuthor(absence, user, "Only the owner of the absence can delete it.");
+
+    absencedb.is_deleted = true;
+
     return (await this.absenceRepo.save(absencedb)).toAbsence();
   }
 }
