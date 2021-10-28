@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { HolidaysController } from './holidays.controller';
+import { AbsencesController } from './absences.controller';
 import { HolidaysService } from './holidays.service';
 import { Holidaydb } from '../model/holiday.entity';
 import { Absencedb } from '../model/absence.entity';
@@ -11,6 +11,6 @@ import { AbsenceFactory } from './absenceTypes/absenceTypes';
 @Module({
   imports: [TypeOrmModule.forFeature([Holidaydb, Absencedb, Userdb])],
   providers: [HolidaysService, AbsencesService, AbsenceFactory],
-  controllers: [HolidaysController],
+  controllers: [AbsencesController],
 })
 export class HolidaysModule {}

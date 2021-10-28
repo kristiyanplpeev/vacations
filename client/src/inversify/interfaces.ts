@@ -1,3 +1,4 @@
+import { AxiosRequestConfig } from "axios";
 import { Dispatch } from "redux";
 
 import { AbsencesEnum } from "common/constants";
@@ -10,11 +11,11 @@ import {
   ITeams,
   IPositions,
   IUserAbsenceWithWorkingDaysAndEmployee,
+  IUserAbsenceWithEmployee,
 } from "common/interfaces";
 import { AppActions, IUserDetails } from "store/user/types";
 
 export interface IAuthService {
-  logInUser(): Promise<IUserDetails>;
   getToken(): string;
   extractUser(token: string): IUserDetails;
 }
@@ -42,8 +43,8 @@ export interface IAbsenceService {
   getUserAbsences(): Promise<Array<IUserAbsenceWithWorkingDays>>;
   getAllUsersAbsences(): Promise<Array<IUserAbsenceWithWorkingDaysAndEmployee>>;
   getAbsenceEndDate(type: AbsencesEnum, startingDate: string): Promise<{ endingDate: string }>;
-  DetailedAbsence(absenceId: string): Promise<IUserAbsenceWithEachDayStatus>;
-  getRequestedAbsenceById(absenceId: string): Promise<IUserAbsenceWithEachDayStatus>;
+  getAbsenceWithEachDay(absenceId: string): Promise<IUserAbsenceWithEachDayStatus>;
+  getAbsence(absenceId: string): Promise<IUserAbsenceWithEmployee>;
   editAbsence(
     id: string,
     type: AbsencesEnum,
@@ -51,13 +52,23 @@ export interface IAbsenceService {
     endingDate?: string,
     comment?: string,
   ): Promise<void>;
+  deleteAbsence(absenceId: string): Promise<void>;
 }
 
 export interface IUserService {
+  logInUser(): Promise<IUserDetails>;
   getAllUsers(teamId: string, positionId: string): Promise<Array<IUserWithTeamAndPosition>>;
   getUsersByIds(usersIds: string): Promise<Array<IUserWithTeamAndPosition>>;
   getTeams(): Promise<Array<ITeams>>;
   getPositions(): Promise<Array<IPositions>>;
   updateUsersTeam(users: Array<string>, newTeamId: string): Promise<void>;
   updateUsersPosition(users: Array<string>, newPositionId: string): Promise<void>;
+}
+
+export interface IRestClient {
+  get<T>(url: string, input?: AxiosRequestConfig): Promise<T>;
+  post<T>(url: string, input?: AxiosRequestConfig): Promise<T>;
+  delete<T>(url: string, input?: AxiosRequestConfig): Promise<T>;
+  patch<T>(url: string, input?: AxiosRequestConfig): Promise<T>;
+  put<T>(url: string, input?: AxiosRequestConfig): Promise<T>;
 }

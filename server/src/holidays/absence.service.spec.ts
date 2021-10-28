@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Absencedb } from '../model/absence.entity';
 import { Userdb } from '../model/user.entity';
 import { Holidaydb } from '../model/holiday.entity';
-import { HolidaysController } from './holidays.controller';
+import { AbsencesController } from './absences.controller';
 import { HolidaysService } from './holidays.service';
 import {
   mockAbsenceDb,
@@ -85,7 +85,7 @@ describe('absenceService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [HolidaysController],
+      controllers: [AbsencesController],
       providers: [
         HolidaysService,
         AbsencesService,
@@ -199,6 +199,35 @@ describe('absenceService', () => {
       try {
         //act
         await service.editAbsence(absence, mockedUser, absenceId);
+      } catch (error) {
+        //assert
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
+  });
+
+  describe('deleteAbsence', () => {
+    it('should return detailed information about deleted absence', async () => {
+      //arrange
+      const absenceId = '0505c3d8-2fb5-4952-a0e7-1b49334f578d';
+
+      //act
+      const result = await service.deleteAbsence(
+        getUserWithId('fc799a20-5885-4390-98ce-7c868c3b3338'),
+        absenceId,
+      );
+
+      //assert
+      expect(result).toEqual(toAbsence(mockAbsenceDb));
+    });
+    it('should throw when user id and absence employee id does not match', async () => {
+      //arrange
+      const absenceId = '0505c3d8-2fb5-4952-a0e7-1b49334f578d';
+      expect.hasAssertions();
+
+      try {
+        //act
+        await service.deleteAbsence(mockedUser, absenceId);
       } catch (error) {
         //assert
         expect(error).toBeInstanceOf(UnauthorizedException);

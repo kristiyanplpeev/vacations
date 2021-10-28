@@ -45,6 +45,10 @@ export interface IUserAbsence {
   comment: string;
 }
 
+export interface IUserAbsenceWithEmployee extends IUserAbsence {
+  employee: IUser;
+}
+
 export interface IUserAbsenceWithWorkingDays extends IUserAbsence {
   workingDays: number;
   totalDays: number;

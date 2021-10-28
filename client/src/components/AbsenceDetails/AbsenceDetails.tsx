@@ -63,7 +63,7 @@ class AbsenceDetails extends Component<AbsenceDetailsProps, AbsenceDetailsState>
         loading: true,
       });
       const absenceId = this.props.match.params.id;
-      const absenceDetails = await this.absenceService.DetailedAbsence(absenceId);
+      const absenceDetails = await this.absenceService.getAbsenceWithEachDay(absenceId);
       const workingDays = this.calculateWorkingDays(absenceDetails.eachDayStatus);
 
       this.setState({
@@ -103,6 +103,7 @@ class AbsenceDetails extends Component<AbsenceDetailsProps, AbsenceDetailsState>
                 employee={this.state.employee}
                 absenceDetails={this.state.absenceDetails}
                 workingDays={this.state.workingDays}
+                setError={this.setError}
               />
             )}
           </Grid>
@@ -115,6 +116,12 @@ class AbsenceDetails extends Component<AbsenceDetailsProps, AbsenceDetailsState>
         </Grid>
       </div>
     );
+  }
+
+  setError(error: string): void {
+    this.setState({
+      error,
+    });
   }
 
   private calculateWorkingDays(daysStatuses: HolidayDays): number {

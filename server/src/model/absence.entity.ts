@@ -15,6 +15,9 @@ export class Absencedb extends BaseEntity {
   @Column({ type: 'date' })
   to_date: string;
 
+  @Column({ type: 'boolean', default: false })
+  is_deleted: boolean;
+
   @Column({ type: 'text', nullable: true })
   comment: string;
 
@@ -28,6 +31,7 @@ export class Absencedb extends BaseEntity {
       startingDate: new Date(this.from_date),
       endingDate: new Date(this.to_date),
       comment: this.comment,
+      isDeleted: this.is_deleted,
       employee: this.employee,
     };
   }

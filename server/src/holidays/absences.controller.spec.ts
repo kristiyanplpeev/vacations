@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HolidaysService } from './holidays.service';
-import { HolidaysController } from './holidays.controller';
+import { AbsencesController } from './absences.controller';
 import { AbsencesService } from './absence.service';
 import {
   mockAbsenceDb,
@@ -15,8 +15,8 @@ import { AbsenceTypesEnum } from '../common/constants';
 import { AbsenceFactory } from './absenceTypes/absenceTypes';
 import DateUtil from '../utils/DateUtil';
 
-describe('HolidaysController', () => {
-  let controller: HolidaysController;
+describe('AbsencesController', () => {
+  let controller: AbsencesController;
 
   const convertDatesToString = (obj: any) => ({
     ...obj,
@@ -75,7 +75,7 @@ describe('HolidaysController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [HolidaysController],
+      controllers: [AbsencesController],
       providers: [HolidaysService, AbsencesService, AbsenceFactory],
     })
       .overrideProvider(HolidaysService)
@@ -84,7 +84,7 @@ describe('HolidaysController', () => {
       .useValue(mockAbsencesService)
       .compile();
 
-    controller = module.get<HolidaysController>(HolidaysController);
+    controller = module.get<AbsencesController>(AbsencesController);
   });
 
   afterEach(() => {
@@ -98,8 +98,8 @@ describe('HolidaysController', () => {
     it('should return days and statuses for absence period', async () => {
       //arrange
       const dto = {
-        start: '2021-08-12',
-        end: '2021-08-14',
+        from: '2021-08-12',
+        to: '2021-08-14',
       };
 
       //act
@@ -142,7 +142,7 @@ describe('HolidaysController', () => {
         //arrange
 
         //act
-        const result = await controller.getAbsenceDetailsWithEachDayStatus({
+        const result = await controller.getAbsenceWithEachDay({
           id: '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
         });
 
@@ -157,6 +157,7 @@ describe('HolidaysController', () => {
 
         //act
         const result = await controller.editAbsence(
+          { id: 'fc799a20-5885-4390-98ce-7c868c3b3338' },
           convertDatesToString(absenceDto),
           {
             user: mockedUser,
