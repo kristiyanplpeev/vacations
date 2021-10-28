@@ -95,6 +95,15 @@ export class HolidaysController {
     return plainToClass(AbsenceWithWorkingDaysResponseDto, userAbsences);
   }
 
+  @Get('team')
+  @UseGuards(JwtAuthGuard)
+  public async getByTeam(@Req() req): Promise<string | AbsenceResponseDto> {
+    const userAbsences = await this.absenceService.getAllUsersAbsencesByTeam(
+      req.user,
+    );
+    return plainToClass(AbsenceResponseDto, userAbsences);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   public async getAbsenceDetailsWithEachDayStatus(
