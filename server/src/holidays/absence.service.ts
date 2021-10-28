@@ -113,9 +113,10 @@ export class AbsencesService {
       where: { id: user.id },
       relations: [UserRelations.teams],
     });
-    if (!team) {
-      return 'You have no team assigned! Please contact your administrator';
-    }
+    Guard.should(
+      team !== null,
+      "You don't have a team assigned. Please contact your admin!",
+    );
 
     const usersDb = await this.userRepo.find({ where: { team } });
     const users = usersDb.map((u) => u.toUser());
@@ -125,7 +126,9 @@ export class AbsencesService {
         where: { employee: user.id },
         relations: [UserRelations.employee],
       });
-      const absences = absencesDb.map((a) => a.toAbsence());
+      const absences = absencesDb
+        .map((a) => a.toAbsence())
+        .filter((a) => !a.isDeleted);
 
       return await this.calculateAbsenceWorkingDays(absences);
     });
