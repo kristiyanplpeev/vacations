@@ -81,7 +81,7 @@ export class AbsencesService {
         workingDays: workDays.length,
       };
     });
-    
+
     return await Promise.all(userAbsencesWithCalculatedWorkingDays);
   }
 
@@ -96,6 +96,35 @@ export class AbsencesService {
     const userHolidays = userHolidaysDb.map((el) => el.toAbsence());
 
     return await this.calculateAbsenceWorkingDays(userHolidays);
+  }
+
+  public async getAllUsersAbsencesByTeam(
+    user: User,
+  ): Promise<string | Promise<Array<Array<AbsenceDetailsWithTotalDays>>>> {
+    Guard.isValidUUID(user.id, `Invalid user id: ${user.id}`);
+
+    const { team } = await this.userRepo.findOne({
+      where: { id: user.id },
+      relations: [UserRelations.teams],
+    });
+    if (!team) {
+      return 'You have no team assigned! Please contact your administrator';
+    }
+
+    const usersDb = await this.userRepo.find({ where: { team } });
+    const users = usersDb.map((u) => u.toUser());
+
+    const allUsersAbsences = users.map(async (user) => {
+      const absencesDb = await this.absenceRepo.find({
+        where: { employee: user.id },
+        relations: [UserRelations.employee],
+      });
+      const absences = absencesDb.map((a) => a.toAbsence());
+
+      return await this.calculateAbsenceWorkingDays(absences);
+    });
+
+    return Promise.all(allUsersAbsences);
   }
 
   private async getAbsenceDetails(absenceId: string): Promise<Absence> {
