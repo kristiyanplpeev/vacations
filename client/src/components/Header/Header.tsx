@@ -34,7 +34,7 @@ class Header extends Component<Props, HeaderState> {
             <Button onClick={() => this.props.history.push("/home")} color="inherit">
               My absences
             </Button>
-            <Button onClick={() => {}} color="inherit">
+            <Button onClick={() => this.props.history.push("/team-absences")} color="inherit">
               Team absences
             </Button>
             <Button onClick={() => this.props.history.push("/admin")} color="inherit">
