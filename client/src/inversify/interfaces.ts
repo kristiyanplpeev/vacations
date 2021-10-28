@@ -9,6 +9,7 @@ import {
   IUserWithTeamAndPosition,
   ITeams,
   IPositions,
+  IUserAbsenceWithWorkingDaysAndEmployee,
 } from "common/interfaces";
 import { AppActions, IUserDetails } from "store/user/types";
 
@@ -39,6 +40,7 @@ export interface IAbsenceService {
     comment?: string,
   ): Promise<void | { warning: string }>;
   getUserAbsences(): Promise<Array<IUserAbsenceWithWorkingDays>>;
+  getAllUsersAbsences(): Promise<Array<IUserAbsenceWithWorkingDaysAndEmployee>>;
   getAbsenceEndDate(type: AbsencesEnum, startingDate: string): Promise<{ endingDate: string }>;
   DetailedAbsence(absenceId: string): Promise<IUserAbsenceWithEachDayStatus>;
   getRequestedAbsenceById(absenceId: string): Promise<IUserAbsenceWithEachDayStatus>;

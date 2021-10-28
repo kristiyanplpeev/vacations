@@ -3,7 +3,11 @@ import { injectable } from "inversify";
 
 import { AbsencesEnum, applicationJSON, BASE_URL } from "common/constants";
 import { ErrorUtil } from "common/ErrorUtil";
-import { IUserAbsenceWithWorkingDays, IUserAbsenceWithEachDayStatus } from "common/interfaces";
+import {
+  IUserAbsenceWithWorkingDays,
+  IUserAbsenceWithEachDayStatus,
+  IUserAbsenceWithWorkingDaysAndEmployee,
+} from "common/interfaces";
 import { IAbsenceService, IAuthService } from "inversify/interfaces";
 import "reflect-metadata";
 // eslint-disable-next-line import/no-cycle
@@ -72,6 +76,14 @@ class AbsenceService implements IAbsenceService {
   getUserAbsences = async (): Promise<Array<IUserAbsenceWithWorkingDays>> => {
     try {
       return (await axios.get(`${BASE_URL}holidays/users`, this.getConfig())).data;
+    } catch (error) {
+      throw new Error(ErrorUtil.errorHandle(error));
+    }
+  };
+
+  getAllUsersAbsences = async (): Promise<Array<IUserAbsenceWithWorkingDaysAndEmployee>> => {
+    try {
+      return (await axios.get(`${BASE_URL}holidays/team`, this.getConfig())).data;
     } catch (error) {
       throw new Error(ErrorUtil.errorHandle(error));
     }
