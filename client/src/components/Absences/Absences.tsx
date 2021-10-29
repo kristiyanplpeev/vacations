@@ -27,7 +27,7 @@ import { isWithinInterval, subDays } from "date-fns";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext, withRouter } from "react-router";
 
-import { leaveTypesWithURLs, ViewsEnum } from "common/constants";
+import { AbsencesViewEnum, leaveTypesWithURLs, ViewsEnum } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import { IUser, IUserAbsenceWithWorkingDays } from "common/interfaces";
 import { HolidayDays } from "common/interfaces";
@@ -58,7 +58,7 @@ const DateRangePickerDay = styled(MuiDateRangePickerDay, {
   };
 }) as React.ComponentType<DateRangePickerDayProps<Date>>;
 
-export interface IUserAbcenseWithDate {
+export interface IUserAbsenceWithDate {
   id: string;
   type: string;
   startingDate: Date;
@@ -70,15 +70,15 @@ export interface IUserAbcenseWithDate {
 }
 
 interface AbsencesProps extends RouteComponentProps<null, StaticContext> {
-  isShowingTeamAbsences: boolean;
+  absences: AbsencesViewEnum;
   handleToggleSelectDialog?: (state: boolean) => void;
 }
 
 interface AbsencesState {
   loading: boolean;
   error: string;
-  userPastAbsences: Array<IUserAbcenseWithDate>;
-  userFutureAbsences: Array<IUserAbcenseWithDate>;
+  userPastAbsences: Array<IUserAbsenceWithDate>;
+  userFutureAbsences: Array<IUserAbsenceWithDate>;
   view: ViewsEnum;
   holidays: HolidayDays;
   deleteAbsenceId: string;
@@ -106,7 +106,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
       loading: true,
     });
 
-    this.props.isShowingTeamAbsences ? await this.loadAllUsersAbsences() : await this.loadAbsences();
+    this.props.absences === AbsencesViewEnum.team ? await this.loadAllUsersAbsences() : await this.loadUserAbsences();
     await this.loadHolidaysForThreeMonths();
 
     this.setState({
@@ -130,7 +130,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
     }
   }
 
-  async loadAbsences(): Promise<void> {
+  async loadUserAbsences(): Promise<void> {
     try {
       const { userFutureAbsences, userPastAbsences } = await this.getUserAbsences();
 
@@ -207,9 +207,9 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
       return <CircularProgress />;
     }
 
-    const { isShowingTeamAbsences, handleToggleSelectDialog } = this.props;
+    const { absences, handleToggleSelectDialog } = this.props;
 
-    if (isShowingTeamAbsences) {
+    if (absences === AbsencesViewEnum.team) {
       return (
         <Typography className="homepage-message-text" variant="h5" gutterBottom>
           Your team currently does not have any absences!
@@ -247,7 +247,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
         {this.renderHeaderAndFooter(true)}
         {this.renderSeparator()}
         {this.renderHeaderAndFooter(false)}
-        {!this.props.isShowingTeamAbsences && this.renderAddAbsenceButton()}
+        {this.props.absences === AbsencesViewEnum.mine && this.renderAddAbsenceButton()}
       </div>
     );
   }
@@ -328,14 +328,19 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
     dateRangePickerDayProps: DateRangePickerDayProps<Date>,
     periods: Array<{ start: Date; end: Date }>,
   ): JSX.Element {
-    const { isShowingTeamAbsences } = this.props;
+    const { absences } = this.props;
     const dayIsBetween = periods.some((p) => isWithinInterval(date, { start: p.start, end: p.end }));
     const dayIsHoliday = this.checkIfDayIsHoliday(date);
     const className = dayIsBetween && !dayIsHoliday ? "absence" : "non-absence";
     dateRangePickerDayProps.inlist = dayIsHoliday;
     dateRangePickerDayProps.isHighlighting = dayIsBetween;
 
-    if (isShowingTeamAbsences && dayIsBetween && !dayIsHoliday && !dateRangePickerDayProps.outsideCurrentMonth) {
+    if (
+      absences === AbsencesViewEnum.team &&
+      dayIsBetween &&
+      !dayIsHoliday &&
+      !dateRangePickerDayProps.outsideCurrentMonth
+    ) {
       const { userPastAbsences, userFutureAbsences } = this.state;
       const names = this.getEmployeesNames(date, userFutureAbsences.concat(userPastAbsences));
 
@@ -372,7 +377,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
         <TableCell width="10%" align="left" />
         <TableCell width="10%" align="left" />
         <TableCell width="10%" align="left">
-          {this.props.isShowingTeamAbsences && <b>Employee</b>}
+          {this.props.absences === AbsencesViewEnum.team && <b>Employee</b>}
         </TableCell>
         <TableCell width="30%" align="left">
           <b>Comment</b>
@@ -396,7 +401,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
   }
 
   // eslint-disable-next-line max-lines-per-function
-  private mappingFunc = (el: IUserAbcenseWithDate): JSX.Element => (
+  private mappingFunc = (el: IUserAbsenceWithDate): JSX.Element => (
     <TableRow hover key={el.id}>
       <TableCell width="10%" align="left">
         {el.type}
@@ -413,7 +418,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
       <TableCell width="8%" align="left">
         {el.totalDays}
       </TableCell>
-      {this.props.isShowingTeamAbsences && el.employee ? (
+      {el.employee ? (
         <>
           <TableCell width="10%" align="left" />
           <TableCell width="10%" align="left" />
@@ -500,7 +505,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
   }
 
   getPeriods(): Array<{ start: Date; end: Date }> {
-    const mappingFunc = (absence: IUserAbcenseWithDate) => {
+    const mappingFunc = (absence: IUserAbsenceWithDate) => {
       // In order to correctly display the period, you need to pass
       // the day before the startingDate to the DateRangePicker component from Material UI
       const start = subDays(absence.startingDate, 1);
@@ -518,8 +523,8 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
   }
 
   async getUserAbsences(): Promise<{
-    userFutureAbsences: Array<IUserAbcenseWithDate>;
-    userPastAbsences: Array<IUserAbcenseWithDate>;
+    userFutureAbsences: Array<IUserAbsenceWithDate>;
+    userPastAbsences: Array<IUserAbsenceWithDate>;
   }> {
     const userAbsences = await this.absenceService.getUserAbsences();
     const userFutureAbsences = this.filterAndMapUserAbsences(
@@ -538,19 +543,17 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
   }
 
   async getAllUsersAbsences(): Promise<{
-    userFutureAbsences: Array<IUserAbcenseWithDate>;
-    userPastAbsences: Array<IUserAbcenseWithDate>;
+    userFutureAbsences: Array<IUserAbsenceWithDate>;
+    userPastAbsences: Array<IUserAbsenceWithDate>;
   }> {
     const allUsersAbsences = await this.absenceService.getAllUsersAbsences();
 
-    const flattenedAllUsersAbsences = allUsersAbsences.flat();
-
     const userFutureAbsences = this.filterAndMapUserAbsences(
-      flattenedAllUsersAbsences,
+      allUsersAbsences,
       (el) => el.startingDate > DateUtil.todayStringified(),
     );
     const userPastAbsences = this.filterAndMapUserAbsences(
-      flattenedAllUsersAbsences,
+      allUsersAbsences,
       (el) => el.startingDate <= DateUtil.todayStringified(),
     );
 
@@ -563,14 +566,14 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
   filterAndMapUserAbsences(
     absences: Array<IUserAbsenceWithWorkingDays>,
     filterFunc: (absence: IUserAbsenceWithWorkingDays) => boolean,
-  ): Array<IUserAbcenseWithDate> {
+  ): Array<IUserAbsenceWithDate> {
     return absences
       .filter(filterFunc)
       .sort(DateUtil.dateSorting)
       .map((a) => ({ ...a, startingDate: new Date(a.startingDate), endingDate: new Date(a.endingDate) }));
   }
 
-  getEmployeesNames(date: Date, absences: Array<IUserAbcenseWithDate>): Array<string> {
+  getEmployeesNames(date: Date, absences: Array<IUserAbsenceWithDate>): Array<string> {
     return absences
       .filter((absence) => {
         const start = subDays(new Date(absence.startingDate), 1);

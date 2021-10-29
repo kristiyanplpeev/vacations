@@ -2,6 +2,7 @@ import React, { Component } from "react";
 
 import Grid from "@mui/material/Grid";
 
+import { AbsencesViewEnum } from "common/constants";
 import Absences from "components/Absences/Absences";
 
 class TeamAbsences extends Component {
@@ -9,7 +10,7 @@ class TeamAbsences extends Component {
     return (
       <Grid>
         <h1 className="homepage-header">Team Absences</h1>
-        <Absences isShowingTeamAbsences={true} />
+        <Absences absences={AbsencesViewEnum.team} />
       </Grid>
     );
   }

@@ -11,7 +11,7 @@ import { Alert } from "@material-ui/lab";
 import "./Homepage.css";
 import { RouteComponentProps, StaticContext } from "react-router";
 
-import { AbsencesEnum, leaveTypesWithURLs } from "common/constants";
+import { AbsencesEnum, AbsencesViewEnum, leaveTypesWithURLs } from "common/constants";
 import Absences from "components/Absences/Absences";
 import Error from "components/common/Error/Error";
 
@@ -44,7 +44,7 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     return (
       <div className="homepage-root">
         <h1 className="homepage-header">My Absences</h1>
-        <Absences handleToggleSelectDialog={this.handleToggleSelectDialog} isShowingTeamAbsences={false} />
+        <Absences handleToggleSelectDialog={this.handleToggleSelectDialog} absences={AbsencesViewEnum.mine} />
         {this.renderSnackbar()}
         {this.renderSelectDialog()}
       </div>
