@@ -5,6 +5,7 @@ export interface IUserDetails {
   firstName: string;
   lastName: string;
   picture: string;
+  role: string;
 }
 
 export interface IUserState {

@@ -15,7 +15,7 @@ import { resolve } from "inversify-react";
 import "./UsersList.css";
 import { RouteComponentProps } from "react-router";
 
-import { anyPosition, anyTeam, PositionsEnum, TeamsEnum } from "common/constants";
+import { anyPosition, anyRole, anyTeam, PositionsEnum, TeamsEnum, UserRolesEnum } from "common/constants";
 import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import { IUserService } from "inversify/interfaces";
@@ -32,6 +32,7 @@ interface UsersListState {
   positions: Array<IPositions>;
   selectedTeam: string;
   selectedPosition: string;
+  selectedRole: string;
 }
 
 class UsersList extends Component<UsersListProps, UsersListState> {
@@ -48,6 +49,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
       positions: [],
       selectedTeam: anyTeam,
       selectedPosition: anyPosition,
+      selectedRole: anyRole,
     };
   }
 
@@ -56,7 +58,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
       this.setState({
         loading: true,
       });
-      const users = await this.userService.getAllUsers(anyTeam, anyPosition);
+      const users = await this.userService.getAllUsers(anyTeam, anyPosition, anyRole);
       const teams = await this.userService.getTeams();
       const positions = await this.userService.getPositions();
       this.setState({
@@ -90,6 +92,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
     );
   }
 
+  // eslint-disable-next-line max-lines-per-function
   renderSelectElements(): JSX.Element {
     return (
       <>
@@ -127,6 +130,22 @@ class UsersList extends Component<UsersListProps, UsersListState> {
             </Select>
           </FormControl>
         </div>
+        <div className="users-list-selector-wrapper">
+          <Typography className="users-list-selector-label" variant="h5" component="h2">
+            Role
+          </Typography>
+          <FormControl className="users-list-selector">
+            <Select
+              value={this.state.selectedRole}
+              onChange={(event: React.ChangeEvent<{ value: unknown }>) =>
+                this.handleRoleSelect(event.target.value as string)
+              }
+            >
+              <MenuItem value={anyRole}>--- any role ---</MenuItem>
+              {this.renderRoles()}
+            </Select>
+          </FormControl>
+        </div>
       </>
     );
   }
@@ -143,6 +162,14 @@ class UsersList extends Component<UsersListProps, UsersListState> {
     return this.state.positions.map((el) => (
       <MenuItem value={el.id} key={el.id}>
         {el.position}
+      </MenuItem>
+    ));
+  }
+
+  renderRoles(): Array<JSX.Element> {
+    return Object.values(UserRolesEnum).map((el) => (
+      <MenuItem value={el} key={el}>
+        {el}
       </MenuItem>
     ));
   }
@@ -186,20 +213,25 @@ class UsersList extends Component<UsersListProps, UsersListState> {
             <CardActionArea>
               <CardContent>
                 <Grid container spacing={1}>
-                  <Grid item xs={4}>
+                  <Grid item xs={3}>
                     <Avatar className="users-avatar" alt={el.firstName} src={el.picture} />
                     <Typography variant="h5" className="users-names">
                       {el.firstName} {el.lastName}
                     </Typography>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid item xs={3}>
                     <Typography variant="h5" className="users-names">
                       {el.position}
                     </Typography>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid item xs={3}>
                     <Typography variant="h5" className="users-names">
                       {el.team}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Typography variant="h5" className="users-names">
+                      {el.role}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -233,10 +265,28 @@ class UsersList extends Component<UsersListProps, UsersListState> {
       this.setState({
         loading: true,
       });
-      const users = await this.userService.getAllUsers(value, this.state.selectedPosition);
+      const users = await this.userService.getAllUsers(value, this.state.selectedPosition, this.state.selectedRole);
       this.setState({
         users,
         selectedTeam: value,
+        loading: false,
+      });
+    } catch (error) {
+      this.setState({
+        error: error.message,
+      });
+    }
+  }
+
+  async handleRoleSelect(value: string): Promise<void> {
+    try {
+      this.setState({
+        loading: true,
+      });
+      const users = await this.userService.getAllUsers(this.state.selectedTeam, this.state.selectedPosition, value);
+      this.setState({
+        users,
+        selectedRole: value,
         loading: false,
       });
     } catch (error) {
@@ -251,7 +301,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
       this.setState({
         loading: true,
       });
-      const users = await this.userService.getAllUsers(this.state.selectedTeam, value);
+      const users = await this.userService.getAllUsers(this.state.selectedTeam, value, this.state.selectedRole);
       this.setState({
         users,
         selectedPosition: value,

@@ -3,19 +3,21 @@ import React from "react";
 import { Button } from "@material-ui/core";
 import { shallow } from "enzyme";
 
+import { UserRolesEnum } from "common/constants";
 import { RouteComponentPropsMock } from "common/testConstants";
 import UsersList from "components/UsersList/UsersList";
 
 const usersCardDataUnitTest = "users-card";
 const changeButtonDataUnitTest = "change-button";
 
-const mockUser = {
+export const mockUser = {
   id: "id",
   googleId: "googleId",
   email: "email",
   firstName: "firstName",
   lastName: "lastName",
   picture: "picture",
+  role: UserRolesEnum.user,
   team: "no team",
   position: "no position",
 };

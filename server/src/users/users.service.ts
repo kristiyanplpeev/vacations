@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Userdb } from '../model/user.entity';
 import { In, Repository } from 'typeorm';
-import { PositionsEnum, TeamsEnum, UserRelations } from '../common/constants';
+import {
+  PositionsEnum,
+  RolesEnum,
+  TeamsEnum,
+  UserRelations,
+} from '../common/constants';
 import {
   UserWithTeamAndPositionAsStrings,
   User,
@@ -60,10 +65,12 @@ export class UsersService {
   public async getFilteredUsers(
     teamId: string,
     positionId: string,
+    role: RolesEnum,
   ): Promise<Array<UserWithTeamAndPositionAsStrings>> {
     const queryObj = {
       team: null,
       position: null,
+      role: null,
     };
     if (teamId) {
       queryObj.team = await this.getTeamById(teamId);
@@ -74,6 +81,15 @@ export class UsersService {
       queryObj.position = await this.getPositionById(positionId);
     } else {
       delete queryObj.position;
+    }
+    if (role) {
+      Guard.should(
+        Object.values(RolesEnum).includes(role),
+        `Role "${role}" is not supported.`,
+      );
+      queryObj.role = role;
+    } else {
+      delete queryObj.role;
     }
 
     const users = await this.userRepo.find({
@@ -163,5 +179,42 @@ export class UsersService {
       (el) => el.toUser(),
     );
     return updatedUsers;
+  }
+
+  public async updateUsersRole(
+    users: Array<string>,
+    newRole: RolesEnum,
+  ): Promise<Array<User>> {
+    Guard.should(
+      Object.values(RolesEnum).includes(newRole),
+      `Role "${newRole}" is not supported.`,
+    );
+    const usersdb = await this.userRepo.find({
+      where: {
+        id: In(users),
+      },
+    });
+    Guard.allElementsExist<User>(
+      users,
+      usersdb,
+      (ids) => `Users with ids ${ids} doesn't exist.`,
+    );
+    usersdb.forEach((el) => {
+      el.role = newRole;
+    });
+    const updatedUsers = (await this.userRepo.save(usersdb)).map((el) =>
+      el.toUser(),
+    );
+    return updatedUsers;
+  }
+
+  async getUserById(userId: string): Promise<User> {
+    Guard.isValidUUID(userId, `Invalid user ID.`);
+    const userDetails = this.userRepo.findOne({
+      where: { id: userId },
+      relations: [UserRelations.positions, UserRelations.teams],
+    });
+    Guard.exists(userDetails, `There is no user with id ${userId}`);
+    return (await userDetails).toUser();
   }
 }

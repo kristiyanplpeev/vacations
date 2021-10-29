@@ -18,6 +18,14 @@ import DateUtil from '../utils/DateUtil';
 describe('AbsencesController', () => {
   let controller: AbsencesController;
 
+  const absenceEdited = 'Absence edited successfully.';
+
+  const absenceAdded = 'Absence added successfully.';
+
+  const getAbsencesWithoutIsDeletedProperty = (absences) => {
+    return absences.map((absence) => ({ ...absence, isDeleted: undefined }));
+  };
+
   const convertDatesToString = (obj: any) => ({
     ...obj,
     startingDate: DateUtil.dateToString(obj.startingDate),
@@ -28,8 +36,6 @@ describe('AbsencesController', () => {
     ...el,
     date: DateUtil.dateToString(el.date),
   }));
-
-  const mockAbsenceDetails = toAbsence(mockAbsenceDb);
 
   const mockEmployeeHolidaysCalc = [
     absenceCalculatedWorkingDays(toAbsence(mockEmployeeHolidays[0]), 1, 1),
@@ -48,10 +54,6 @@ describe('AbsencesController', () => {
     ],
   };
 
-  const mockSavedHolidayResponse = convertDatesToString(
-    toAbsence(mockAbsenceDb),
-  );
-
   const mockAbsenceWithEachDayResponse = convertDatesToString(
     mockAbsenceWithEachDay,
   );
@@ -64,13 +66,13 @@ describe('AbsencesController', () => {
 
   const mockAbsencesService = {
     postAbsence: jest.fn((body) => {
-      return mockAbsenceDetails;
+      return absenceAdded;
     }),
     getUserAbsences: jest.fn(() => {
       return mockEmployeeHolidaysCalc;
     }),
     getAbsenceWithEachDayStatus: jest.fn(() => mockAbsenceWithEachDay),
-    editAbsence: jest.fn(() => toAbsence(mockAbsenceDb)),
+    editAbsence: jest.fn(() => absenceEdited),
   };
 
   beforeEach(async () => {
@@ -125,48 +127,54 @@ describe('AbsencesController', () => {
       });
 
       //assert
-      expect(result).toEqual(convertDatesToString(mockAbsenceDetails));
+      expect(result).toEqual(absenceAdded);
     });
   });
   describe('getUserAbsences', () => {
-    it('should return posted holiday info', async () => {
+    it('should return user absences', async () => {
       //act
       const result = await controller.getUserAbsences({ user: mockedUser });
 
       //assert
-      expect(result).toEqual(mockEmployeeHolidaysCalcResponse);
+      expect(result).toEqual(
+        getAbsencesWithoutIsDeletedProperty(mockEmployeeHolidaysCalcResponse),
+      );
     });
+  });
 
-    describe('getAbsenceDetailsWithEachDayStatus', () => {
-      it('should return detailed absence information', async () => {
-        //arrange
+  describe('getAbsenceDetailsWithEachDayStatus', () => {
+    it('should return detailed absence information', async () => {
+      //arrange
 
-        //act
-        const result = await controller.getAbsenceWithEachDay({
-          id: '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
-        });
-
-        //assert
-        expect(result).toEqual(mockAbsenceWithEachDayResponse);
+      //act
+      const result = await controller.getAbsenceWithEachDay({
+        id: '0505c3d8-2fb5-4952-a0e7-1b49334f578d',
       });
+
+      //assert
+      expect(result).toEqual(
+        getAbsencesWithoutIsDeletedProperty([
+          mockAbsenceWithEachDayResponse,
+        ])[0],
+      );
     });
+  });
 
-    describe('editAbsence', () => {
-      it('should return detailed edited absence information', async () => {
-        //arrange
+  describe('editAbsence', () => {
+    it('should return detailed edited absence information', async () => {
+      //arrange
 
-        //act
-        const result = await controller.editAbsence(
-          { id: 'fc799a20-5885-4390-98ce-7c868c3b3338' },
-          convertDatesToString(absenceDto),
-          {
-            user: mockedUser,
-          },
-        );
+      //act
+      const result = await controller.editAbsence(
+        { id: 'fc799a20-5885-4390-98ce-7c868c3b3338' },
+        convertDatesToString(absenceDto),
+        {
+          user: mockedUser,
+        },
+      );
 
-        //assert
-        expect(result).toEqual(mockSavedHolidayResponse);
-      });
+      //assert
+      expect(result).toEqual(absenceEdited);
     });
   });
 });

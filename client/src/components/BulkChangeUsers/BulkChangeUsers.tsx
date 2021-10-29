@@ -15,6 +15,7 @@ import Typography from "@material-ui/core/Typography";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
+import { UserRolesEnum } from "common/constants";
 import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import { IUserService } from "inversify/interfaces";
@@ -37,6 +38,7 @@ interface BulkChangeUsersState {
   positions: Array<IPositions>;
   selectedTeam: string;
   selectedPosition: string;
+  selectedRole: string;
 }
 
 class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersState> {
@@ -52,6 +54,7 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
       positions: [],
       selectedTeam: noChange,
       selectedPosition: noChange,
+      selectedRole: noChange,
     };
   }
 
@@ -110,20 +113,25 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
           <CardActionArea disabled>
             <CardContent>
               <Grid container spacing={1}>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                   <Avatar className="change-bulk-avatar" alt={el.firstName} src={el.picture} />
                   <Typography variant="h5" className="change-bulk-names">
                     {el.firstName} {el.lastName}
                   </Typography>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                   <Typography variant="h5" className="change-bulk-names">
                     {el.position}
                   </Typography>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                   <Typography variant="h5" className="change-bulk-names">
                     {el.team}
+                  </Typography>
+                </Grid>
+                <Grid item xs={3}>
+                  <Typography variant="h5" className="change-bulk-names">
+                    {el.role}
                   </Typography>
                 </Grid>
               </Grid>
@@ -134,6 +142,7 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
     });
   }
 
+  // eslint-disable-next-line max-lines-per-function
   renderSelectElements(): JSX.Element {
     return (
       <>
@@ -171,6 +180,22 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
             </Select>
           </FormControl>
         </div>
+        <div className="change-bulk-selector-wrapper">
+          <Typography className="change-bulk-selector-label" variant="h5" component="h2">
+            Role
+          </Typography>
+          <FormControl className="change-bulk-selector">
+            <Select
+              value={this.state.selectedRole}
+              onChange={(event: React.ChangeEvent<{ value: unknown }>) =>
+                this.handleRoleSelect(event.target.value as string)
+              }
+            >
+              <MenuItem value={noChange}>--- no change ---</MenuItem>
+              {this.renderRoles()}
+            </Select>
+          </FormControl>
+        </div>
       </>
     );
   }
@@ -187,6 +212,14 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
     return this.state.positions.map((el) => (
       <MenuItem value={el.id} key={el.id}>
         {el.position}
+      </MenuItem>
+    ));
+  }
+
+  renderRoles(): Array<JSX.Element> {
+    return Object.values(UserRolesEnum).map((el) => (
+      <MenuItem value={el} key={el}>
+        {el}
       </MenuItem>
     ));
   }
@@ -223,6 +256,10 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
         await this.userService.updateUsersPosition(usersIds, this.state.selectedPosition);
       }
 
+      if (this.state.selectedRole !== noChange) {
+        await this.userService.updateUsersRole(usersIds, this.state.selectedRole);
+      }
+
       this.props.history.push("/admin/users");
     } catch (error) {
       this.setState({
@@ -240,6 +277,12 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
   handlePositionSelect(value: string): void {
     this.setState({
       selectedPosition: value,
+    });
+  }
+
+  handleRoleSelect(value: string): void {
+    this.setState({
+      selectedRole: value,
     });
   }
 }

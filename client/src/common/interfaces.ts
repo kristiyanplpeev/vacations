@@ -7,6 +7,7 @@ export interface IUser {
   firstName: string;
   lastName: string;
   picture: string;
+  role: string;
 }
 
 export interface IUserWithTeamAndPosition extends IUser {

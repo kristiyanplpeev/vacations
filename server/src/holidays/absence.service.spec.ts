@@ -164,7 +164,7 @@ describe('absenceService', () => {
   });
 
   describe('editAbsence', () => {
-    it('should return detailed edited absence information', async () => {
+    it('should return message that the absence was edited successfully.', async () => {
       //arrange
       const absenceId = '0505c3d8-2fb5-4952-a0e7-1b49334f578d';
       const absence = factory.create({
@@ -182,7 +182,7 @@ describe('absenceService', () => {
         absenceId,
       );
       //assert
-      expect(result).toEqual(toAbsence(mockAbsenceDb));
+      expect(result).toEqual('Absence edited successfully.');
     });
     it('should throw when user id and absence employee id does not match', async () => {
       //arrange
@@ -207,7 +207,7 @@ describe('absenceService', () => {
   });
 
   describe('deleteAbsence', () => {
-    it('should return detailed information about deleted absence', async () => {
+    it('should return message that the absence was deleted successfully.', async () => {
       //arrange
       const absenceId = '0505c3d8-2fb5-4952-a0e7-1b49334f578d';
 
@@ -218,7 +218,7 @@ describe('absenceService', () => {
       );
 
       //assert
-      expect(result).toEqual(toAbsence(mockAbsenceDb));
+      expect(result).toEqual('Absence deleted successfully.');
     });
     it('should throw when user id and absence employee id does not match', async () => {
       //arrange

@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 
-import { anyPosition, anyTeam } from "common/constants";
+import { anyPosition, anyRole, anyTeam, UserRolesEnum } from "common/constants";
 import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import { IAuthService, IRestClient, IUserService } from "inversify/interfaces";
 import "reflect-metadata";
@@ -24,10 +24,15 @@ class UserService implements IUserService {
     return this.authService.extractUser(res.access_token);
   };
 
-  getAllUsers = async (teamId?: string, positionId?: string): Promise<Array<IUserWithTeamAndPosition>> => {
+  getAllUsers = async (
+    teamId?: string,
+    positionId?: string,
+    role?: string,
+  ): Promise<Array<IUserWithTeamAndPosition>> => {
     const team = teamId !== anyTeam ? `teamId=${teamId}` : "";
     const position = positionId !== anyPosition ? `positionId=${positionId}` : "";
-    const query = [team, position].filter((el) => el).join("&");
+    const roles = role !== anyRole ? `role=${role}` : "";
+    const query = [team, position, roles].filter((el) => el).join("&");
     return await this.restClient.get(`users?${query}`);
   };
 
@@ -48,7 +53,7 @@ class UserService implements IUserService {
       users,
       teamId: newTeamId,
     };
-    await this.restClient.post(`users/teams`, { data });
+    await this.restClient.put(`users/teams`, { data });
   };
 
   updateUsersPosition = async (users: Array<string>, newPositionId: string): Promise<void> => {
@@ -56,7 +61,15 @@ class UserService implements IUserService {
       users,
       positionId: newPositionId,
     };
-    await this.restClient.post(`users/positions`, { data });
+    await this.restClient.put(`users/positions`, { data });
+  };
+
+  updateUsersRole = async (users: Array<string>, newRole: UserRolesEnum): Promise<void> => {
+    const data = {
+      users,
+      role: newRole,
+    };
+    await this.restClient.put(`users/roles`, { data });
   };
 }
 

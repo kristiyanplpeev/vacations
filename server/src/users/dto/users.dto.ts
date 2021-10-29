@@ -1,5 +1,5 @@
 import { ArrayMinSize, IsArray, IsString, IsUUID } from 'class-validator';
-import { PositionsEnum, TeamsEnum } from '../../common/constants';
+import { PositionsEnum, RolesEnum, TeamsEnum } from '../../common/constants';
 
 export class UpdateUserDto {
   @IsArray()
@@ -9,13 +9,18 @@ export class UpdateUserDto {
 }
 
 export class UpdateTeamsDto extends UpdateUserDto {
-  @IsString()
+  @IsUUID('all', { message: 'Invalid team id' })
   teamId: string;
 }
 
 export class UpdatePositionsDto extends UpdateUserDto {
-  @IsString()
+  @IsUUID('all', { message: 'Invalid position id' })
   positionId: string;
+}
+
+export class UpdateRolesDto extends UpdateUserDto {
+  @IsString()
+  role: RolesEnum;
 }
 
 export class UserWithTeamAndPositionAsStringsResponseDto {

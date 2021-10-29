@@ -9,6 +9,7 @@ import { RouteComponentProps, withRouter } from "react-router";
 import { Switch, Route, Redirect } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 
+import { UserRolesEnum } from "common/constants";
 import AbsenceDetails from "components/AbsenceDetails/AbsenceDetails";
 import AdminPanel from "components/AdminPanel/AdminPanel";
 import BulkChangeUsers from "components/BulkChangeUsers/BulkChangeUsers";
@@ -85,19 +86,19 @@ class App extends Component<AppProps, AppState> {
               <PrivateRoute
                 path="/admin"
                 exact
-                isAuthenticated={this.props.user.isAuthenticated}
+                isAuthenticated={this.props.user.isAuthenticated && this.props.user.user.role === UserRolesEnum.admin}
                 component={AdminPanel}
               />
               <PrivateRoute
                 path="/admin/users"
                 exact
-                isAuthenticated={this.props.user.isAuthenticated}
+                isAuthenticated={this.props.user.isAuthenticated && this.props.user.user.role === UserRolesEnum.admin}
                 component={UsersList}
               />
               <PrivateRoute
                 path="/admin/change/:ids"
                 exact
-                isAuthenticated={this.props.user.isAuthenticated}
+                isAuthenticated={this.props.user.isAuthenticated && this.props.user.user.role === UserRolesEnum.admin}
                 component={BulkChangeUsers}
               />
             </Switch>

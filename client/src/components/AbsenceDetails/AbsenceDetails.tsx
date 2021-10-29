@@ -44,6 +44,7 @@ class AbsenceDetails extends Component<AbsenceDetailsProps, AbsenceDetailsState>
         firstName: "",
         lastName: "",
         picture: "",
+        role: "",
       },
       absenceDetails: {
         id: "",

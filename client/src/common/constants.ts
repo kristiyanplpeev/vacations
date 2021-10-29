@@ -20,6 +20,7 @@ export const emptyUser = {
   firstName: "",
   lastName: "",
   picture: "",
+  role: "",
 };
 
 export const applicationJSON = "application/json";
@@ -58,6 +59,11 @@ export enum ViewsEnum {
   calendar = "calendar",
 }
 
+export enum UserRolesEnum {
+  admin = "admin",
+  user = "user",
+}
+
 export const leaveTypesWithURLs = {
   paidLeave: { leave: AbsencesEnum.paidLeave, url: "paid" },
   unpaidLeave: { leave: AbsencesEnum.unpaidLeave, url: "unpaid" },
@@ -70,3 +76,5 @@ export const leaveTypesWithURLs = {
 export const anyTeam = "any team";
 
 export const anyPosition = "any position";
+
+export const anyRole = "any role";
