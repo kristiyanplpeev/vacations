@@ -97,9 +97,9 @@ export class AbsencesController {
 
   @Get('team')
   @UseGuards(JwtAuthGuard)
-  public async getByTeam(@Req() req): Promise<string | AbsenceResponseDto> {
+  public async getByTeam(@Req() req): Promise<Array<AbsenceResponseDto>> {
     const userAbsences = await this.absenceService.getAllUsersAbsencesByTeam(
-      req.user,
+      req.user.id,
     );
     return plainToClass(AbsenceResponseDto, userAbsences);
   }

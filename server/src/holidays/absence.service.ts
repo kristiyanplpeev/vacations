@@ -105,12 +105,12 @@ export class AbsencesService {
   }
 
   public async getAllUsersAbsencesByTeam(
-    user: User,
-  ): Promise<string | Promise<Array<Array<AbsenceDetailsWithTotalDays>>>> {
-    Guard.isValidUUID(user.id, `Invalid user id: ${user.id}`);
+    userId: string,
+  ): Promise<Array<AbsenceDetailsWithTotalDays>> {
+    Guard.isValidUUID(userId, `Invalid user id: ${userId}`);
 
     const { team } = await this.userRepo.findOne({
-      where: { id: user.id },
+      where: { id: userId },
       relations: [UserRelations.teams],
     });
     Guard.should(
@@ -133,7 +133,9 @@ export class AbsencesService {
       return await this.calculateAbsenceWorkingDays(absences);
     });
 
-    return Promise.all(allUsersAbsences);
+    const getAllUsersAbsences = await Promise.all(allUsersAbsences);
+
+    return getAllUsersAbsences.flat();
   }
 
   private async getAbsenceDetails(absenceId: string): Promise<Absence> {
