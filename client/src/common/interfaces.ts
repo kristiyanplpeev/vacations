@@ -58,8 +58,7 @@ export interface IUserAbsenceWithWorkingDaysAndEmployee extends IUserAbsenceWith
   employee: IUser;
 }
 
-export interface IUserAbsenceWithEachDayStatus extends IUserAbsence {
-  employee: IUser;
+export interface IUserAbsenceWithEachDayStatus extends IUserAbsenceWithEmployee {
   eachDayStatus: HolidayDays;
 }
 
