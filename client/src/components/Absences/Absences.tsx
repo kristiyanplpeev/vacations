@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Button, Divider } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Paper from "@material-ui/core/Paper";
 import Table from "@material-ui/core/Table";
@@ -10,6 +10,7 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableFooter from "@material-ui/core/TableFooter";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import SentimentSatisfiedSharpIcon from "@material-ui/icons/SentimentSatisfiedSharp";
 import MuiDateRangePickerDay, { DateRangePickerDayProps } from "@mui/lab/DateRangePickerDay";
 import StaticDateRangePicker from "@mui/lab/StaticDateRangePicker";
 import Badge from "@mui/material/Badge";
@@ -21,14 +22,16 @@ import Tabs from "@mui/material/Tabs";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import "components/Homepage/Homepage.css";
+import Typography from "@mui/material/Typography";
 import { isWithinInterval, subDays } from "date-fns";
 import { resolve } from "inversify-react";
 import { RouteComponentProps, StaticContext, withRouter } from "react-router";
 
-import { AbsencesEnum, leaveTypesWithURLs, ViewsEnum } from "common/constants";
+import { leaveTypesWithURLs, ViewsEnum } from "common/constants";
 import { DateUtil } from "common/DateUtil";
-import { IUser, IUserAbsenceWithEachDayStatus, IUserAbsenceWithWorkingDays } from "common/interfaces";
+import { IUser, IUserAbsenceWithWorkingDays } from "common/interfaces";
 import { HolidayDays } from "common/interfaces";
+import DeleteAbsenceModal from "components/common/DeleteAbsenceModal/DeleteAbsenceModal";
 import Error from "components/common/Error/Error";
 import { IAbsenceService, IHolidayService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
@@ -68,6 +71,7 @@ export interface IUserAbcenseWithDate {
 
 interface AbsencesProps extends RouteComponentProps<null, StaticContext> {
   isShowingTeamAbsences: boolean;
+  handleToggleSelectDialog?: (state: boolean) => void;
 }
 
 interface AbsencesState {
@@ -77,6 +81,7 @@ interface AbsencesState {
   userFutureAbsences: Array<IUserAbcenseWithDate>;
   view: ViewsEnum;
   holidays: HolidayDays;
+  deleteAbsenceId: string;
 }
 
 class Absences extends Component<AbsencesProps, AbsencesState> {
@@ -92,6 +97,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
       userFutureAbsences: [],
       view: ViewsEnum.table,
       holidays: [],
+      deleteAbsenceId: "",
     };
   }
 
@@ -101,7 +107,6 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
     });
 
     this.props.isShowingTeamAbsences ? await this.loadAllUsersAbsences() : await this.loadAbsences();
-
     await this.loadHolidaysForThreeMonths();
 
     this.setState({
@@ -127,11 +132,11 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
 
   async loadAbsences(): Promise<void> {
     try {
-      const userAbsences = await this.getUserAbsences();
+      const { userFutureAbsences, userPastAbsences } = await this.getUserAbsences();
 
       this.setState({
-        userFutureAbsences: userAbsences.userFutureAbsences,
-        userPastAbsences: userAbsences.userPastAbsences,
+        userFutureAbsences,
+        userPastAbsences,
       });
     } catch (error) {
       this.setState({
@@ -156,10 +161,81 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
   }
 
   render(): JSX.Element {
-    if (this.state.error) {
-      return <Error message={this.state.error} />;
+    const { error, userFutureAbsences, userPastAbsences } = this.state;
+    const userHasNoAbsences = !userFutureAbsences.length && !userPastAbsences.length;
+
+    if (error) {
+      return <Error message={error} />;
     }
-    return <div className="homepage-root">{this.renderUserAbsencesTable()}</div>;
+    return (
+      <div className="homepage-root">
+        {userHasNoAbsences ? this.renderNoUserAbsencesView() : this.renderUserAbsencesTable()}
+        {this.renderDeleteAbsenceConfirmationModal()}
+      </div>
+    );
+  }
+
+  renderAddAbsenceButton(): JSX.Element {
+    const { handleToggleSelectDialog } = this.props;
+
+    return (
+      <Button
+        className="homepage-add-absence-button"
+        onClick={() => {
+          handleToggleSelectDialog && handleToggleSelectDialog(true);
+        }}
+        variant="outlined"
+        color="primary"
+      >
+        Add absence
+      </Button>
+    );
+  }
+
+  renderDeleteAbsenceConfirmationModal(): JSX.Element {
+    return (
+      <DeleteAbsenceModal
+        deleteAbsenceId={this.state.deleteAbsenceId}
+        handleCancelClick={this.handleCancelClick}
+        handleConfirmClick={this.handleConfirmClick}
+      />
+    );
+  }
+
+  renderNoUserAbsencesView(): JSX.Element {
+    if (this.state.loading) {
+      return <CircularProgress />;
+    }
+
+    const { isShowingTeamAbsences, handleToggleSelectDialog } = this.props;
+
+    if (isShowingTeamAbsences) {
+      return (
+        <Typography className="homepage-message-text" variant="h5" gutterBottom>
+          Your team currently does not have any absences!
+        </Typography>
+      );
+    }
+
+    return (
+      <div>
+        <div className="homepage-message-wrapper">
+          <Typography className="homepage-message-text" variant="h5" gutterBottom>
+            Looks like you need a break
+          </Typography>
+          <SentimentSatisfiedSharpIcon fontSize="large" />
+        </div>
+        <Button
+          onClick={() => {
+            handleToggleSelectDialog && handleToggleSelectDialog(true);
+          }}
+          variant="outlined"
+          color="primary"
+        >
+          REQUEST ABSENCE
+        </Button>
+      </div>
+    );
   }
 
   renderUserAbsencesTable(): JSX.Element {
@@ -171,6 +247,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
         {this.renderHeaderAndFooter(true)}
         {this.renderSeparator()}
         {this.renderHeaderAndFooter(false)}
+        {!this.props.isShowingTeamAbsences && this.renderAddAbsenceButton()}
       </div>
     );
   }
@@ -218,24 +295,6 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
     );
   }
 
-  getPeriods(): Array<{ start: Date; end: Date }> {
-    const mappingFunc = (absence: IUserAbcenseWithDate) => {
-      // In order to correctly display the period, you need to pass
-      // the day before the startingDate to the DateRangePicker component from Material UI
-      const start = subDays(absence.startingDate, 1);
-
-      return {
-        start,
-        end: absence.endingDate,
-      };
-    };
-
-    const futurePeriods = this.state.userFutureAbsences.map(mappingFunc);
-    const pastPeriods = this.state.userPastAbsences.map(mappingFunc);
-
-    return futurePeriods.concat(pastPeriods);
-  }
-
   renderCalendar(): JSX.Element {
     const periods = this.getPeriods();
 
@@ -268,7 +327,6 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
     date: Date,
     dateRangePickerDayProps: DateRangePickerDayProps<Date>,
     periods: Array<{ start: Date; end: Date }>,
-    absences?: Array<IUserAbsenceWithEachDayStatus>,
   ): JSX.Element {
     const { isShowingTeamAbsences } = this.props;
     const dayIsBetween = periods.some((p) => isWithinInterval(date, { start: p.start, end: p.end }));
@@ -311,8 +369,10 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
         <TableCell width="8%" align="left">
           <b>Total days</b>
         </TableCell>
-        <TableCell width="20%" align="left">
-          {this.state.userPastAbsences && <b>Employee</b>}
+        <TableCell width="10%" align="left" />
+        <TableCell width="10%" align="left" />
+        <TableCell width="10%" align="left">
+          {this.props.isShowingTeamAbsences && <b>Employee</b>}
         </TableCell>
         <TableCell width="30%" align="left">
           <b>Comment</b>
@@ -335,25 +395,6 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
     );
   }
 
-  // renderNoUserAbsencesView(): JSX.Element {
-  //   if (this.state.loading) {
-  //     return <CircularProgress />;
-  //   }
-  //   return (
-  //     <div>
-  //       <div className="homepage-message-wrapper">
-  //         <Typography className="homepage-message-text" variant="h5" gutterBottom>
-  //           Looks like you need a break
-  //         </Typography>
-  //         <SentimentSatisfiedSharpIcon fontSize="large" />
-  //       </div>
-  //       <Button onClick={() => this.handleToggleSelectDialog(true)} variant="outlined" color="primary">
-  //         REQUEST ABSENCE
-  //       </Button>
-  //     </div>
-  //   );
-  // }
-
   // eslint-disable-next-line max-lines-per-function
   private mappingFunc = (el: IUserAbcenseWithDate): JSX.Element => (
     <TableRow hover key={el.id}>
@@ -373,19 +414,28 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
         {el.totalDays}
       </TableCell>
       {this.props.isShowingTeamAbsences && el.employee ? (
-        <TableCell width="10%" align="left">
-          {el.employee.firstName + " " + el.employee.lastName}
-        </TableCell>
+        <>
+          <TableCell width="10%" align="left" />
+          <TableCell width="10%" align="left" />
+          <TableCell width="10%" align="left">
+            {el.employee.firstName + " " + el.employee.lastName}
+          </TableCell>
+        </>
       ) : (
         <>
-          <TableCell width="5%" align="left">
+          <TableCell width="10%" align="left">
             <Button color="primary" onClick={() => this.props.history.push(`/absence/${el.id}`)}>
               view
             </Button>
           </TableCell>
-          <TableCell width="5%" align="left">
+          <TableCell width="10%" align="left">
             <Button color="primary" onClick={() => this.handleEditClick(el.id, el.type)}>
               edit
+            </Button>
+          </TableCell>
+          <TableCell width="10%" align="left">
+            <Button color="secondary" onClick={() => this.handleDeleteClick(el.id)}>
+              delete
             </Button>
           </TableCell>
         </>
@@ -402,6 +452,42 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
     });
   };
 
+  handleDeleteClick(absenceId: string): void {
+    this.setState({
+      deleteAbsenceId: absenceId,
+    });
+  }
+
+  handleCancelClick = (): void => {
+    this.setState({
+      deleteAbsenceId: "",
+    });
+  };
+
+  handleConfirmClick = async (currentAbsenceId: string): Promise<void> => {
+    try {
+      await this.absenceService.deleteAbsence(currentAbsenceId);
+
+      const pastAbsencesWithoutDeletedOne = this.state.userPastAbsences.filter(
+        (absence) => absence.id !== currentAbsenceId,
+      );
+
+      const futureAbsencesWithoutDeletedOne = this.state.userFutureAbsences.filter(
+        (absence) => absence.id !== currentAbsenceId,
+      );
+
+      this.setState({
+        userPastAbsences: pastAbsencesWithoutDeletedOne,
+        userFutureAbsences: futureAbsencesWithoutDeletedOne,
+        deleteAbsenceId: "",
+      });
+    } catch (error) {
+      this.setState({
+        error: error.message,
+      });
+    }
+  };
+
   handleEditClick(currentAbsenceId: string, type: string): void {
     const absenceUrl = Object.values(leaveTypesWithURLs).find((absence) => absence.leave === type);
     if (!absenceUrl) {
@@ -411,6 +497,24 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
       return;
     }
     this.props.history.push(`/edit/${absenceUrl.url}/${currentAbsenceId}`);
+  }
+
+  getPeriods(): Array<{ start: Date; end: Date }> {
+    const mappingFunc = (absence: IUserAbcenseWithDate) => {
+      // In order to correctly display the period, you need to pass
+      // the day before the startingDate to the DateRangePicker component from Material UI
+      const start = subDays(absence.startingDate, 1);
+
+      return {
+        start,
+        end: absence.endingDate,
+      };
+    };
+
+    const futurePeriods = this.state.userFutureAbsences.map(mappingFunc);
+    const pastPeriods = this.state.userPastAbsences.map(mappingFunc);
+
+    return futurePeriods.concat(pastPeriods);
   }
 
   async getUserAbsences(): Promise<{
@@ -437,14 +541,16 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
     userFutureAbsences: Array<IUserAbcenseWithDate>;
     userPastAbsences: Array<IUserAbcenseWithDate>;
   }> {
-    const allUsersAbsences = (await this.absenceService.getAllUsersAbsences()).flat();
+    const allUsersAbsences = await this.absenceService.getAllUsersAbsences();
+
+    const flattenedAllUsersAbsences = allUsersAbsences.flat();
 
     const userFutureAbsences = this.filterAndMapUserAbsences(
-      allUsersAbsences,
+      flattenedAllUsersAbsences,
       (el) => el.startingDate > DateUtil.todayStringified(),
     );
     const userPastAbsences = this.filterAndMapUserAbsences(
-      allUsersAbsences,
+      flattenedAllUsersAbsences,
       (el) => el.startingDate <= DateUtil.todayStringified(),
     );
 
@@ -472,7 +578,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
 
         return isWithinInterval(date, { start, end });
       })
-      .map((a) => a.employee!.firstName);
+      .map((a) => (a.employee ? a.employee.firstName : ""));
   }
 
   checkIfDayIsHoliday(date: Date): boolean {
