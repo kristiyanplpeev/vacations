@@ -5,6 +5,7 @@ import {
   IUserAbsenceWithWorkingDays,
   IUserAbsenceWithEachDayStatus,
   IUserAbsenceWithEmployee,
+  IUserAbsenceWithWorkingDaysAndEmployee,
 } from "common/interfaces";
 import { IAbsenceService, IRestClient } from "inversify/interfaces";
 import "reflect-metadata";
@@ -52,6 +53,10 @@ class AbsenceService implements IAbsenceService {
 
   getAbsenceWithEachDay = async (absenceId: string): Promise<IUserAbsenceWithEachDayStatus> => {
     return await this.restClient.get(`absences/${absenceId}`);
+  };
+
+  getAllUsersAbsences = async (): Promise<Array<IUserAbsenceWithWorkingDaysAndEmployee>> => {
+    return await this.restClient.get(`absences/team`);
   };
 
   getAbsence = async (absenceId: string): Promise<IUserAbsenceWithEmployee> => {

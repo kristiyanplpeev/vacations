@@ -104,6 +104,40 @@ export class AbsencesService {
     return await this.calculateAbsenceWorkingDays(nonDeletedUserAbsences);
   }
 
+  public async getAllUsersAbsencesByTeam(
+    userId: string,
+  ): Promise<Array<AbsenceDetailsWithTotalDays>> {
+    Guard.isValidUUID(userId, `Invalid user id: ${userId}`);
+
+    const { team } = await this.userRepo.findOne({
+      where: { id: userId },
+      relations: [UserRelations.teams],
+    });
+    Guard.should(
+      team !== null,
+      "You don't have a team assigned. Please contact your admin!",
+    );
+
+    const usersDb = await this.userRepo.find({ where: { team } });
+    const users = usersDb.map((u) => u.toUser());
+
+    const allUsersAbsences = users.map(async (user) => {
+      const absencesDb = await this.absenceRepo.find({
+        where: { employee: user.id },
+        relations: [UserRelations.employee],
+      });
+      const absences = absencesDb
+        .map((a) => a.toAbsence())
+        .filter((a) => !a.isDeleted);
+
+      return await this.calculateAbsenceWorkingDays(absences);
+    });
+
+    const getAllUsersAbsences = await Promise.all(allUsersAbsences);
+
+    return getAllUsersAbsences.flat();
+  }
+
   private async getAbsenceDetails(absenceId: string): Promise<Absence> {
     const absencedb = await this.absenceRepo.findOne({
       where: { id: absenceId },

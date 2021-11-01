@@ -17,6 +17,7 @@ import Header from "components/Header/Header";
 import Homepage from "components/Homepage/Homepage";
 import AddAndEditAbsence from "components/NewAbsence/AddAndEditAbsence";
 import SideBar from "components/SideBar/SideBar";
+import TeamAbsences from "components/TeamAbsences/TeamAbsences";
 import UsersList from "components/UsersList/UsersList";
 import { IAuthenticationActionCreator } from "inversify/interfaces";
 import { myContainer } from "inversify/inversify.config";
@@ -100,6 +101,12 @@ class App extends Component<AppProps, AppState> {
                 exact
                 isAuthenticated={this.props.user.isAuthenticated && this.props.user.user.role === UserRolesEnum.admin}
                 component={BulkChangeUsers}
+              />
+              <PrivateRoute
+                path="/team-absences"
+                exact
+                isAuthenticated={this.props.user.isAuthenticated}
+                component={TeamAbsences}
               />
             </Switch>
           </Provider>

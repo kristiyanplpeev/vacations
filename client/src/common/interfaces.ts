@@ -55,6 +55,10 @@ export interface IUserAbsenceWithWorkingDays extends IUserAbsence {
   totalDays: number;
 }
 
+export interface IUserAbsenceWithWorkingDaysAndEmployee extends IUserAbsenceWithWorkingDays {
+  employee: IUser;
+}
+
 export interface IUserAbsenceWithEachDayStatus extends IUserAbsenceWithEmployee {
   eachDayStatus: HolidayDays;
 }

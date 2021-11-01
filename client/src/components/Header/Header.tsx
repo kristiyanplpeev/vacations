@@ -38,7 +38,7 @@ export class Header extends Component<HeaderProps, HeaderState> {
             <Button onClick={() => this.props.history.push("/home")} color="inherit">
               My absences
             </Button>
-            <Button onClick={() => {}} color="inherit">
+            <Button onClick={() => this.props.history.push("/team-absences")} color="inherit">
               Team absences
             </Button>
             {this.props.userInfo.user.role === UserRolesEnum.admin && (
