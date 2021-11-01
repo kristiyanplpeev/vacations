@@ -74,6 +74,33 @@ class UsersList extends Component<UsersListProps, UsersListState> {
     });
   }
 
+  async componentDidUpdate(prevProps: UsersListProps, prevState: UsersListState): Promise<void> {
+    if (
+      this.state.selectedPosition !== prevState.selectedPosition ||
+      this.state.selectedRole !== prevState.selectedRole ||
+      this.state.selectedTeam !== prevState.selectedTeam
+    ) {
+      try {
+        this.setState({
+          loading: true,
+        });
+        const users = await this.userService.getAllUsers(
+          this.state.selectedTeam,
+          this.state.selectedPosition,
+          this.state.selectedRole,
+        );
+        this.setState({
+          users,
+          loading: false,
+        });
+      } catch (error) {
+        this.setState({
+          error: error.message,
+        });
+      }
+    }
+  }
+
   render(): JSX.Element {
     if (this.state.error) {
       return <Error message={this.state.error} />;
@@ -90,9 +117,9 @@ class UsersList extends Component<UsersListProps, UsersListState> {
           selectedTeam={this.state.selectedTeam}
           selectedPosition={this.state.selectedPosition}
           selectedRole={this.state.selectedRole}
-          handleTeamSelect={this.handleTeamSelect}
-          handlePositionSelect={this.handlePositionSelect}
-          handleRoleSelect={this.handleRoleSelect}
+          handleTeamSelect={(value: string) => this.setState({ selectedTeam: value })}
+          handlePositionSelect={(value: string) => this.setState({ selectedPosition: value })}
+          handleRoleSelect={(value: string) => this.setState({ selectedRole: value })}
         />
         {this.renderChangeButton()}
         {this.renderUsers()}
@@ -185,60 +212,6 @@ class UsersList extends Component<UsersListProps, UsersListState> {
   isUserSelected(userId: string): boolean {
     return this.state.selectedUsers.includes(userId);
   }
-
-  handleTeamSelect = async (value: string): Promise<void> => {
-    try {
-      this.setState({
-        loading: true,
-      });
-      const users = await this.userService.getAllUsers(value, this.state.selectedPosition, this.state.selectedRole);
-      this.setState({
-        users,
-        selectedTeam: value,
-        loading: false,
-      });
-    } catch (error) {
-      this.setState({
-        error: error.message,
-      });
-    }
-  };
-
-  handleRoleSelect = async (value: string): Promise<void> => {
-    try {
-      this.setState({
-        loading: true,
-      });
-      const users = await this.userService.getAllUsers(this.state.selectedTeam, this.state.selectedPosition, value);
-      this.setState({
-        users,
-        selectedRole: value,
-        loading: false,
-      });
-    } catch (error) {
-      this.setState({
-        error: error.message,
-      });
-    }
-  };
-
-  handlePositionSelect = async (value: string): Promise<void> => {
-    try {
-      this.setState({
-        loading: true,
-      });
-      const users = await this.userService.getAllUsers(this.state.selectedTeam, value, this.state.selectedRole);
-      this.setState({
-        users,
-        selectedPosition: value,
-        loading: false,
-      });
-    } catch (error) {
-      this.setState({
-        error: error.message,
-      });
-    }
-  };
 }
 
 export default UsersList;

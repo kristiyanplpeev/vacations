@@ -102,9 +102,9 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
           selectedTeam={this.state.selectedTeam}
           selectedPosition={this.state.selectedPosition}
           selectedRole={this.state.selectedRole}
-          handleTeamSelect={this.handleTeamSelect}
-          handlePositionSelect={this.handlePositionSelect}
-          handleRoleSelect={this.handleRoleSelect}
+          handleTeamSelect={(value: string) => this.setState({ selectedTeam: value })}
+          handlePositionSelect={(value: string) => this.setState({ selectedPosition: value })}
+          handleRoleSelect={(value: string) => this.setState({ selectedRole: value })}
         />
         <Divider className="change-bulk-divider" />
         {this.renderButtons()}
@@ -191,24 +191,6 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
       });
     }
   }
-
-  handleTeamSelect = async (value: string): Promise<void> => {
-    this.setState({
-      selectedTeam: value,
-    });
-  };
-
-  handlePositionSelect = async (value: string): Promise<void> => {
-    this.setState({
-      selectedPosition: value,
-    });
-  };
-
-  handleRoleSelect = async (value: string): Promise<void> => {
-    this.setState({
-      selectedRole: value,
-    });
-  };
 }
 
 export default BulkChangeUsers;

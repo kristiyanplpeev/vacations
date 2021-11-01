@@ -24,9 +24,9 @@ interface SelectElementsProps {
   selectedTeam: string;
   selectedPosition: string;
   selectedRole: string;
-  handleTeamSelect: (value: string) => Promise<void>;
-  handlePositionSelect: (value: string) => Promise<void>;
-  handleRoleSelect: (value: string) => Promise<void>;
+  handleTeamSelect: (value: string) => void;
+  handlePositionSelect: (value: string) => void;
+  handleRoleSelect: (value: string) => void;
 }
 
 class SelectElements extends Component<SelectElementsProps> {
