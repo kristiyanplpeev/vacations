@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/no-cycle
+import { IUserDetails } from "store/user/types";
+
 export const BASE_URL = "http://localhost:5000/";
 
 export const dayStatus = {
@@ -13,7 +16,7 @@ export const user = {
 
 export const errMessage = "Something went wrong.";
 
-export const emptyUser = {
+export const emptyUser: IUserDetails = {
   sub: "",
   googleId: "",
   email: "",
@@ -27,7 +30,7 @@ export const applicationJSON = "application/json";
 
 export const noLoggedUser = {
   isAuthenticated: false,
-  user: emptyUser,
+  userDetails: emptyUser,
 };
 
 export enum TeamsEnum {
@@ -83,3 +86,9 @@ export const anyTeam = "any team";
 export const anyPosition = "any position";
 
 export const anyRole = "any role";
+
+export const noChange = "no change";
+
+export const usersListClass = "users-list";
+
+export const bulkChangeUsersClass = "change-bulk";

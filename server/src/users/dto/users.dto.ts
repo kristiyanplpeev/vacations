@@ -9,12 +9,12 @@ export class UpdateUserDto {
 }
 
 export class UpdateTeamsDto extends UpdateUserDto {
-  @IsUUID('all', { message: 'Invalid team id' })
+  @IsString()
   teamId: string;
 }
 
 export class UpdatePositionsDto extends UpdateUserDto {
-  @IsUUID('all', { message: 'Invalid position id' })
+  @IsString()
   positionId: string;
 }
 

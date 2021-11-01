@@ -41,7 +41,7 @@ export class Header extends Component<HeaderProps, HeaderState> {
             <Button onClick={() => this.props.history.push("/team-absences")} color="inherit">
               Team absences
             </Button>
-            {this.props.userInfo.user.role === UserRolesEnum.admin && (
+            {this.props.userInfo.userDetails.role === UserRolesEnum.admin && (
               <Button
                 data-unit-test="admin-panel-button"
                 onClick={() => this.props.history.push("/admin")}
@@ -52,10 +52,10 @@ export class Header extends Component<HeaderProps, HeaderState> {
             )}
             <IconButton edge="start" className="header-menu-button" color="inherit" aria-label="menu"></IconButton>
             <Typography variant="h6" className="header-title">
-              {this.props.userInfo.user.firstName} {this.props.userInfo.user.lastName}
+              {this.props.userInfo.userDetails.firstName} {this.props.userInfo.userDetails.lastName}
             </Typography>
             <div onClick={(event: React.MouseEvent<HTMLElement>) => this.handleProfilePicClick(event)}>
-              <Avatar alt="profile_pic" src={this.props.userInfo.user.picture} />
+              <Avatar alt="profile_pic" src={this.props.userInfo.userDetails.picture} />
             </div>
           </Toolbar>
         </AppBar>
@@ -83,11 +83,11 @@ export class Header extends Component<HeaderProps, HeaderState> {
         keepMounted
         getContentAnchorEl={null}
       >
-        <Avatar className="header-profile-menu-pic" alt="profile_pic" src={this.props.userInfo.user.picture} />
+        <Avatar className="header-profile-menu-pic" alt="profile_pic" src={this.props.userInfo.userDetails.picture} />
         <Typography variant="h6">
-          {this.props.userInfo.user.firstName} {this.props.userInfo.user.lastName}
+          {this.props.userInfo.userDetails.firstName} {this.props.userInfo.userDetails.lastName}
         </Typography>
-        <Typography variant="subtitle2">{this.props.userInfo.user.email}</Typography>
+        <Typography variant="subtitle2">{this.props.userInfo.userDetails.email}</Typography>
         <Divider className="header-profile-menu-divider" />
         <Button onClick={() => this.logout()} color="inherit">
           Sign out

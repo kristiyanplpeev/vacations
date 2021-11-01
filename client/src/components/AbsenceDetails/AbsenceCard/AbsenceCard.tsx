@@ -237,7 +237,7 @@ class AbsenceCard extends Component<AbsenceCardProps, AbsenceCardState> {
   }
 
   isLoggedUserOwnerOfTheAbsence(): boolean {
-    return this.props.userInfo.user.sub === this.props.employee.id;
+    return this.props.userInfo.userDetails.sub === this.props.employee.id;
   }
 }
 

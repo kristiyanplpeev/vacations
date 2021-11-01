@@ -20,7 +20,7 @@ class AuthenticationActionCreator implements IAuthenticationActionCreator {
     const userDetails = await this.userService.logInUser();
     const payload = {
       isAuthenticated: true,
-      user: userDetails,
+      userDetails,
     };
     return {
       type: user.login,
@@ -38,7 +38,7 @@ class AuthenticationActionCreator implements IAuthenticationActionCreator {
     const isAuthenticated = !!this.authService.getToken();
     const payload = {
       isAuthenticated,
-      user: userDetails,
+      userDetails: userDetails,
     };
     return {
       type: user.check,

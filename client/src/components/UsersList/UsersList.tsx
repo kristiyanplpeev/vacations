@@ -6,18 +6,16 @@ import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardContent from "@material-ui/core/CardContent";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import FormControl from "@material-ui/core/FormControl";
 import Grid from "@material-ui/core/Grid";
-import MenuItem from "@material-ui/core/MenuItem";
-import Select from "@material-ui/core/Select";
 import Typography from "@material-ui/core/Typography";
 import { resolve } from "inversify-react";
 import "./UsersList.css";
 import { RouteComponentProps } from "react-router";
 
-import { anyPosition, anyRole, anyTeam, PositionsEnum, TeamsEnum, UserRolesEnum } from "common/constants";
+import { anyPosition, anyRole, anyTeam, usersListClass } from "common/constants";
 import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import Error from "components/common/Error/Error";
+import SelectElements from "components/common/SelectElements/SelectElements";
 import { IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
@@ -85,93 +83,21 @@ class UsersList extends Component<UsersListProps, UsersListState> {
         <Typography className="users-title" variant="h4" component="h2">
           Users
         </Typography>
-        {this.renderSelectElements()}
+        <SelectElements
+          styleClass={usersListClass}
+          teams={this.state.teams}
+          positions={this.state.positions}
+          selectedTeam={this.state.selectedTeam}
+          selectedPosition={this.state.selectedPosition}
+          selectedRole={this.state.selectedRole}
+          handleTeamSelect={this.handleTeamSelect}
+          handlePositionSelect={this.handlePositionSelect}
+          handleRoleSelect={this.handleRoleSelect}
+        />
         {this.renderChangeButton()}
         {this.renderUsers()}
       </div>
     );
-  }
-
-  // eslint-disable-next-line max-lines-per-function
-  renderSelectElements(): JSX.Element {
-    return (
-      <>
-        <div className="users-list-selector-wrapper">
-          <Typography className="users-list-selector-label" variant="h5" component="h2">
-            Team
-          </Typography>
-          <FormControl className="users-list-selector">
-            <Select
-              value={this.state.selectedTeam}
-              onChange={(event: React.ChangeEvent<{ value: unknown }>) =>
-                this.handleTeamSelect(event.target.value as string)
-              }
-            >
-              <MenuItem value={anyTeam}>--- any team ---</MenuItem>
-              {this.renderTeams()}
-              <MenuItem value={TeamsEnum.noTeam}>no team</MenuItem>
-            </Select>
-          </FormControl>
-        </div>
-        <div className="users-list-selector-wrapper">
-          <Typography className="users-list-selector-label" variant="h5" component="h2">
-            Position
-          </Typography>
-          <FormControl className="users-list-selector">
-            <Select
-              value={this.state.selectedPosition}
-              onChange={(event: React.ChangeEvent<{ value: unknown }>) =>
-                this.handlePositionSelect(event.target.value as string)
-              }
-            >
-              <MenuItem value={anyPosition}>--- any position ---</MenuItem>
-              {this.renderPositions()}
-              <MenuItem value={PositionsEnum.noPosition}>no position</MenuItem>
-            </Select>
-          </FormControl>
-        </div>
-        <div className="users-list-selector-wrapper">
-          <Typography className="users-list-selector-label" variant="h5" component="h2">
-            Role
-          </Typography>
-          <FormControl className="users-list-selector">
-            <Select
-              value={this.state.selectedRole}
-              onChange={(event: React.ChangeEvent<{ value: unknown }>) =>
-                this.handleRoleSelect(event.target.value as string)
-              }
-            >
-              <MenuItem value={anyRole}>--- any role ---</MenuItem>
-              {this.renderRoles()}
-            </Select>
-          </FormControl>
-        </div>
-      </>
-    );
-  }
-
-  renderTeams(): Array<JSX.Element> {
-    return this.state.teams.map((el) => (
-      <MenuItem value={el.id} key={el.id}>
-        {el.team}
-      </MenuItem>
-    ));
-  }
-
-  renderPositions(): Array<JSX.Element> {
-    return this.state.positions.map((el) => (
-      <MenuItem value={el.id} key={el.id}>
-        {el.position}
-      </MenuItem>
-    ));
-  }
-
-  renderRoles(): Array<JSX.Element> {
-    return Object.values(UserRolesEnum).map((el) => (
-      <MenuItem value={el} key={el}>
-        {el}
-      </MenuItem>
-    ));
   }
 
   renderChangeButton(): JSX.Element {
@@ -260,7 +186,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
     return this.state.selectedUsers.includes(userId);
   }
 
-  async handleTeamSelect(value: string): Promise<void> {
+  handleTeamSelect = async (value: string): Promise<void> => {
     try {
       this.setState({
         loading: true,
@@ -276,9 +202,9 @@ class UsersList extends Component<UsersListProps, UsersListState> {
         error: error.message,
       });
     }
-  }
+  };
 
-  async handleRoleSelect(value: string): Promise<void> {
+  handleRoleSelect = async (value: string): Promise<void> => {
     try {
       this.setState({
         loading: true,
@@ -294,9 +220,9 @@ class UsersList extends Component<UsersListProps, UsersListState> {
         error: error.message,
       });
     }
-  }
+  };
 
-  async handlePositionSelect(value: string): Promise<void> {
+  handlePositionSelect = async (value: string): Promise<void> => {
     try {
       this.setState({
         loading: true,
@@ -312,7 +238,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
         error: error.message,
       });
     }
-  }
+  };
 }
 
 export default UsersList;

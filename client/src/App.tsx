@@ -54,6 +54,7 @@ class App extends Component<AppProps, AppState> {
 
   // eslint-disable-next-line max-lines-per-function
   render(): ReactNode {
+    const userState = this.props.user;
     if (!this.state.allowRender) return null;
     return (
       <div className="App">
@@ -69,43 +70,43 @@ class App extends Component<AppProps, AppState> {
               <PrivateRoute
                 path="/new/:type"
                 exact
-                isAuthenticated={this.props.user.isAuthenticated}
+                isAuthenticated={userState.isAuthenticated}
                 component={AddAndEditAbsence}
               />
               <PrivateRoute
                 path="/edit/:type/:id"
                 exact
-                isAuthenticated={this.props.user.isAuthenticated}
+                isAuthenticated={userState.isAuthenticated}
                 component={AddAndEditAbsence}
               />
               <PrivateRoute
                 path="/absence/:id"
                 exact
-                isAuthenticated={this.props.user.isAuthenticated}
+                isAuthenticated={userState.isAuthenticated}
                 component={AbsenceDetails}
               />
               <PrivateRoute
                 path="/admin"
                 exact
-                isAuthenticated={this.props.user.isAuthenticated && this.props.user.user.role === UserRolesEnum.admin}
+                isAuthenticated={userState.isAuthenticated && userState.userDetails.role === UserRolesEnum.admin}
                 component={AdminPanel}
               />
               <PrivateRoute
                 path="/admin/users"
                 exact
-                isAuthenticated={this.props.user.isAuthenticated && this.props.user.user.role === UserRolesEnum.admin}
+                isAuthenticated={userState.isAuthenticated && userState.userDetails.role === UserRolesEnum.admin}
                 component={UsersList}
               />
               <PrivateRoute
                 path="/admin/change/:ids"
                 exact
-                isAuthenticated={this.props.user.isAuthenticated && this.props.user.user.role === UserRolesEnum.admin}
+                isAuthenticated={userState.isAuthenticated && userState.userDetails.role === UserRolesEnum.admin}
                 component={BulkChangeUsers}
               />
               <PrivateRoute
                 path="/team-absences"
                 exact
-                isAuthenticated={this.props.user.isAuthenticated}
+                isAuthenticated={userState.isAuthenticated}
                 component={TeamAbsences}
               />
             </Switch>

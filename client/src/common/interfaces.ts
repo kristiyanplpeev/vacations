@@ -1,4 +1,4 @@
-import { PositionsEnum, TeamsEnum } from "common/constants";
+import { PositionsEnum, TeamsEnum, UserRolesEnum } from "common/constants";
 
 export interface IUser {
   id: string;
@@ -7,7 +7,7 @@ export interface IUser {
   firstName: string;
   lastName: string;
   picture: string;
-  role: string;
+  role: UserRolesEnum | "";
 }
 
 export interface IUserWithTeamAndPosition extends IUser {
