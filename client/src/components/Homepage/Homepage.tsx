@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Button, Divider } from "@material-ui/core";
+import { Divider } from "@material-ui/core";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import List from "@material-ui/core/List";
@@ -42,12 +42,12 @@ class Homepage extends Component<HomepageProps, HomepageState> {
     }
 
     return (
-      <div className="homepage-root">
+      <>
         <h1 className="homepage-header">My Absences</h1>
         <Absences handleToggleSelectDialog={this.handleToggleSelectDialog} absences={AbsencesViewEnum.mine} />
         {this.renderSnackbar()}
         {this.renderSelectDialog()}
-      </div>
+      </>
     );
   }
 

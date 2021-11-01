@@ -57,12 +57,13 @@ export interface IAbsenceService {
 
 export interface IUserService {
   logInUser(): Promise<IUserDetails>;
-  getAllUsers(teamId: string, positionId: string): Promise<Array<IUserWithTeamAndPosition>>;
+  getAllUsers(teamId: string, positionId: string, role: string): Promise<Array<IUserWithTeamAndPosition>>;
   getUsersByIds(usersIds: string): Promise<Array<IUserWithTeamAndPosition>>;
   getTeams(): Promise<Array<ITeams>>;
   getPositions(): Promise<Array<IPositions>>;
   updateUsersTeam(users: Array<string>, newTeamId: string): Promise<void>;
   updateUsersPosition(users: Array<string>, newPositionId: string): Promise<void>;
+  updateUsersRole(users: Array<string>, newRole: string): Promise<void>;
 }
 
 export interface IRestClient {

@@ -8,6 +8,7 @@ import { Positionsdb } from '../model/positions.entity';
 import { mockedUser, userDb } from '../common/holidaysMockedData';
 import { PositionsEnum, TeamsEnum } from '../common/constants';
 import { User } from 'src/google/utils/interfaces';
+import { BadRequestException } from '@nestjs/common';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -34,11 +35,15 @@ describe('UsersService', () => {
   const mockUserRepository = {
     find: jest.fn(() => Promise.resolve([mockedUser])),
     save: jest.fn(() =>
-      Promise.resolve([userDb(getMockedUser(getTeamDb(TeamsEnum.orchestrator), undefined))]),
+      Promise.resolve([
+        userDb(getMockedUser(getTeamDb(TeamsEnum.orchestrator), undefined)),
+      ]),
     ),
   };
   const mockPositionsRepository = {
-    findOne: jest.fn(() => Promise.resolve(getPositionDb(PositionsEnum.regular))),
+    findOne: jest.fn(() =>
+      Promise.resolve(getPositionDb(PositionsEnum.regular)),
+    ),
   };
 
   beforeEach(async () => {
@@ -89,7 +94,9 @@ describe('UsersService', () => {
       );
 
       //assert
-      expect(result).toEqual([getMockedUser(getTeamDb(TeamsEnum.orchestrator), undefined)]);
+      expect(result).toEqual([
+        getMockedUser(getTeamDb(TeamsEnum.orchestrator), undefined),
+      ]);
     });
   });
 
@@ -107,7 +114,9 @@ describe('UsersService', () => {
       //arrange
 
       //act
-      const result = await service.getTeamById(getTeamDb(TeamsEnum.orchestrator).id);
+      const result = await service.getTeamById(
+        getTeamDb(TeamsEnum.orchestrator).id,
+      );
 
       //assert
       expect(result).toEqual(getTeamDb(TeamsEnum.orchestrator));
@@ -128,7 +137,9 @@ describe('UsersService', () => {
       //arrange
 
       //act
-      const result = await service.getPositionById(getPositionDb(PositionsEnum.regular).id);
+      const result = await service.getPositionById(
+        getPositionDb(PositionsEnum.regular).id,
+      );
 
       //assert
       expect(result).toEqual(getPositionDb(PositionsEnum.regular));

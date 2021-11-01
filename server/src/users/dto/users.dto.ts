@@ -1,5 +1,5 @@
 import { ArrayMinSize, IsArray, IsString, IsUUID } from 'class-validator';
-import { PositionsEnum, TeamsEnum } from '../../common/constants';
+import { PositionsEnum, RolesEnum, TeamsEnum } from '../../common/constants';
 
 export class UpdateUserDto {
   @IsArray()
@@ -16,6 +16,11 @@ export class UpdateTeamsDto extends UpdateUserDto {
 export class UpdatePositionsDto extends UpdateUserDto {
   @IsString()
   positionId: string;
+}
+
+export class UpdateRolesDto extends UpdateUserDto {
+  @IsString()
+  role: RolesEnum;
 }
 
 export class UserWithTeamAndPositionAsStringsResponseDto {

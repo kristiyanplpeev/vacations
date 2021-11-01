@@ -15,7 +15,6 @@ const handleResponse = (response: AxiosResponse): any => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleError = (err: AxiosError): any => {
   if (err.response) {
-    console.log(err.response);
     throw new Error(err.response.data.message);
   } else {
     throw new Error(errMessage);

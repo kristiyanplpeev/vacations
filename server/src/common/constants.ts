@@ -10,7 +10,8 @@ export const nonWorkingDaysCount = 2;
 
 export const maxYearDifference = 1;
 
-export const invalidDateFormatMessage = "Date must be yyyy-mm-dd formatted string.";
+export const invalidDateFormatMessage =
+  'Date must be yyyy-mm-dd formatted string.';
 
 export enum DayStatus {
   weekend = 'weekend',
@@ -36,6 +37,11 @@ export enum PositionsEnum {
   senior = 'Senior',
   lead = 'Team lead',
   noPosition = 'no position',
+}
+
+export enum RolesEnum {
+  user = 'user',
+  admin = 'admin',
 }
 
 export enum AbsenceTypesEnum {

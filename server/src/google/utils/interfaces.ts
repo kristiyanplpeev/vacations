@@ -1,5 +1,5 @@
 import { Positions, Teams } from '../../users/interfaces';
-import { PositionsEnum, TeamsEnum } from '../../common/constants';
+import { PositionsEnum, TeamsEnum, RolesEnum } from '../../common/constants';
 
 export interface Token {
   access_token: string;
@@ -14,6 +14,7 @@ export interface User {
   picture: string;
   team: Teams;
   position: Positions;
+  role: RolesEnum;
 }
 
 export interface UserWithTeamAndPositionAsStrings {

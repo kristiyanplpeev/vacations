@@ -7,21 +7,18 @@ import CardActionArea from "@material-ui/core/CardActionArea";
 import CardContent from "@material-ui/core/CardContent";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Divider from "@material-ui/core/Divider";
-import FormControl from "@material-ui/core/FormControl";
 import Grid from "@material-ui/core/Grid";
-import MenuItem from "@material-ui/core/MenuItem";
-import Select from "@material-ui/core/Select";
 import Typography from "@material-ui/core/Typography";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
+import { bulkChangeUsersClass, noChange } from "common/constants";
 import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import Error from "components/common/Error/Error";
+import SelectElements from "components/common/SelectElements/SelectElements";
 import { IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 import "./BulkChangeUsers.css";
-
-const noChange = "no change";
 
 interface BulkChangeUsersMatchProps {
   ids: string;
@@ -37,6 +34,7 @@ interface BulkChangeUsersState {
   positions: Array<IPositions>;
   selectedTeam: string;
   selectedPosition: string;
+  selectedRole: string;
 }
 
 class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersState> {
@@ -52,6 +50,7 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
       positions: [],
       selectedTeam: noChange,
       selectedPosition: noChange,
+      selectedRole: noChange,
     };
   }
 
@@ -96,7 +95,17 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
         <Typography className="change-bulk-new-values" variant="h4" component="h2">
           New values
         </Typography>
-        {this.renderSelectElements()}
+        <SelectElements
+          styleClass={bulkChangeUsersClass}
+          teams={this.state.teams}
+          positions={this.state.positions}
+          selectedTeam={this.state.selectedTeam}
+          selectedPosition={this.state.selectedPosition}
+          selectedRole={this.state.selectedRole}
+          handleTeamSelect={(value: string) => this.setState({ selectedTeam: value })}
+          handlePositionSelect={(value: string) => this.setState({ selectedPosition: value })}
+          handleRoleSelect={(value: string) => this.setState({ selectedRole: value })}
+        />
         <Divider className="change-bulk-divider" />
         {this.renderButtons()}
       </div>
@@ -110,20 +119,25 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
           <CardActionArea disabled>
             <CardContent>
               <Grid container spacing={1}>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                   <Avatar className="change-bulk-avatar" alt={el.firstName} src={el.picture} />
                   <Typography variant="h5" className="change-bulk-names">
                     {el.firstName} {el.lastName}
                   </Typography>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                   <Typography variant="h5" className="change-bulk-names">
                     {el.position}
                   </Typography>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                   <Typography variant="h5" className="change-bulk-names">
                     {el.team}
+                  </Typography>
+                </Grid>
+                <Grid item xs={3}>
+                  <Typography variant="h5" className="change-bulk-names">
+                    {el.role}
                   </Typography>
                 </Grid>
               </Grid>
@@ -132,63 +146,6 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
         </Card>
       );
     });
-  }
-
-  renderSelectElements(): JSX.Element {
-    return (
-      <>
-        <div className="change-bulk-selector-wrapper">
-          <Typography className="change-bulk-selector-label" variant="h5" component="h2">
-            Team
-          </Typography>
-          <FormControl className="change-bulk-selector">
-            <Select
-              value={this.state.selectedTeam}
-              onChange={(event: React.ChangeEvent<{ value: unknown }>) =>
-                this.handleTeamSelect(event.target.value as string)
-              }
-            >
-              <MenuItem value={noChange}>--- no change ---</MenuItem>
-              {this.renderTeams()}
-              <MenuItem value={"no team"}>no team</MenuItem>
-            </Select>
-          </FormControl>
-        </div>
-        <div className="change-bulk-selector-wrapper">
-          <Typography className="change-bulk-selector-label" variant="h5" component="h2">
-            Position
-          </Typography>
-          <FormControl className="change-bulk-selector">
-            <Select
-              value={this.state.selectedPosition}
-              onChange={(event: React.ChangeEvent<{ value: unknown }>) =>
-                this.handlePositionSelect(event.target.value as string)
-              }
-            >
-              <MenuItem value={noChange}>--- no change ---</MenuItem>
-              {this.renderPositions()}
-              <MenuItem value={"no position"}>no position</MenuItem>
-            </Select>
-          </FormControl>
-        </div>
-      </>
-    );
-  }
-
-  renderTeams(): Array<JSX.Element> {
-    return this.state.teams.map((el) => (
-      <MenuItem value={el.id} key={el.id}>
-        {el.team}
-      </MenuItem>
-    ));
-  }
-
-  renderPositions(): Array<JSX.Element> {
-    return this.state.positions.map((el) => (
-      <MenuItem value={el.id} key={el.id}>
-        {el.position}
-      </MenuItem>
-    ));
   }
 
   renderButtons(): JSX.Element {
@@ -223,24 +180,16 @@ class BulkChangeUsers extends Component<BulkChangeUsersProps, BulkChangeUsersSta
         await this.userService.updateUsersPosition(usersIds, this.state.selectedPosition);
       }
 
+      if (this.state.selectedRole !== noChange) {
+        await this.userService.updateUsersRole(usersIds, this.state.selectedRole);
+      }
+
       this.props.history.push("/admin/users");
     } catch (error) {
       this.setState({
         error: error.message,
       });
     }
-  }
-
-  handleTeamSelect(value: string): void {
-    this.setState({
-      selectedTeam: value,
-    });
-  }
-
-  handlePositionSelect(value: string): void {
-    this.setState({
-      selectedPosition: value,
-    });
   }
 }
 

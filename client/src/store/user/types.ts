@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/no-cycle
+import { UserRolesEnum } from "common/constants";
+
 export interface IUserDetails {
   sub: string;
   googleId: string;
@@ -5,11 +8,12 @@ export interface IUserDetails {
   firstName: string;
   lastName: string;
   picture: string;
+  role: UserRolesEnum | "";
 }
 
 export interface IUserState {
   isAuthenticated: boolean;
-  user: IUserDetails;
+  userDetails: IUserDetails;
 }
 
 export interface IUserDetailsAction {
