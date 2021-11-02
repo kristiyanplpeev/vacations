@@ -8,6 +8,7 @@ import {
   PositionsResponseDto,
   TeamsResponseDto,
   UpdateRolesDto,
+  updatePositionCoefficientDto,
 } from './dto/users.dto';
 import { plainToClass } from 'class-transformer';
 import { UserResponseDto } from '../google/dto/google.dto';
@@ -82,5 +83,15 @@ export class UsersController {
   ): Promise<Array<UserResponseDto>> {
     const updatedUsers = await this.usersService.updateUsersRole(body.users, body.role);
     return plainToClass(UserResponseDto, updatedUsers);
+  }
+
+  @Put('positions/coefficients')
+  @Roles(RolesEnum.admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  public async updatePositionCoefficient(
+    @Body() body: updatePositionCoefficientDto,
+  ): Promise<PositionsResponseDto> {
+    const updatedPosition = await this.usersService.updatePositionCoefficient(body.positionId, body.newCoefficient);
+    return plainToClass(PositionsResponseDto, updatedPosition);
   }
 }

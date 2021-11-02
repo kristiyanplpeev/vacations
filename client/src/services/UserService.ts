@@ -71,6 +71,13 @@ class UserService implements IUserService {
     };
     await this.restClient.put(`users/roles`, { data });
   };
+  updatePositionCoefficient = async (positionId: string, newCoefficient: number): Promise<void> => {
+    const data = {
+      positionId,
+      newCoefficient,
+    };
+    await this.restClient.put(`users/positions/coefficients`, { data });
+  };
 }
 
 export default UserService;

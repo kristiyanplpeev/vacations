@@ -5,7 +5,6 @@ export class teamAndPosition1630672181406 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     const teams = ['Orchestrator', 'Datadash', 'Test team'];
-    const positions = ['Junior', 'Regular', 'Senior', 'Team lead'];
 
     await queryRunner.query(
       `CREATE TABLE "teams" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "team" character varying(300) NOT NULL, CONSTRAINT "PK_7e5523774a38b08a6236d322403" PRIMARY KEY ("id"))`,
@@ -25,11 +24,6 @@ export class teamAndPosition1630672181406 implements MigrationInterface {
     for (let i = 0; i < teams.length; i++) {
       await queryRunner.query(
         `INSERT INTO "teams" (team) VALUES ('${teams[i]}')`,
-      );
-    }
-    for (let i = 0; i < positions.length; i++) {
-      await queryRunner.query(
-        `INSERT INTO "positions" (position) VALUES ('${positions[i]}')`,
       );
     }
   }

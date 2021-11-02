@@ -92,10 +92,12 @@ export class UsersService {
       delete queryObj.role;
     }
 
-    const users = await this.userRepo.find({
+    const usersdb = await this.userRepo.find({
       where: { ...queryObj },
       relations: [UserRelations.teams, UserRelations.positions],
     });
+
+    const users = usersdb.map((user) => user.toUser());
 
     return this.setUsersTeamsAndPositions(users);
   }
@@ -108,17 +110,20 @@ export class UsersService {
     usersIdsArr.forEach((el) => {
       Guard.isValidUUID(el, `User id ${el} is invalid`);
     });
-    const users = await this.userRepo.find({
+    const usersdb = await this.userRepo.find({
       where: {
         id: In(usersIdsArr),
       },
       relations: [UserRelations.teams, UserRelations.positions],
     });
-    Guard.allElementsExist<User>(
+    Guard.allElementsExist<Userdb>(
       usersIdsArr,
-      users,
+      usersdb,
       (ids) => `Users with ids ${ids} doesn't exist.`,
     );
+
+    const users = usersdb.map((user) => user.toUser());
+
     return this.setUsersTeamsAndPositions(users);
   }
 
@@ -141,7 +146,7 @@ export class UsersService {
       },
       relations: [UserRelations.teams],
     });
-    Guard.allElementsExist<User>(
+    Guard.allElementsExist<Userdb>(
       users,
       usersWithTeam,
       (ids) => `Users with ids ${ids} doesn't exist.`,
@@ -167,7 +172,7 @@ export class UsersService {
       },
       relations: [UserRelations.positions],
     });
-    Guard.allElementsExist<User>(
+    Guard.allElementsExist<Userdb>(
       users,
       usersWithPosition,
       (ids) => `Users with ids ${ids} doesn't exist.`,
@@ -194,7 +199,7 @@ export class UsersService {
         id: In(users),
       },
     });
-    Guard.allElementsExist<User>(
+    Guard.allElementsExist<Userdb>(
       users,
       usersdb,
       (ids) => `Users with ids ${ids} doesn't exist.`,
@@ -210,11 +215,22 @@ export class UsersService {
 
   async getUserById(userId: string): Promise<User> {
     Guard.isValidUUID(userId, `Invalid user ID.`);
-    const userDetails = this.userRepo.findOne({
+    const userDetails = await this.userRepo.findOne({
       where: { id: userId },
       relations: [UserRelations.positions, UserRelations.teams],
     });
     Guard.exists(userDetails, `There is no user with id ${userId}`);
-    return (await userDetails).toUser();
+    return  userDetails.toUser();
+  }
+
+  async updatePositionCoefficient(
+    positionId: string,
+    newCoefficient: number,
+  ): Promise<Positions> {
+    const positiondb = await this.getPositionById(positionId);
+    positiondb.coefficient = newCoefficient;
+    const updatedPosition = await this.positionsRepo.save(positiondb);
+
+    return updatedPosition.toPositions();
   }
 }
