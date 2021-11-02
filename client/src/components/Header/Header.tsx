@@ -6,19 +6,23 @@ import "./Header.css";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 
+import { UserRolesEnum } from "common/constants";
 import { IAuthenticationActionCreator } from "inversify/interfaces";
 import { myContainer } from "inversify/inversify.config";
 import { TYPES } from "inversify/types";
 import { ApplicationState, IUserState, AppActions } from "store/user/types";
 
-type Props = RouteComponentProps & LinkDispatchProps & LinkStateProps;
+interface HeaderProps extends RouteComponentProps {
+  userInfo: IUserState;
+  logOutUser: () => void;
+}
 
 interface HeaderState {
   anchorEl: HTMLElement | null;
 }
 
-class Header extends Component<Props, HeaderState> {
-  constructor(props: Props) {
+export class Header extends Component<HeaderProps, HeaderState> {
+  constructor(props: HeaderProps) {
     super(props);
     this.state = {
       anchorEl: null,
@@ -37,15 +41,21 @@ class Header extends Component<Props, HeaderState> {
             <Button onClick={() => this.props.history.push("/team-absences")} color="inherit">
               Team absences
             </Button>
-            <Button onClick={() => this.props.history.push("/admin")} color="inherit">
-              Admin
-            </Button>
+            {this.props.userInfo.userDetails.role === UserRolesEnum.admin && (
+              <Button
+                data-unit-test="admin-panel-button"
+                onClick={() => this.props.history.push("/admin")}
+                color="inherit"
+              >
+                Admin
+              </Button>
+            )}
             <IconButton edge="start" className="header-menu-button" color="inherit" aria-label="menu"></IconButton>
             <Typography variant="h6" className="header-title">
-              {this.props.userInfo.user.firstName} {this.props.userInfo.user.lastName}
+              {this.props.userInfo.userDetails.firstName} {this.props.userInfo.userDetails.lastName}
             </Typography>
             <div onClick={(event: React.MouseEvent<HTMLElement>) => this.handleProfilePicClick(event)}>
-              <Avatar alt="profile_pic" src={this.props.userInfo.user.picture} />
+              <Avatar alt="profile_pic" src={this.props.userInfo.userDetails.picture} />
             </div>
           </Toolbar>
         </AppBar>
@@ -73,11 +83,11 @@ class Header extends Component<Props, HeaderState> {
         keepMounted
         getContentAnchorEl={null}
       >
-        <Avatar className="header-profile-menu-pic" alt="profile_pic" src={this.props.userInfo.user.picture} />
+        <Avatar className="header-profile-menu-pic" alt="profile_pic" src={this.props.userInfo.userDetails.picture} />
         <Typography variant="h6">
-          {this.props.userInfo.user.firstName} {this.props.userInfo.user.lastName}
+          {this.props.userInfo.userDetails.firstName} {this.props.userInfo.userDetails.lastName}
         </Typography>
-        <Typography variant="subtitle2">{this.props.userInfo.user.email}</Typography>
+        <Typography variant="subtitle2">{this.props.userInfo.userDetails.email}</Typography>
         <Divider className="header-profile-menu-divider" />
         <Button onClick={() => this.logout()} color="inherit">
           Sign out
@@ -104,21 +114,14 @@ class Header extends Component<Props, HeaderState> {
   }
 }
 
-interface LinkStateProps {
-  userInfo: IUserState;
-}
-interface LinkDispatchProps {
-  logOutUser: () => void;
-}
-
-const mapStateToProps = ({ userInfoReducer }: ApplicationState): LinkStateProps => {
+const mapStateToProps = ({ userInfoReducer }: ApplicationState) => {
   return {
     userInfo: userInfoReducer,
   };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapDispatchToProps = (dispatch: ThunkDispatch<any, any, AppActions>): LinkDispatchProps => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<any, any, AppActions>) => ({
   // logOutUser: bindActionCreators(logOutUserDispatch, dispatch),
   logOutUser: (): void => {
     const authAction = myContainer.get<IAuthenticationActionCreator>(TYPES.AuthAction);
@@ -126,4 +129,6 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<any, any, AppActions>): Link
   },
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Header));
+const routerWrapper = withRouter(Header);
+
+export default connect(mapStateToProps, mapDispatchToProps)(routerWrapper);

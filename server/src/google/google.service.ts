@@ -37,6 +37,7 @@ export class GoogleService implements AuthenticationProvider {
       lastName: details.lastName,
       email: details.email,
       picture: details.picture,
+      role: details.role,
     };
 
     return {

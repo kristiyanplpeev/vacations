@@ -63,6 +63,7 @@ export interface IUserService {
   getPositions(): Promise<Array<IPositions>>;
   updateUsersTeam(users: Array<string>, newTeamId: string): Promise<void>;
   updateUsersPosition(users: Array<string>, newPositionId: string): Promise<void>;
+  updateUsersRole(users: Array<string>, newRole: string): Promise<void>;
 }
 
 export interface IRestClient {

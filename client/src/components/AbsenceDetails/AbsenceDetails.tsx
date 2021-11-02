@@ -44,6 +44,7 @@ class AbsenceDetails extends Component<AbsenceDetailsProps, AbsenceDetailsState>
         firstName: "",
         lastName: "",
         picture: "",
+        role: "",
       },
       absenceDetails: {
         id: "",
@@ -118,11 +119,11 @@ class AbsenceDetails extends Component<AbsenceDetailsProps, AbsenceDetailsState>
     );
   }
 
-  setError(error: string): void {
+  setError = (error: string): void => {
     this.setState({
       error,
     });
-  }
+  };
 
   private calculateWorkingDays(daysStatuses: HolidayDays): number {
     return daysStatuses.filter((el) => el.status === dayStatus.workday).length;

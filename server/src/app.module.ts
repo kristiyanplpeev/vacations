@@ -7,6 +7,8 @@ import { GoogleModule } from './google/google.module';
 import { PassportModule } from '@nestjs/passport';
 import { HolidaysModule } from './holidays/holidays.module';
 import { UsersModule } from './users/users.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './google/guards';
 
 @Module({
   imports: [

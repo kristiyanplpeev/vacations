@@ -3,6 +3,7 @@ import {
   AbsenceTypesEnum,
   DayStatus,
   PositionsEnum,
+  RolesEnum,
   TeamsEnum,
 } from '../common/constants';
 
@@ -124,6 +125,7 @@ export const mockedUser = {
   lastName: 'Peev',
   picture:
     'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
+  role: RolesEnum.user,
   team: { id: 'id', team: TeamsEnum.noTeam, user: [] },
   position: { id: 'id', position: PositionsEnum.noPosition, user: [] },
 };
@@ -138,6 +140,7 @@ export const userDb = (user) => ({
       firstName: this.firstName,
       lastName: this.lastName,
       picture: this.picture,
+      role: this.role,
       team: this.team,
       position: this.position,
     };
