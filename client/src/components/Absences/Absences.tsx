@@ -374,11 +374,17 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
         <TableCell width="8%" align="left">
           <b>Total days</b>
         </TableCell>
-        <TableCell width="10%" align="left" />
-        <TableCell width="10%" align="left" />
-        <TableCell width="10%" align="left">
-          {this.props.absences === AbsencesViewEnum.team && <b>Employee</b>}
-        </TableCell>
+        {this.props.absences === AbsencesViewEnum.mine ? (
+          <>
+            <TableCell width="10%" align="left" />
+            <TableCell width="10%" align="left" />
+            <TableCell width="10%" align="left" />
+          </>
+        ) : (
+          <TableCell width="10%" align="left">
+            <b>Employee</b>
+          </TableCell>
+        )}
         <TableCell width="30%" align="left">
           <b>Comment</b>
         </TableCell>
@@ -418,10 +424,8 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
       <TableCell width="8%" align="left">
         {el.totalDays}
       </TableCell>
-      {el.employee ? (
+      {this.props.absences === AbsencesViewEnum.team && el.employee ? (
         <>
-          <TableCell width="10%" align="left" />
-          <TableCell width="10%" align="left" />
           <TableCell width="10%" align="left">
             {el.employee.firstName + " " + el.employee.lastName}
           </TableCell>
