@@ -7,11 +7,12 @@ import {
   HolidayDays,
   IUserAbsenceWithWorkingDays,
   IUserAbsenceWithEachDayStatus,
-  IUserWithTeamAndPosition,
+  IUserWithTeamAndPositionEnums,
   ITeams,
   IPositions,
   IUserAbsenceWithWorkingDaysAndEmployee,
   IUserAbsenceWithEmployee,
+  IUserWithTeamAndPosition,
 } from "common/interfaces";
 import { AppActions, IUserDetails } from "store/user/types";
 
@@ -57,8 +58,9 @@ export interface IAbsenceService {
 
 export interface IUserService {
   logInUser(): Promise<IUserDetails>;
-  getAllUsers(teamId: string, positionId: string, role: string): Promise<Array<IUserWithTeamAndPosition>>;
-  getUsersByIds(usersIds: string): Promise<Array<IUserWithTeamAndPosition>>;
+  getAllUsers(): Promise<Array<IUserWithTeamAndPosition>>;
+  getFilteredUsers(teamId: string, positionId: string, role: string): Promise<Array<IUserWithTeamAndPositionEnums>>;
+  getUsersByIds(usersIds: string): Promise<Array<IUserWithTeamAndPositionEnums>>;
   getTeams(): Promise<Array<ITeams>>;
   getPositions(): Promise<Array<IPositions>>;
   postTeam(name: string): Promise<ITeams>;
