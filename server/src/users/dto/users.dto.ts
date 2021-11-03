@@ -1,5 +1,18 @@
-import { ArrayMinSize, IsArray, IsString, IsUUID } from 'class-validator';
+import { Exclude } from 'class-transformer';
+import { ArrayMinSize, IsArray, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { PositionsEnum, RolesEnum, TeamsEnum } from '../../common/constants';
+
+export class GetTeamByIdDto {
+  @IsUUID('all', { message: 'Invalid team id' })
+  id: string;
+}
+
+export class CreateTeamDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(50)
+  name: string;
+}
 
 export class UpdateUserDto {
   @IsArray()
@@ -37,6 +50,8 @@ export class UserWithTeamAndPositionAsStringsResponseDto {
 export class TeamsResponseDto {
   id: string;
   team: string;
+  @Exclude()
+  isDeleted: boolean;
 }
 
 export class PositionsResponseDto {
