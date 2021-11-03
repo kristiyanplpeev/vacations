@@ -96,7 +96,8 @@ export class UsersService {
       where: { ...queryObj },
       relations: [UserRelations.teams, UserRelations.positions],
     });
-    const users = usersdb.map((u) => u.toUser());
+
+    const users = usersdb.map((user) => user.toUser());
 
     return this.setUsersTeamsAndPositions(users);
   }
@@ -120,7 +121,8 @@ export class UsersService {
       usersdb,
       (ids) => `Users with ids ${ids} doesn't exist.`,
     );
-    const users = usersdb.map((u) => u.toUser());
+
+    const users = usersdb.map((user) => user.toUser());
 
     return this.setUsersTeamsAndPositions(users);
   }
@@ -248,11 +250,22 @@ export class UsersService {
 
   async getUserById(userId: string): Promise<User> {
     Guard.isValidUUID(userId, `Invalid user ID.`);
-    const userDetails = this.userRepo.findOne({
+    const userDetails = await this.userRepo.findOne({
       where: { id: userId },
       relations: [UserRelations.positions, UserRelations.teams],
     });
     Guard.exists(userDetails, `There is no user with id ${userId}`);
-    return (await userDetails).toUser();
+    return  userDetails.toUser();
+  }
+
+  async updatePositionCoefficient(
+    positionId: string,
+    newCoefficient: number,
+  ): Promise<Positions> {
+    const positiondb = await this.getPositionById(positionId);
+    positiondb.coefficient = newCoefficient;
+    const updatedPosition = await this.positionsRepo.save(positiondb);
+
+    return updatedPosition.toPositions();
   }
 }

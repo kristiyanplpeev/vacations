@@ -127,7 +127,13 @@ export const mockedUser = {
     'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
   role: RolesEnum.user,
   team: { id: 'id', team: TeamsEnum.noTeam, user: [] },
-  position: { id: 'id', position: PositionsEnum.noPosition, user: [] },
+  position: {
+    id: 'id',
+    position: PositionsEnum.senior,
+    coefficient: 0.75,
+    sortOrder: 5,
+    user: [],
+  },
 };
 
 export const userDb = (user) => ({
@@ -162,7 +168,11 @@ export const mockHolidayPeriodDates = [
   },
 ];
 
-export const absenceCalculatedWorkingDays = (absence, workingDays, totalDays) => ({
+export const absenceCalculatedWorkingDays = (
+  absence,
+  workingDays,
+  totalDays,
+) => ({
   ...absence,
   workingDays,
   totalDays,

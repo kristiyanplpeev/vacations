@@ -71,6 +71,8 @@ export interface ITeams {
 export interface IPositions {
   id: string;
   position: PositionsEnum;
+  coefficient: number;
+  sortOrder: number;
 }
 export interface Error {
   error: string;

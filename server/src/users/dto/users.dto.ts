@@ -1,5 +1,15 @@
 import { Exclude } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+  Min,
+  Max,
+  IsNumber,
+} from 'class-validator';
 import { PositionsEnum, RolesEnum, TeamsEnum } from '../../common/constants';
 
 export class GetTeamByIdDto {
@@ -13,6 +23,8 @@ export class CreateTeamDto {
   @MaxLength(50)
   name: string;
 }
+
+const newCoefficientError = 'New coefficient must be between 0.1 and 1.';
 
 export class UpdateUserDto {
   @IsArray()
@@ -36,6 +48,18 @@ export class UpdateRolesDto extends UpdateUserDto {
   role: RolesEnum;
 }
 
+export class IdDto {
+  @IsUUID('all', { message: 'Invalid id' })
+  id: string;
+}
+
+export class UpdatePositionCoefficientDto {
+  @IsNumber({}, { message: 'New coefficient must be a number' })
+  @Min(0.1, { message: newCoefficientError })
+  @Max(1, { message: newCoefficientError })
+  newCoefficient: number;
+}
+
 export class UserWithTeamAndPositionAsStringsResponseDto {
   id: string;
   googleId: string;
@@ -57,4 +81,6 @@ export class TeamsResponseDto {
 export class PositionsResponseDto {
   id: string;
   position: string;
+  coefficient: number;
+  sortOrder: number;
 }

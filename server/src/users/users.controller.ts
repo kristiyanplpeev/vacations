@@ -1,4 +1,14 @@
-import { Controller, UseGuards, Get, Query, Post, Body, Put, Delete, Param } from '@nestjs/common';
+import {
+  Controller,
+  UseGuards,
+  Get,
+  Query,
+  Post,
+  Body,
+  Put,
+  Delete,
+  Param,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard, RolesGuard } from '../google/guards';
 import {
@@ -10,6 +20,8 @@ import {
   UpdateRolesDto,
   GetTeamByIdDto,
   CreateTeamDto,
+  UpdatePositionCoefficientDto,
+  IdDto,
 } from './dto/users.dto';
 import { plainToClass } from 'class-transformer';
 import { UserResponseDto } from '../google/dto/google.dto';
@@ -29,7 +41,11 @@ export class UsersController {
     @Query('positionId') positionId: string,
     @Query('role') role: RolesEnum,
   ): Promise<Array<UserWithTeamAndPositionAsStringsResponseDto>> {
-    const users = await this.usersService.getFilteredUsers(teamId, positionId, role);
+    const users = await this.usersService.getFilteredUsers(
+      teamId,
+      positionId,
+      role,
+    );
     return plainToClass(UserWithTeamAndPositionAsStringsResponseDto, users);
   }
 
@@ -64,7 +80,7 @@ export class UsersController {
     @Body() body: CreateTeamDto,
   ): Promise<TeamsResponseDto> {
     const team = await this.usersService.postTeam(body.name);
-    return plainToClass(TeamsResponseDto,team);
+    return plainToClass(TeamsResponseDto, team);
   }
 
   @Put('teams')
@@ -73,7 +89,10 @@ export class UsersController {
   public async updateTeams(
     @Body() body: UpdateTeamsDto,
   ): Promise<Array<UserResponseDto>> {
-    const updatedUsers = await this.usersService.updateTeams(body.users, body.teamId);
+    const updatedUsers = await this.usersService.updateTeams(
+      body.users,
+      body.teamId,
+    );
     return plainToClass(UserResponseDto, updatedUsers);
   }
 
@@ -83,7 +102,10 @@ export class UsersController {
   public async updatePositions(
     @Body() body: UpdatePositionsDto,
   ): Promise<Array<UserResponseDto>> {
-    const updatedUsers = await this.usersService.updatePositions(body.users, body.positionId);
+    const updatedUsers = await this.usersService.updatePositions(
+      body.users,
+      body.positionId,
+    );
     return plainToClass(UserResponseDto, updatedUsers);
   }
 
@@ -93,16 +115,31 @@ export class UsersController {
   public async updateUsersRole(
     @Body() body: UpdateRolesDto,
   ): Promise<Array<UserResponseDto>> {
-    const updatedUsers = await this.usersService.updateUsersRole(body.users, body.role);
+    const updatedUsers = await this.usersService.updateUsersRole(
+      body.users,
+      body.role,
+    );
     return plainToClass(UserResponseDto, updatedUsers);
   }
 
   @Delete('teams/:id')
   @Roles(RolesEnum.admin)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  public async deleteTeam(
-    @Param() params: GetTeamByIdDto,
-  ): Promise<string> {
+  public async deleteTeam(@Param() params: GetTeamByIdDto): Promise<string> {
     return await this.usersService.deleteTeam(params.id);
+  }
+
+  @Put('positions/:id/coefficients')
+  @Roles(RolesEnum.admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  public async updatePositionCoefficient(
+    @Body() body: UpdatePositionCoefficientDto,
+    @Param() params: IdDto,
+  ): Promise<PositionsResponseDto> {
+    const updatedPosition = await this.usersService.updatePositionCoefficient(
+      params.id,
+      body.newCoefficient,
+    );
+    return plainToClass(PositionsResponseDto, updatedPosition);
   }
 }

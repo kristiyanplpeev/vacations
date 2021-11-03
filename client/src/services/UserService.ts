@@ -82,6 +82,13 @@ class UserService implements IUserService {
   deleteTeam = async (teamId: string): Promise<void> => {
     await this.restClient.delete(`users/teams/${teamId}`);
   };
+
+  updatePositionCoefficient = async (positionId: string, newCoefficient: number): Promise<void> => {
+    const data = {
+      newCoefficient,
+    };
+    await this.restClient.put(`users/positions/${positionId}/coefficients`, { data });
+  };
 }
 
 export default UserService;

@@ -9,4 +9,6 @@ export interface Teams {
 export interface Positions {
   id: string;
   position: PositionsEnum;
+  coefficient: number;
+  sortOrder: number;
 }

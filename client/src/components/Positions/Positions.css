@@ -1,0 +1,35 @@
+.positions-container {
+  margin-left: 240px;
+  text-align: left;
+  padding: 0% 5%;
+}
+
+.positions-title.MuiTypography-root {
+  margin: 1% 1% 1% 0%;
+  padding-left: 16px;
+}
+
+.positions-expand-container.MuiList-root {
+  padding: 8px 16px;
+}
+
+.change-position-button {
+  float: right;
+}
+
+.position-confirmation-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30%;
+  background-color: whitesmoke;
+  border: 2px solid #000;
+  box-shadow: 24;
+  text-align: center;
+  padding: 10px;
+}
+
+.change-position-modal-buttons.MuiButton-root {
+  margin: 10px;
+}

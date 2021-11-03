@@ -9,6 +9,12 @@ export class Positionsdb extends BaseEntity {
   @Column({ type: 'varchar', length: 300 })
   position: PositionsEnum;
 
+  @Column({ type: 'decimal' })
+  coefficient: number;
+
+  @Column({ type: 'smallint' })
+  sort_order: number;
+
   @OneToMany(() => Userdb, (user) => user.position)
   user: Userdb[];
 
@@ -16,6 +22,8 @@ export class Positionsdb extends BaseEntity {
     return {
       id: this.id,
       position: this.position,
+      coefficient: this.coefficient,
+      sortOrder: this.sort_order,
     };
   }
 }
