@@ -39,13 +39,11 @@ interface AppState {
 }
 
 class App extends Component<AppProps, AppState> {
-  private userState: IUserState;
   constructor(props: AppProps) {
     super(props);
     this.state = {
       allowRender: false,
     };
-    this.userState = props.user;
   }
 
   componentDidMount(): void {
@@ -58,7 +56,6 @@ class App extends Component<AppProps, AppState> {
   // eslint-disable-next-line max-lines-per-function
   render(): ReactNode {
     if (!this.state.allowRender) return null;
-    this.userState = this.props.user;
     return (
       <div className="App">
         <LocalizationProvider dateAdapter={DateFnsAdapter}>
@@ -131,10 +128,11 @@ class App extends Component<AppProps, AppState> {
   }
 
   isUserAuthenticated(role: UserRolesEnum): boolean {
+    const userState = this.props.user;
     if (role === UserRolesEnum.admin) {
-      return this.userState.isAuthenticated && this.userState.userDetails.role === UserRolesEnum.admin;
+      return userState.isAuthenticated && userState.userDetails.role === UserRolesEnum.admin;
     } else {
-      return this.userState.isAuthenticated;
+      return userState.isAuthenticated;
     }
   }
 }

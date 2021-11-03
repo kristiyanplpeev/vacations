@@ -144,11 +144,7 @@ class Positions extends Component<PositionsProps, PositionsState> {
             variant="outlined"
             color="error"
             className="change-position-modal-buttons"
-            onClick={() =>
-              this.setState({
-                openModal: false,
-              })
-            }
+            onClick={this.handleModalClose}
           >
             Cancel
           </Button>
@@ -223,6 +219,12 @@ class Positions extends Component<PositionsProps, PositionsState> {
       },
     });
   }
+
+  handleModalClose = (): void => {
+    this.setState({
+      openModal: false,
+    });
+  };
 
   getSortedPositions(): Array<IPositions> {
     return [...this.state.positions].sort((a, b) => {

@@ -33,10 +33,12 @@ export class UpdateRolesDto extends UpdateUserDto {
   role: RolesEnum;
 }
 
-export class updatePositionCoefficientDto {
+export class IdDto {
   @IsUUID('all', { message: 'Invalid position id' })
-  positionId: string;
+  id: string;
+}
 
+export class UpdatePositionCoefficientDto {
   @IsNumber({}, { message: 'New coefficient must be a number' })
   @Min(0.1, { message: newCoefficientError })
   @Max(1, { message: newCoefficientError })

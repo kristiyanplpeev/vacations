@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Query, Post, Body, Put } from '@nestjs/common';
+import { Controller, UseGuards, Get, Query, Post, Body, Put, Param } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard, RolesGuard } from '../google/guards';
 import {
@@ -8,7 +8,8 @@ import {
   PositionsResponseDto,
   TeamsResponseDto,
   UpdateRolesDto,
-  updatePositionCoefficientDto,
+  UpdatePositionCoefficientDto,
+  IdDto,
 } from './dto/users.dto';
 import { plainToClass } from 'class-transformer';
 import { UserResponseDto } from '../google/dto/google.dto';
@@ -85,13 +86,14 @@ export class UsersController {
     return plainToClass(UserResponseDto, updatedUsers);
   }
 
-  @Put('positions/coefficients')
+  @Put('positions/:id/coefficients')
   @Roles(RolesEnum.admin)
   @UseGuards(JwtAuthGuard, RolesGuard)
   public async updatePositionCoefficient(
-    @Body() body: updatePositionCoefficientDto,
+    @Body() body: UpdatePositionCoefficientDto,
+    @Param() params: IdDto,
   ): Promise<PositionsResponseDto> {
-    const updatedPosition = await this.usersService.updatePositionCoefficient(body.positionId, body.newCoefficient);
+    const updatedPosition = await this.usersService.updatePositionCoefficient(params.id, body.newCoefficient);
     return plainToClass(PositionsResponseDto, updatedPosition);
   }
 }

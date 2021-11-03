@@ -73,10 +73,9 @@ class UserService implements IUserService {
   };
   updatePositionCoefficient = async (positionId: string, newCoefficient: number): Promise<void> => {
     const data = {
-      positionId,
       newCoefficient,
     };
-    await this.restClient.put(`users/positions/coefficients`, { data });
+    await this.restClient.put(`users/positions/${positionId}/coefficients`, { data });
   };
 }
 
