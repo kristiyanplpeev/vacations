@@ -172,14 +172,9 @@ class Positions extends Component<PositionsProps, PositionsState> {
         loading: true,
       });
       await this.userService.updatePositionCoefficient(this.state.expandedPosition, +this.state.expandedInput.value);
-      const updatedPositions = this.state.positions.map((position) => {
-        if (this.state.expandedPosition === position.id) {
-          position.coefficient = +this.state.expandedInput.value;
-        }
-        return position;
-      });
+      const positions = await this.userService.getPositions();
       this.setState({
-        positions: updatedPositions,
+        positions,
         expandedPosition: "",
         openModal: false,
         loading: false,
