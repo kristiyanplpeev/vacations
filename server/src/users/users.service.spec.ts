@@ -7,8 +7,6 @@ import { Teamsdb } from '../model/teams.entity';
 import { Positionsdb } from '../model/positions.entity';
 import { mockedUser, userDb } from '../common/holidaysMockedData';
 import { PositionsEnum, TeamsEnum } from '../common/constants';
-import { User } from 'src/google/utils/interfaces';
-import { BadRequestException } from '@nestjs/common';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -78,7 +76,7 @@ describe('UsersService', () => {
 
       //assert
       expect(result).toEqual([
-        getMockedUser(TeamsEnum.noTeam, PositionsEnum.noPosition),
+        getMockedUser(TeamsEnum.noTeam, PositionsEnum.senior),
       ]);
     });
   });

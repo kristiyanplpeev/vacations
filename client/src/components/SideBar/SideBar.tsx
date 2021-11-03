@@ -30,7 +30,7 @@ class SideBar extends Component<SidebarProps> {
               </Typography>
             </ListItem>
             <Divider />
-            <ListItem button key={"3"}>
+            <ListItem button onClick={() => this.props.history.push("/admin/positions")} key={"3"}>
               <Typography component="span" className="admin-sidebar-text" variant="body2" color="textPrimary">
                 Positions
               </Typography>
