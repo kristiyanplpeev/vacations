@@ -49,6 +49,14 @@ export class UsersController {
     return plainToClass(UserWithTeamAndPositionAsStringsResponseDto, users);
   }
 
+  @Get('all')
+  @Roles(RolesEnum.admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  public async getAllUsers(): Promise<Array<UserResponseDto>> {
+    const users = await this.usersService.getAllUsers();
+    return plainToClass(UserResponseDto, users);
+  }
+
   @Get('byId')
   @Roles(RolesEnum.admin)
   @UseGuards(JwtAuthGuard, RolesGuard)

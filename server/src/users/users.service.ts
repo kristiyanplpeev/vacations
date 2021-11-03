@@ -62,6 +62,16 @@ export class UsersService {
     return position;
   }
 
+  public async getAllUsers(): Promise<Array<User>> {
+    const users = (
+      await this.userRepo.find({
+        relations: [UserRelations.teams, UserRelations.positions],
+      })
+    ).map((u) => u.toUser());
+
+    return users;
+  }
+
   public async getFilteredUsers(
     teamId: string,
     positionId: string,
@@ -255,7 +265,7 @@ export class UsersService {
       relations: [UserRelations.positions, UserRelations.teams],
     });
     Guard.exists(userDetails, `There is no user with id ${userId}`);
-    return  userDetails.toUser();
+    return userDetails.toUser();
   }
 
   async updatePositionCoefficient(
