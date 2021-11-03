@@ -92,10 +92,11 @@ export class UsersService {
       delete queryObj.role;
     }
 
-    const users = await this.userRepo.find({
+    const usersdb = await this.userRepo.find({
       where: { ...queryObj },
       relations: [UserRelations.teams, UserRelations.positions],
     });
+    const users = usersdb.map((u) => u.toUser());
 
     return this.setUsersTeamsAndPositions(users);
   }
@@ -108,26 +109,51 @@ export class UsersService {
     usersIdsArr.forEach((el) => {
       Guard.isValidUUID(el, `User id ${el} is invalid`);
     });
-    const users = await this.userRepo.find({
+    const usersdb = await this.userRepo.find({
       where: {
         id: In(usersIdsArr),
       },
       relations: [UserRelations.teams, UserRelations.positions],
     });
-    Guard.allElementsExist<User>(
+    Guard.allElementsExist<Userdb>(
       usersIdsArr,
-      users,
+      usersdb,
       (ids) => `Users with ids ${ids} doesn't exist.`,
     );
+    const users = usersdb.map((u) => u.toUser());
+
     return this.setUsersTeamsAndPositions(users);
   }
 
   public async getTeams(): Promise<Array<Teams>> {
-    return (await this.teamsRepo.find()).map((el) => el.toTeams());
+    const teamsdb = await this.teamsRepo.find();
+    const nonDeletedTeams = teamsdb
+      .filter((t) => !t.is_deleted)
+      .map((t) => t.toTeams());
+
+    return nonDeletedTeams;
   }
 
   public async getPositions(): Promise<Array<Positions>> {
     return (await this.positionsRepo.find()).map((el) => el.toPositions());
+  }
+
+  public async postTeam(name: string): Promise<Teams> {
+    const existingTeams = await (
+      await this.teamsRepo.find()
+    ).map((t) => t.toTeams().team);
+
+    Guard.should(
+      !existingTeams.includes(name),
+      `This team name already exists!`,
+    );
+
+    const newTeam = this.teamsRepo.create({
+      team: name,
+    });
+    await this.teamsRepo.save(newTeam);
+
+    return newTeam.toTeams();
   }
 
   public async updateTeams(
@@ -141,7 +167,7 @@ export class UsersService {
       },
       relations: [UserRelations.teams],
     });
-    Guard.allElementsExist<User>(
+    Guard.allElementsExist<Userdb>(
       users,
       usersWithTeam,
       (ids) => `Users with ids ${ids} doesn't exist.`,
@@ -167,7 +193,7 @@ export class UsersService {
       },
       relations: [UserRelations.positions],
     });
-    Guard.allElementsExist<User>(
+    Guard.allElementsExist<Userdb>(
       users,
       usersWithPosition,
       (ids) => `Users with ids ${ids} doesn't exist.`,
@@ -194,7 +220,7 @@ export class UsersService {
         id: In(users),
       },
     });
-    Guard.allElementsExist<User>(
+    Guard.allElementsExist<Userdb>(
       users,
       usersdb,
       (ids) => `Users with ids ${ids} doesn't exist.`,
@@ -206,6 +232,18 @@ export class UsersService {
       el.toUser(),
     );
     return updatedUsers;
+  }
+
+  public async deleteTeam(teamId: string): Promise<string> {
+    Guard.isValidUUID(teamId, `Invalid team id: ${teamId}`);
+    const teamdb = await this.teamsRepo.findOne({ where: { id: teamId } });
+    Guard.exists(teamdb, `Team with id ${teamId} does not exist!`);
+    Guard.should(!teamdb.is_deleted, `Team has already been deleted!`);
+
+    teamdb.is_deleted = true;
+    await this.teamsRepo.save(teamdb);
+
+    return 'Team deleted successfully!';
   }
 
   async getUserById(userId: string): Promise<User> {

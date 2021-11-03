@@ -44,7 +44,7 @@ export class Userdb extends BaseEntity {
       lastName: this.lastName,
       picture: this.picture,
       role: this.role,
-      team: this.team,
+      team: this.team?.toTeams(),
       position: this.position,
     };
   }

@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Query, Post, Body, Put } from '@nestjs/common';
+import { Controller, UseGuards, Get, Query, Post, Body, Put, Delete, Param } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard, RolesGuard } from '../google/guards';
 import {
@@ -8,11 +8,14 @@ import {
   PositionsResponseDto,
   TeamsResponseDto,
   UpdateRolesDto,
+  GetTeamByIdDto,
+  CreateTeamDto,
 } from './dto/users.dto';
 import { plainToClass } from 'class-transformer';
 import { UserResponseDto } from '../google/dto/google.dto';
 import { RolesEnum } from '../common/constants';
 import { Roles } from '../google//decorators/roles.decorator';
+import { Teams } from 'src/users/interfaces';
 
 @Controller('users')
 export class UsersController {
@@ -54,6 +57,16 @@ export class UsersController {
     return plainToClass(PositionsResponseDto, positions);
   }
 
+  @Post('teams')
+  @Roles(RolesEnum.admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  public async createTeam(
+    @Body() body: CreateTeamDto,
+  ): Promise<TeamsResponseDto> {
+    const team = await this.usersService.postTeam(body.name);
+    return plainToClass(TeamsResponseDto,team);
+  }
+
   @Put('teams')
   @Roles(RolesEnum.admin)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -82,5 +95,14 @@ export class UsersController {
   ): Promise<Array<UserResponseDto>> {
     const updatedUsers = await this.usersService.updateUsersRole(body.users, body.role);
     return plainToClass(UserResponseDto, updatedUsers);
+  }
+
+  @Delete('teams/:id')
+  @Roles(RolesEnum.admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  public async deleteTeam(
+    @Param() params: GetTeamByIdDto,
+  ): Promise<string> {
+    return await this.usersService.deleteTeam(params.id);
   }
 }
