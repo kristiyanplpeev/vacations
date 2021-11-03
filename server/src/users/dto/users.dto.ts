@@ -34,7 +34,7 @@ export class UpdateRolesDto extends UpdateUserDto {
 }
 
 export class IdDto {
-  @IsUUID('all', { message: 'Invalid position id' })
+  @IsUUID('all', { message: 'Invalid id' })
   id: string;
 }
 
