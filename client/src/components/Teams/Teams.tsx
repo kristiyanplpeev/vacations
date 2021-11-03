@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import { resolve } from "inversify-react";
 
-import { anyPosition, anyRole, anyTeam, TeamsEnum } from "common/constants";
+import { PositionsEnum, TeamsEnum } from "common/constants";
 import { ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import { IUserService } from "inversify/interfaces";
@@ -86,8 +86,7 @@ class Teams extends Component<TeamsProps, TeamsState> {
 
   async loadUsers(): Promise<void> {
     try {
-      const users = await this.userService.getAllUsers(anyTeam, anyPosition, anyRole);
-
+      const users = await this.userService.getAllUsers();
       this.setState({
         users,
       });
@@ -152,7 +151,7 @@ class Teams extends Component<TeamsProps, TeamsState> {
             <Paper variant="outlined" className="team-container">
               <Typography variant="h4">{team.team}</Typography>
               <Divider className="divider" />
-              {this.renderUsers(team)}
+              {this.renderUsersWithTeam(team)}
             </Paper>
           </Grid>
         ))}
@@ -160,50 +159,49 @@ class Teams extends Component<TeamsProps, TeamsState> {
     );
   }
 
-  // eslint-disable-next-line max-lines-per-function
-  renderUsers(team?: ITeams): JSX.Element {
-    if (team) {
-      const filteredUsers = this.state.users.filter((u) => u.team === team.team);
-      return (
-        <Stack spacing={2}>
-          {filteredUsers.length > 0 ? (
-            <>
-              {filteredUsers.map((user) => (
+  renderUsersWithTeam(team: ITeams): JSX.Element {
+    const filteredUsers = this.state.users.filter((u) => u.team?.team === team.team);
+    const sortedUsers = this.getSortedUsers(filteredUsers);
+    return (
+      <Stack spacing={2}>
+        {sortedUsers.length > 0 ? (
+          <>
+            {sortedUsers.map((user) => {
+              const position = user.position ? user.position.position : PositionsEnum.noPosition;
+              return (
                 <Grid container key={user.id} justifyContent="space-between" alignItems="center">
                   <Grid item>
                     <Chip
                       className="teams-card-chip"
                       avatar={<Avatar className="teams-card-chip-avatar" alt={user.firstName[0]} src={user.picture} />}
-                      label={user.position}
+                      label={position}
                       variant="outlined"
                     />
                   </Grid>
                   <Grid item>{user.email}</Grid>
                 </Grid>
-              ))}
-            </>
-          ) : (
-            <Stack spacing={8} className="empty-team">
-              <Typography variant="h5">---no employees---</Typography>
-              <Button
-                startIcon={<DeleteIcon />}
-                variant="contained"
-                className="delete-team-button"
-                onClick={() => this.handleDelete(team.id)}
-              >
-                Delete Team
-              </Button>
-            </Stack>
-          )}
-        </Stack>
-      );
-    } else {
-      return this.renderUsersWithoutTeam();
-    }
+              );
+            })}
+          </>
+        ) : (
+          <Stack spacing={8} className="empty-team">
+            <Typography variant="h5">---no employees---</Typography>
+            <Button
+              startIcon={<DeleteIcon />}
+              variant="contained"
+              className="delete-team-button"
+              onClick={() => this.handleDelete(team.id)}
+            >
+              Delete Team
+            </Button>
+          </Stack>
+        )}
+      </Stack>
+    );
   }
 
   renderUsersWithoutTeam(): JSX.Element {
-    const usersWithoutTeam = this.state.users.filter((u) => u.team === TeamsEnum.noTeam);
+    const usersWithoutTeam = this.state.users.filter((u) => !u.team);
     return (
       <Stack spacing={2}>
         <Typography variant="h3" align="left">
@@ -223,6 +221,14 @@ class Teams extends Component<TeamsProps, TeamsState> {
         </Grid>
       </Stack>
     );
+  }
+
+  getSortedUsers(users: Array<IUserWithTeamAndPosition>): Array<IUserWithTeamAndPosition> {
+    return [...users].sort((a, b) => {
+      if (a.position?.sortOrder < b.position?.sortOrder || !b.position) return -1;
+      if (a.position?.sortOrder > b.position?.sortOrder) return 1;
+      return 0;
+    });
   }
 
   handleTeamNameChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
