@@ -48,6 +48,13 @@ class UserService implements IUserService {
     return await this.restClient.get(`users/positions`);
   };
 
+  postTeam = async (name: string): Promise<ITeams> => {
+    const data = {
+      name,
+    };
+    return await this.restClient.post(`users/teams`, { data });
+  };
+
   updateUsersTeam = async (users: Array<string>, newTeamId: string): Promise<void> => {
     const data = {
       users,
@@ -70,6 +77,10 @@ class UserService implements IUserService {
       role: newRole,
     };
     await this.restClient.put(`users/roles`, { data });
+  };
+
+  deleteTeam = async (teamId: string): Promise<void> => {
+    await this.restClient.delete(`users/teams/${teamId}`);
   };
 }
 
