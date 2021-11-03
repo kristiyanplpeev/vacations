@@ -65,7 +65,7 @@ export interface IUserAbsenceWithEachDayStatus extends IUserAbsenceWithEmployee 
 
 export interface ITeams {
   id: string;
-  team: TeamsEnum;
+  team: string;
 }
 
 export interface IPositions {
