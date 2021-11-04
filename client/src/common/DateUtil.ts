@@ -23,6 +23,10 @@ export class DateUtil {
     return new Date().toISOString().slice(0, 10);
   }
 
+  static dateToString = (date: Date): string => {
+    return date.toISOString().slice(0, 10);
+  };
+
   // sprint index 0 means current sprint, 1 means next sprint and -1 means last sprint
   //we shall move this from here
   static getSprintPeriod(sprintIndex: number): SprintPeriod {
