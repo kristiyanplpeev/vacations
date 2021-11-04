@@ -69,8 +69,7 @@ class Teams extends Component<TeamsProps, TeamsState> {
       loading: true,
     });
 
-    await this.loadTeams();
-    await this.loadUsers();
+    await Promise.all([this.loadTeams(), this.loadUsers()]);
 
     this.setState({
       loading: false,
@@ -255,11 +254,7 @@ class Teams extends Component<TeamsProps, TeamsState> {
   }
 
   getSortedUsers(users: Array<IUserWithTeamAndPosition>): Array<IUserWithTeamAndPosition> {
-    return [...users].sort((a, b) => {
-      if (a.position?.sortOrder < b.position?.sortOrder || !b.position) return -1;
-      if (a.position?.sortOrder > b.position?.sortOrder) return 1;
-      return 0;
-    });
+    return [...users].sort((a, b) => (b.position ? a.position.sortOrder - b.position.sortOrder : -1));
   }
 
   handleTeamNameChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -295,11 +290,7 @@ class Teams extends Component<TeamsProps, TeamsState> {
   handleDelete = async (teamId: string): Promise<void> => {
     try {
       await this.userService.deleteTeam(teamId);
-
-      const remainingTeams = this.state.teams.filter((t) => t.id !== teamId);
-      this.setState({
-        teams: remainingTeams,
-      });
+      await this.loadTeams();
       this.handleDeleteModalClose();
     } catch (e) {
       this.setState({
@@ -315,10 +306,8 @@ class Teams extends Component<TeamsProps, TeamsState> {
         return;
       }
 
-      const newTeam = await this.userService.postTeam(this.state.teamName);
-      this.setState({
-        teams: [...this.state.teams, newTeam],
-      });
+      await this.userService.postTeam(this.state.teamName);
+      await this.loadTeams();
       this.handleClose();
     } catch (e) {
       this.setState({

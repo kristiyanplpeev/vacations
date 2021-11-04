@@ -251,6 +251,10 @@ export class UsersService {
     const teamdb = await this.teamsRepo.findOne({ where: { id: teamId } });
     Guard.exists(teamdb, `Team with id ${teamId} does not exist!`);
     Guard.should(!teamdb.is_deleted, `Team has already been deleted!`);
+    const isTeamEmpty =
+      (await this.userRepo.find({ where: { team: teamId } })).length === 0;
+    
+    Guard.should(isTeamEmpty, `Can't delete this team as it is not empty!`);
 
     teamdb.is_deleted = true;
     await this.teamsRepo.save(teamdb);
