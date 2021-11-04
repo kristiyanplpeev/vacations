@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Absencedb } from '../model/absence.entity';
 import { Userdb } from '../model/user.entity';
@@ -238,14 +242,21 @@ export class AbsencesService {
 
   getSprintPeriod(sprintIndex: number): SprintPeriod {
     const firstSprintBeginning = new Date(process.env.SPRINT_START_DATE);
-    const today = new Date();
+    const today = new Date('2021-11-15');
     const daysSinceFirstSprint = differenceInCalendarDays(
       today,
       firstSprintBeginning,
     );
 
-    const requestedSprint =
-      Math.ceil((daysSinceFirstSprint + 1) / sprintLengthDays) + sprintIndex;
+    const defaultSprint = Math.ceil(
+      (daysSinceFirstSprint + 1) / sprintLengthDays,
+    );
+    const defaultSprintEndingDate = addDays(
+      firstSprintBeginning,
+      defaultSprint * sprintLengthDays - 1,
+    );
+    
+    const requestedSprint = defaultSprint + sprintIndex;
 
     const startingDate = addDays(
       firstSprintBeginning,
@@ -259,6 +270,21 @@ export class AbsencesService {
       startingDate: DateUtil.roundDate(startingDate),
       endingDate: DateUtil.roundDate(endingDate),
     };
+
+    if (differenceInCalendarDays(defaultSprintEndingDate, today) < 2) {
+      requestedSprintPeriod.startingDate = addDays(
+        requestedSprintPeriod.startingDate,
+        sprintLengthDays,
+      );
+      requestedSprintPeriod.endingDate = addDays(
+        requestedSprintPeriod.endingDate,
+        sprintLengthDays,
+      );
+    }
+
+    if (requestedSprintPeriod.startingDate < firstSprintBeginning) {
+      throw new BadRequestException('We do not have data before that period');
+    }
 
     return requestedSprintPeriod;
   }
