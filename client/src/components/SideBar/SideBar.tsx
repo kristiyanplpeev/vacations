@@ -24,7 +24,7 @@ class SideBar extends Component<SidebarProps> {
               </Typography>
             </ListItem>
             <Divider />
-            <ListItem button key={"2"}>
+            <ListItem button onClick={() => this.props.history.push("/admin/teams")} key={"2"}>
               <Typography component="span" className="admin-sidebar-text" variant="body2" color="textPrimary">
                 Teams
               </Typography>

@@ -13,7 +13,7 @@ import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
 import { bulkChangeUsersClass, noChange } from "common/constants";
-import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
+import { IPositions, ITeams, IUserWithTeamAndPositionEnums } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import SelectElements from "components/common/SelectElements/SelectElements";
 import { IUserService } from "inversify/interfaces";
@@ -29,7 +29,7 @@ interface BulkChangeUsersProps extends RouteComponentProps<BulkChangeUsersMatchP
 interface BulkChangeUsersState {
   error: string;
   loading: boolean;
-  users: Array<IUserWithTeamAndPosition>;
+  users: Array<IUserWithTeamAndPositionEnums>;
   teams: Array<ITeams>;
   positions: Array<IPositions>;
   selectedTeam: string;

@@ -1,8 +1,9 @@
-import { PositionsEnum, TeamsEnum } from '../common/constants';
+import { PositionsEnum } from '../common/constants';
 
 export interface Teams {
   id: string;
-  team: TeamsEnum;
+  team: string;
+  isDeleted: boolean;
 }
 
 export interface Positions {

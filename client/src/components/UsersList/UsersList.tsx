@@ -13,7 +13,7 @@ import "./UsersList.css";
 import { RouteComponentProps } from "react-router";
 
 import { anyPosition, anyRole, anyTeam, usersListClass } from "common/constants";
-import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
+import { IPositions, ITeams, IUserWithTeamAndPositionEnums } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import SelectElements from "components/common/SelectElements/SelectElements";
 import { IUserService } from "inversify/interfaces";
@@ -24,7 +24,7 @@ interface UsersListProps extends RouteComponentProps {}
 interface UsersListState {
   error: string;
   loading: boolean;
-  users: Array<IUserWithTeamAndPosition>;
+  users: Array<IUserWithTeamAndPositionEnums>;
   selectedUsers: Array<string>;
   teams: Array<ITeams>;
   positions: Array<IPositions>;
@@ -56,7 +56,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
       this.setState({
         loading: true,
       });
-      const users = await this.userService.getAllUsers(anyTeam, anyPosition, anyRole);
+      const users = await this.userService.getFilteredUsers(anyTeam, anyPosition, anyRole);
       const teams = await this.userService.getTeams();
       const positions = await this.userService.getPositions();
       this.setState({
@@ -84,7 +84,7 @@ class UsersList extends Component<UsersListProps, UsersListState> {
         this.setState({
           loading: true,
         });
-        const users = await this.userService.getAllUsers(
+        const users = await this.userService.getFilteredUsers(
           this.state.selectedTeam,
           this.state.selectedPosition,
           this.state.selectedRole,
