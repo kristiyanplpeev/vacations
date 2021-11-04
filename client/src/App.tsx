@@ -106,7 +106,7 @@ class App extends Component<AppProps, AppState> {
               <PrivateRoute
                 path="/admin/teams"
                 exact
-                isAuthenticated={this.props.user.isAuthenticated}
+                isAuthenticated={this.isUserAuthenticated(UserRolesEnum.admin)}
                 component={Teams}
               />
               <PrivateRoute
