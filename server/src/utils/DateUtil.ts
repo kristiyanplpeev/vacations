@@ -22,6 +22,15 @@ class DateUtil {
     const newDate = new Date(date);
     return new Date(newDate.setDate(newDate.getDate() + 1));
   };
+
+  static roundDate = (date: Date): Date => {
+    if (date.getUTCHours() < 12) {
+      date.setUTCHours(0, 0, 0, 0);
+    } else {
+      date.setUTCHours(24, 0, 0, 0);
+    }
+    return date;
+  };
 }
 
 export default DateUtil;

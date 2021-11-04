@@ -12,12 +12,26 @@ import {
   AbsenceDetailsWithEachDay,
   Absence,
   AbsenceDetailsOptional,
+  SprintPeriod,
 } from './interfaces';
-import { DayStatus, UserRelations } from '../common/constants';
+import {
+  DayStatus,
+  noTeamError,
+  sprintLengthDays,
+  UserRelations,
+} from '../common/constants';
 import Guard from '../utils/Guard';
 import { User } from '../google/utils/interfaces';
 import DateUtil from '../utils/DateUtil';
 import { AbsenceTypes } from './absenceTypes/absenceTypes';
+import { UsersService } from '../users/users.service';
+import {
+  addDays,
+  differenceInCalendarDays,
+  differenceInDays,
+  getHours,
+  setHours,
+} from 'date-fns';
 
 @Injectable()
 export class AbsencesService {
@@ -25,6 +39,7 @@ export class AbsencesService {
     @InjectRepository(Absencedb) private absenceRepo: Repository<Absencedb>,
     @InjectRepository(Userdb) private userRepo: Repository<Userdb>,
     private readonly holidaysService: HolidaysService,
+    private readonly usersService: UsersService,
   ) {}
 
   private validateAbsenceAuthor(
@@ -113,10 +128,7 @@ export class AbsencesService {
       where: { id: userId },
       relations: [UserRelations.teams],
     });
-    Guard.should(
-      team !== null,
-      "You don't have a team assigned. Please contact your admin!",
-    );
+    Guard.should(team !== null, noTeamError);
 
     const usersDb = await this.userRepo.find({ where: { team } });
     const users = usersDb.map((u) => u.toUser());
@@ -222,5 +234,45 @@ export class AbsencesService {
     await this.absenceRepo.save(absencedb);
 
     return 'Absence deleted successfully.';
+  }
+
+  getSprintPeriod(sprintIndex: number): SprintPeriod {
+    const firstSprintBeginning = new Date(process.env.SPRINT_START_DATE);
+    const today = new Date();
+    const daysSinceFirstSprint = differenceInCalendarDays(
+      today,
+      firstSprintBeginning,
+    );
+
+    const requestedSprint =
+      Math.ceil((daysSinceFirstSprint + 1) / sprintLengthDays) + sprintIndex;
+
+    const startingDate = addDays(
+      firstSprintBeginning,
+      (requestedSprint - 1) * sprintLengthDays,
+    );
+    const endingDate = addDays(
+      firstSprintBeginning,
+      requestedSprint * sprintLengthDays - 1,
+    );
+    const requestedSprintPeriod = {
+      startingDate: DateUtil.roundDate(startingDate),
+      endingDate: DateUtil.roundDate(endingDate),
+    };
+
+    return requestedSprintPeriod;
+  }
+
+  // sprint index 0 means current sprint, 1 means next sprint and -1 means last sprint
+  public async getTeamSprintAbsences(
+    sprintIndex: number,
+    userId: string,
+  ): Promise<any> {
+    const user = await this.usersService.getUserById(userId);
+    Guard.should(!!user.team, noTeamError);
+
+    const sprintPeriod = this.getSprintPeriod(sprintIndex);
+
+    return sprintPeriod;
   }
 }
