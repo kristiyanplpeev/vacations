@@ -152,7 +152,7 @@ export class UsersService {
 
   public async postTeam(name: string): Promise<Teams> {
     const existingTeams = await (
-      await this.teamsRepo.find()
+      await this.teamsRepo.find({ where: { is_deleted: false } })
     ).map((t) => t.toTeams().team);
 
     Guard.should(
