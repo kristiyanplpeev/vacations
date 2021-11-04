@@ -18,10 +18,13 @@ import {
   DialogTitle,
   TextField,
   Divider,
+  Modal,
+  Box,
+  CircularProgress,
 } from "@mui/material";
 import { resolve } from "inversify-react";
 
-import { PositionsEnum, TeamsEnum } from "common/constants";
+import { PositionsEnum } from "common/constants";
 import { ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import { IUserService } from "inversify/interfaces";
@@ -33,9 +36,11 @@ export interface TeamsProps {}
 export interface TeamsState {
   loading: boolean;
   error: string;
-  open: boolean;
+  openAddDialog: boolean;
+  openDeleteModal: boolean;
   teamName: string;
   teamNameError: string;
+  teamToDeleteId: string;
   teams: Array<ITeams>;
   users: Array<IUserWithTeamAndPosition>;
 }
@@ -49,9 +54,11 @@ class Teams extends Component<TeamsProps, TeamsState> {
     this.state = {
       loading: false,
       error: "",
-      open: false,
+      openAddDialog: false,
+      openDeleteModal: false,
       teamName: "",
       teamNameError: "",
+      teamToDeleteId: "",
       teams: [],
       users: [],
     };
@@ -98,28 +105,33 @@ class Teams extends Component<TeamsProps, TeamsState> {
   }
 
   render(): JSX.Element {
-    const { error } = this.state;
+    const { error, loading } = this.state;
     if (error) {
       return <Error message={error} />;
     }
+    if (loading) {
+      return <CircularProgress />;
+    }
+
     return (
       <Container className="teams-page-container">
         <Typography variant="h2">Teams</Typography>
         {this.renderAddTeam()}
         {this.renderTeams()}
         {this.renderUsersWithoutTeam()}
+        {this.renderModal()}
       </Container>
     );
   }
 
   renderAddTeam(): JSX.Element {
-    const { open, teamName, teamNameError } = this.state;
+    const { openAddDialog, teamName, teamNameError } = this.state;
     return (
       <>
         <Button startIcon={<AddIcon />} onClick={this.handleClickOpen} variant="outlined">
           Add Team
         </Button>
-        <Dialog open={open} onClose={this.handleClose}>
+        <Dialog open={openAddDialog} onClose={this.handleClose}>
           <DialogTitle>Add Team</DialogTitle>
           <DialogContent>
             <DialogContentText>Please enter the name of the team!</DialogContentText>
@@ -190,7 +202,7 @@ class Teams extends Component<TeamsProps, TeamsState> {
               startIcon={<DeleteIcon />}
               variant="contained"
               className="delete-team-button"
-              onClick={() => this.handleDelete(team.id)}
+              onClick={() => this.handleDeleteModalOpen(team.id)}
             >
               Delete Team
             </Button>
@@ -220,6 +232,25 @@ class Teams extends Component<TeamsProps, TeamsState> {
           ))}
         </Grid>
       </Stack>
+    );
+  }
+
+  renderModal(): JSX.Element {
+    const { openDeleteModal, teamToDeleteId } = this.state;
+    return (
+      <Modal open={openDeleteModal}>
+        <Box className="confirmation-modal">
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            Do you want to delete this team?
+          </Typography>
+          <Button variant="outlined" className="modal-buttons" onClick={() => this.handleDelete(teamToDeleteId)}>
+            Confirm
+          </Button>
+          <Button variant="outlined" color="error" className="modal-buttons" onClick={this.handleDeleteModalClose}>
+            Cancel
+          </Button>
+        </Box>
+      </Modal>
     );
   }
 
@@ -269,6 +300,7 @@ class Teams extends Component<TeamsProps, TeamsState> {
       this.setState({
         teams: remainingTeams,
       });
+      this.handleDeleteModalClose();
     } catch (e) {
       this.setState({
         error: e.message,
@@ -295,15 +327,29 @@ class Teams extends Component<TeamsProps, TeamsState> {
     }
   };
 
+  handleDeleteModalOpen = (teamId: string): void => {
+    this.setState({
+      openDeleteModal: true,
+      teamToDeleteId: teamId,
+    });
+  };
+
+  handleDeleteModalClose = (): void => {
+    this.setState({
+      openDeleteModal: false,
+      teamToDeleteId: "",
+    });
+  };
+
   handleClickOpen = (): void => {
     this.setState({
-      open: true,
+      openAddDialog: true,
     });
   };
 
   handleClose = (): void => {
     this.setState({
-      open: false,
+      openAddDialog: false,
       teamName: "",
       teamNameError: "",
     });
