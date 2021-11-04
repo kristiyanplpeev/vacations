@@ -24,11 +24,12 @@ import {
   AbsenceTypeDto,
   AbsencePeriodWithEndDateDto,
   AbsenceStartingDateDto,
+  SprintPeriodDto,
 } from './dto/holidays.dto';
 import { plainToClass } from 'class-transformer';
 import { AbsenceDetailsOptional } from './interfaces';
 import { AbsenceFactory } from './absenceTypes/absenceTypes';
-import Guard from '../utils/Guard';
+import { ApiExtraModels } from '@nestjs/swagger';
 
 const convertDatesInBody = (body: any): AbsenceDetailsOptional => {
   return {
@@ -97,9 +98,18 @@ export class AbsencesController {
 
   @Get('team')
   @UseGuards(JwtAuthGuard)
-  public async getByTeam(@Req() req): Promise<Array<AbsenceResponseDto>> {
+  public async getByTeam(
+    @Req() req,
+    @Query() query: SprintPeriodDto,
+  ): Promise<Array<AbsenceResponseDto>> {
+    const sprintPeriod = {
+      ...(query.sprintStart && { startDate: new Date(query.sprintStart) }),
+      ...(query.sprintEnd && { endDate: new Date(query.sprintEnd) }),
+    };
     const userAbsences = await this.absenceService.getAllUsersAbsencesByTeam(
       req.user.id,
+      sprintPeriod.startDate,
+      sprintPeriod.endDate,
     );
     return plainToClass(AbsenceResponseDto, userAbsences);
   }

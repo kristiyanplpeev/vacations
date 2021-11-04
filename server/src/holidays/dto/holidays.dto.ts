@@ -24,6 +24,16 @@ export class AbsenceStartingDateDto {
   from: string;
 }
 
+export class SprintPeriodDto {
+  @IsDateString({}, { message: invalidDateFormatMessage })
+  @IsOptional()
+  sprintStart?: string;
+
+  @IsDateString({}, { message: invalidDateFormatMessage })
+  @IsOptional()
+  sprintEnd?: string;
+}
+
 export class AbsencePeriodWithEndDateDto extends AbsenceStartingDateDto {
   @IsDateString({}, { message: invalidDateFormatMessage })
   to: string;

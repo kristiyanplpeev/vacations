@@ -1,11 +1,12 @@
-import {
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Absencedb } from '../model/absence.entity';
 import { Userdb } from '../model/user.entity';
 import {
+  LessThan,
+  LessThanOrEqual,
+  MoreThan,
+  MoreThanOrEqual,
   Repository,
 } from 'typeorm';
 import { HolidaysService } from './holidays.service';
@@ -14,11 +15,7 @@ import {
   AbsenceDetailsWithEachDay,
   Absence,
 } from './interfaces';
-import {
-  DayStatus,
-  noTeamError,
-  UserRelations,
-} from '../common/constants';
+import { DayStatus, noTeamError, UserRelations } from '../common/constants';
 import Guard from '../utils/Guard';
 import { User } from '../google/utils/interfaces';
 import DateUtil from '../utils/DateUtil';
@@ -113,6 +110,8 @@ export class AbsencesService {
 
   public async getAllUsersAbsencesByTeam(
     userId: string,
+    sprintStart: Date,
+    sprintEnd: Date,
   ): Promise<Array<AbsenceDetailsWithTotalDays>> {
     Guard.isValidUUID(userId, `Invalid user id: ${userId}`);
 
@@ -127,8 +126,16 @@ export class AbsencesService {
 
     const allUsersAbsences = users.map(async (user) => {
       const absencesDb = await this.absenceRepo.find({
-        where: { employee: user.id },
-        relations: [UserRelations.employee],
+        where: {
+          employee: user.id,
+          ...(sprintEnd && { from_date: LessThanOrEqual(sprintEnd) }),
+          ...(sprintStart && { to_date: MoreThanOrEqual(sprintStart) }),
+        },
+        relations: [
+          UserRelations.employee,
+          `${UserRelations.employee}.${UserRelations.positions}`,
+          `${UserRelations.employee}.${UserRelations.teams}`,
+        ],
       });
       const absences = absencesDb
         .map((a) => a.toAbsence())
