@@ -42,7 +42,10 @@ export interface IAbsenceService {
     comment?: string,
   ): Promise<void | { warning: string }>;
   getUserAbsences(): Promise<Array<IUserAbsenceWithWorkingDays>>;
-  getAllUsersAbsences(): Promise<Array<IUserAbsenceWithWorkingDaysAndEmployee>>;
+  getAllUsersAbsences(
+    startingDate?: string,
+    endingDate?: string,
+  ): Promise<Array<IUserAbsenceWithWorkingDaysAndEmployee>>;
   getAbsenceEndDate(type: AbsencesEnum, startingDate: string): Promise<{ endingDate: string }>;
   getAbsenceWithEachDay(absenceId: string): Promise<IUserAbsenceWithEachDayStatus>;
   getAbsence(absenceId: string): Promise<IUserAbsenceWithEmployee>;

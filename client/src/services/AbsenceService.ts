@@ -55,8 +55,12 @@ class AbsenceService implements IAbsenceService {
     return await this.restClient.get(`absences/${absenceId}`);
   };
 
-  getAllUsersAbsences = async (): Promise<Array<IUserAbsenceWithWorkingDaysAndEmployee>> => {
-    return await this.restClient.get(`absences/team`);
+  getAllUsersAbsences = async (
+    startingDate?: string,
+    endingDate?: string,
+  ): Promise<Array<IUserAbsenceWithWorkingDaysAndEmployee>> => {
+    const query = startingDate && endingDate ? `?sprintStart=${startingDate}&sprintEnd=${endingDate}` : "";
+    return await this.restClient.get(`absences/team${query}`);
   };
 
   getAbsence = async (absenceId: string): Promise<IUserAbsenceWithEmployee> => {
