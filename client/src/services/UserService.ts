@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 
 import { anyPosition, anyRole, anyTeam, UserRolesEnum } from "common/constants";
-import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
+import { IPositions, ITeams, IUserWithTeamAndPosition, IUserWithTeamAndPositionEnums } from "common/interfaces";
 import { IAuthService, IRestClient, IUserService } from "inversify/interfaces";
 import "reflect-metadata";
 // eslint-disable-next-line import/no-cycle
@@ -24,11 +24,15 @@ class UserService implements IUserService {
     return this.authService.extractUser(res.access_token);
   };
 
-  getAllUsers = async (
+  getAllUsers = async (): Promise<Array<IUserWithTeamAndPosition>> => {
+    return await this.restClient.get(`users/all`);
+  };
+
+  getFilteredUsers = async (
     teamId?: string,
     positionId?: string,
     role?: string,
-  ): Promise<Array<IUserWithTeamAndPosition>> => {
+  ): Promise<Array<IUserWithTeamAndPositionEnums>> => {
     const team = teamId !== anyTeam ? `teamId=${teamId}` : "";
     const position = positionId !== anyPosition ? `positionId=${positionId}` : "";
     const roles = role !== anyRole ? `role=${role}` : "";
@@ -36,7 +40,7 @@ class UserService implements IUserService {
     return await this.restClient.get(`users?${query}`);
   };
 
-  getUsersByIds = async (usersIds: string): Promise<Array<IUserWithTeamAndPosition>> => {
+  getUsersByIds = async (usersIds: string): Promise<Array<IUserWithTeamAndPositionEnums>> => {
     return await this.restClient.get(`users/byId?usersIds=${usersIds}`);
   };
 
@@ -46,6 +50,13 @@ class UserService implements IUserService {
 
   getPositions = async (): Promise<Array<IPositions>> => {
     return await this.restClient.get(`users/positions`);
+  };
+
+  postTeam = async (name: string): Promise<ITeams> => {
+    const data = {
+      name,
+    };
+    return await this.restClient.post(`users/teams`, { data });
   };
 
   updateUsersTeam = async (users: Array<string>, newTeamId: string): Promise<void> => {
@@ -71,6 +82,11 @@ class UserService implements IUserService {
     };
     await this.restClient.put(`users/roles`, { data });
   };
+
+  deleteTeam = async (teamId: string): Promise<void> => {
+    await this.restClient.delete(`users/teams/${teamId}`);
+  };
+
   updatePositionCoefficient = async (positionId: string, newCoefficient: number): Promise<void> => {
     const data = {
       newCoefficient,

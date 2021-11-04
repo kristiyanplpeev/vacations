@@ -1,0 +1,45 @@
+.teams-page-container.css-1oqqzyl-MuiContainer-root {
+  margin-left: 380px;
+}
+
+.team-container.MuiPaper-root {
+  width: 500px;
+  height: 500px;
+  padding: 20px;
+  border-width: 1px;
+  border-color: black;
+  margin: 20px 0px;
+}
+
+.divider.MuiDivider-root {
+  height: 0.5px;
+  background-color: black;
+  margin-top: 8px;
+  margin-bottom: 25px;
+}
+
+.teams-card-chip.MuiChip-root {
+  padding-right: 20px;
+  font-size: 1.25rem;
+  border: none;
+}
+
+div.teams-card-chip-avatar.MuiAvatar-root {
+  margin-right: 5px;
+  width: 36px;
+  height: 36px;
+}
+
+.delete-team-button {
+  width: 200px;
+  align-self: center;
+}
+
+.empty-team {
+  margin-top: 20px;
+}
+
+.users-without-team.MuiGrid-root {
+  margin: 20px 0px;
+  width: 90%;
+}

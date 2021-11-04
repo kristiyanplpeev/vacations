@@ -1,13 +1,28 @@
+import { Exclude } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
-  IsNumber,
   IsString,
   IsUUID,
-  Max,
+  MaxLength,
+  MinLength,
   Min,
+  Max,
+  IsNumber,
 } from 'class-validator';
 import { PositionsEnum, RolesEnum, TeamsEnum } from '../../common/constants';
+
+export class GetTeamByIdDto {
+  @IsUUID('all', { message: 'Invalid team id' })
+  id: string;
+}
+
+export class CreateTeamDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(50)
+  name: string;
+}
 
 const newCoefficientError = 'New coefficient must be between 0.1 and 1.';
 
@@ -59,6 +74,8 @@ export class UserWithTeamAndPositionAsStringsResponseDto {
 export class TeamsResponseDto {
   id: string;
   team: string;
+  @Exclude()
+  isDeleted: boolean;
 }
 
 export class PositionsResponseDto {

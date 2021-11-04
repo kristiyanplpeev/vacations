@@ -10,9 +10,14 @@ export interface IUser {
   role: UserRolesEnum | "";
 }
 
-export interface IUserWithTeamAndPosition extends IUser {
+export interface IUserWithTeamAndPositionEnums extends IUser {
   team: TeamsEnum;
   position: PositionsEnum;
+}
+
+export interface IUserWithTeamAndPosition extends IUser {
+  team: ITeams;
+  position: IPositions;
 }
 
 export interface IAbsencePeriod {
@@ -65,7 +70,7 @@ export interface IUserAbsenceWithEachDayStatus extends IUserAbsenceWithEmployee 
 
 export interface ITeams {
   id: string;
-  team: TeamsEnum;
+  team: string;
 }
 
 export interface IPositions {

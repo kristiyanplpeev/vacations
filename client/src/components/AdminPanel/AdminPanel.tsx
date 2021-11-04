@@ -23,7 +23,13 @@ class AdminPanel extends Component<AdminPanelProps> {
         >
           Users
         </Button>
-        <Button className="admin-panel-button" variant="contained" size="large" color="primary">
+        <Button
+          className="admin-panel-button"
+          onClick={() => this.props.history.push("/admin/teams")}
+          variant="contained"
+          size="large"
+          color="primary"
+        >
           Teams
         </Button>
         <Button
