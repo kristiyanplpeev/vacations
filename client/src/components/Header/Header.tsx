@@ -50,6 +50,9 @@ export class Header extends Component<HeaderProps, HeaderState> {
                 Admin
               </Button>
             )}
+            <Button onClick={() => this.props.history.push("/sprint-planning")} color="inherit">
+              Sprint Planning
+            </Button>
             <IconButton edge="start" className="header-menu-button" color="inherit" aria-label="menu"></IconButton>
             <Typography variant="h6" className="header-title">
               {this.props.userInfo.userDetails.firstName} {this.props.userInfo.userDetails.lastName}

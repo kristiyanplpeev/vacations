@@ -18,6 +18,7 @@ import Homepage from "components/Homepage/Homepage";
 import AddAndEditAbsence from "components/NewAbsence/AddAndEditAbsence";
 import Positions from "components/Positions/Positions";
 import SideBar from "components/SideBar/SideBar";
+import SprintPlanning from "components/SprintPlanning/SprintPlanning";
 import TeamAbsences from "components/TeamAbsences/TeamAbsences";
 import Teams from "components/Teams/Teams";
 import UsersList from "components/UsersList/UsersList";
@@ -126,6 +127,12 @@ class App extends Component<AppProps, AppState> {
                 exact
                 isAuthenticated={this.isUserAuthenticated(UserRolesEnum.user)}
                 component={TeamAbsences}
+              />
+              <PrivateRoute
+                path="/sprint-planning"
+                exact
+                isAuthenticated={this.isUserAuthenticated(UserRolesEnum.user)}
+                component={SprintPlanning}
               />
             </Switch>
           </Provider>
