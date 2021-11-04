@@ -10,6 +10,11 @@ export interface IUser {
   role: UserRolesEnum | "";
 }
 
+export interface SprintPeriod {
+  startingDate: Date;
+  endingDate: Date;
+}
+
 export interface IUserWithTeamAndPosition extends IUser {
   team: TeamsEnum;
   position: PositionsEnum;

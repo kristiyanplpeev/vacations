@@ -13,8 +13,6 @@ export const maxYearDifference = 1;
 export const invalidDateFormatMessage =
   'Date must be yyyy-mm-dd formatted string.';
 
-export const sprintLengthDays = 14;
-
 export const noTeamError =
   "You don't have a team assigned. Please contact your admin!";
 

@@ -104,18 +104,6 @@ export class AbsencesController {
     return plainToClass(AbsenceResponseDto, userAbsences);
   }
 
-  @Get('sprint')
-  @UseGuards(JwtAuthGuard)
-  public async getTeamSprintAbsences(
-    @Query('sprintIndex') sprintIndex: number,
-    @Req() req,
-  ): Promise<any> {
-    return await this.absenceService.getTeamSprintAbsences(
-      +sprintIndex,
-      req.user.id,
-    );
-  }
-
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   public async getAbsenceWithEachDay(

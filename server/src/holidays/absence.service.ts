@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -7,7 +6,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Absencedb } from '../model/absence.entity';
 import { Userdb } from '../model/user.entity';
 import {
-  CustomRepositoryCannotInheritRepositoryError,
   Repository,
 } from 'typeorm';
 import { HolidaysService } from './holidays.service';
@@ -15,13 +13,10 @@ import {
   AbsenceDetailsWithTotalDays,
   AbsenceDetailsWithEachDay,
   Absence,
-  AbsenceDetailsOptional,
-  SprintPeriod,
 } from './interfaces';
 import {
   DayStatus,
   noTeamError,
-  sprintLengthDays,
   UserRelations,
 } from '../common/constants';
 import Guard from '../utils/Guard';
@@ -29,13 +24,6 @@ import { User } from '../google/utils/interfaces';
 import DateUtil from '../utils/DateUtil';
 import { AbsenceTypes } from './absenceTypes/absenceTypes';
 import { UsersService } from '../users/users.service';
-import {
-  addDays,
-  differenceInCalendarDays,
-  differenceInDays,
-  getHours,
-  setHours,
-} from 'date-fns';
 
 @Injectable()
 export class AbsencesService {
@@ -238,67 +226,5 @@ export class AbsencesService {
     await this.absenceRepo.save(absencedb);
 
     return 'Absence deleted successfully.';
-  }
-
-  getSprintPeriod(sprintIndex: number): SprintPeriod {
-    const firstSprintBeginning = new Date(process.env.SPRINT_START_DATE);
-    const today = new Date('2021-11-15');
-    const daysSinceFirstSprint = differenceInCalendarDays(
-      today,
-      firstSprintBeginning,
-    );
-
-    const defaultSprint = Math.ceil(
-      (daysSinceFirstSprint + 1) / sprintLengthDays,
-    );
-    const defaultSprintEndingDate = addDays(
-      firstSprintBeginning,
-      defaultSprint * sprintLengthDays - 1,
-    );
-    
-    const requestedSprint = defaultSprint + sprintIndex;
-
-    const startingDate = addDays(
-      firstSprintBeginning,
-      (requestedSprint - 1) * sprintLengthDays,
-    );
-    const endingDate = addDays(
-      firstSprintBeginning,
-      requestedSprint * sprintLengthDays - 1,
-    );
-    const requestedSprintPeriod = {
-      startingDate: DateUtil.roundDate(startingDate),
-      endingDate: DateUtil.roundDate(endingDate),
-    };
-
-    if (differenceInCalendarDays(defaultSprintEndingDate, today) < 2) {
-      requestedSprintPeriod.startingDate = addDays(
-        requestedSprintPeriod.startingDate,
-        sprintLengthDays,
-      );
-      requestedSprintPeriod.endingDate = addDays(
-        requestedSprintPeriod.endingDate,
-        sprintLengthDays,
-      );
-    }
-
-    if (requestedSprintPeriod.startingDate < firstSprintBeginning) {
-      throw new BadRequestException('We do not have data before that period');
-    }
-
-    return requestedSprintPeriod;
-  }
-
-  // sprint index 0 means current sprint, 1 means next sprint and -1 means last sprint
-  public async getTeamSprintAbsences(
-    sprintIndex: number,
-    userId: string,
-  ): Promise<any> {
-    const user = await this.usersService.getUserById(userId);
-    Guard.should(!!user.team, noTeamError);
-
-    const sprintPeriod = this.getSprintPeriod(sprintIndex);
-
-    return sprintPeriod;
   }
 }

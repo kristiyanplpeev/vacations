@@ -6,11 +6,6 @@ export interface AbsencePeriod {
   endingDate: Date;
 }
 
-export interface SprintPeriod {
-  startingDate: Date;
-  endingDate: Date;
-}
-
 export type AbsencePeriodEachDay = Array<{ date: Date; status: string }>;
 
 export interface Absence {

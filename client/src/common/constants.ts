@@ -72,6 +72,10 @@ export enum AbsencesViewEnum {
   mine = "mine",
 }
 
+export const firstSprintBeginning = new Date("2021-11-03");
+
+export const sprintLengthDays = 14;
+
 export const leaveTypesWithURLs = {
   paidLeave: { leave: AbsencesEnum.paidLeave, url: "paid" },
   unpaidLeave: { leave: AbsencesEnum.unpaidLeave, url: "unpaid" },
