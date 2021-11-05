@@ -5,9 +5,9 @@ import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
 import { DateUtil } from "common/DateUtil";
-import { IUserAbsenceWithWorkingDaysAndEmployee } from "common/interfaces";
+import { IUserAbsenceWithWorkingDaysAndEmployee, SprintPeriod } from "common/interfaces";
 import Error from "components/common/Error/Error";
-import { IAbsenceService } from "inversify/interfaces";
+import { IAbsenceService, IHolidayService, ISprintPlanningService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
 interface SprintPlanningProps extends RouteComponentProps {}
@@ -16,11 +16,16 @@ interface SprintPlanningState {
   loading: boolean;
   error: string;
   sprintIndex: number;
+  sprintPeriod: SprintPeriod;
+  sprintTotalWorkdays: number;
   absences: Array<IUserAbsenceWithWorkingDaysAndEmployee>;
 }
 
 class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState> {
+  @resolve(TYPES.SprintPlanning) private sprintPlanningService!: ISprintPlanningService;
   @resolve(TYPES.Absence) private absenceService!: IAbsenceService;
+  @resolve(TYPES.Holidays) private holidayService!: IHolidayService;
+
   constructor(props: SprintPlanningProps) {
     super(props);
 
@@ -28,6 +33,11 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
       loading: false,
       error: "",
       sprintIndex: 0,
+      sprintPeriod: {
+        startingDate: new Date(),
+        endingDate: new Date(),
+      },
+      sprintTotalWorkdays: 10,
       absences: [],
     };
   }
@@ -38,6 +48,7 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
     });
 
     await this.loadAbsences();
+    await this.loadTotalWorkdaysForCurrentSprint();
 
     this.setState({
       loading: false,
@@ -49,7 +60,10 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
       this.setState({
         loading: true,
       });
+
       await this.loadAbsences();
+      await this.loadTotalWorkdaysForCurrentSprint();
+
       this.setState({
         loading: false,
       });
@@ -64,6 +78,7 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
     if (loading) {
       return <CircularProgress />;
     }
+    console.log(this.state.sprintTotalWorkdays);
     return (
       <>
         Sprint Planning
@@ -82,14 +97,31 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
 
   async loadAbsences(): Promise<void> {
     try {
-      const period = DateUtil.getSprintPeriod(this.state.sprintIndex);
-      const startingDate = DateUtil.dateToString(period.startingDate);
-      const endingDate = DateUtil.dateToString(period.endingDate);
+      const sprintPeriod = DateUtil.getSprintPeriod(this.state.sprintIndex);
+      const startingDate = DateUtil.dateToString(sprintPeriod.startingDate);
+      const endingDate = DateUtil.dateToString(sprintPeriod.endingDate);
       const absences = await this.absenceService.getAllUsersAbsences(startingDate, endingDate);
-      console.log(startingDate);
-      console.log(endingDate);
       this.setState({
+        sprintPeriod,
         absences,
+      });
+    } catch (e) {
+      this.setState({
+        error: e.message,
+      });
+    }
+  }
+
+  async loadTotalWorkdaysForCurrentSprint(): Promise<void> {
+    try {
+      const sprintPeriodStringified = this.sprintPlanningService.convertSprintPeriodDatesToStrings(
+        this.state.sprintPeriod,
+      );
+      const totalDays = await this.holidayService.getDatesStatus(sprintPeriodStringified);
+      const sprintTotalWorkdays = this.sprintPlanningService.calculateTotalWorkdays(totalDays);
+
+      this.setState({
+        sprintTotalWorkdays,
       });
     } catch (e) {
       this.setState({
