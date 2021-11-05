@@ -89,7 +89,7 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
     return (
       <div className="sprint-planning-container">
         {this.renderHeader()}
-        <TeamCapacityTable />
+        <TeamCapacityTable setError={this.setError} setLoading={this.setLoading} />
       </div>
     );
   }
@@ -194,6 +194,18 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
 
     this.setState({
       sprintIndex: showNextSprint ? sprintIndex + 1 : sprintIndex - 1,
+    });
+  };
+
+  setError = (error: string): void => {
+    this.setState({
+      error,
+    });
+  };
+
+  setLoading = (loading: boolean): void => {
+    this.setState({
+      loading,
     });
   };
 }

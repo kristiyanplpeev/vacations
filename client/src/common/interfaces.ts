@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-cycle
 import { PositionsEnum, TeamsEnum, UserRolesEnum } from "common/constants";
 
 export interface IUser {

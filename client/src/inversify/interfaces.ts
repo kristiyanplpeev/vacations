@@ -63,7 +63,7 @@ export interface IAbsenceService {
 export interface IUserService {
   logInUser(): Promise<IUserDetails>;
   getAllUsers(): Promise<Array<IUserWithTeamAndPosition>>;
-  getFilteredUsers(teamId: string, positionId: string, role: string): Promise<Array<IUserWithTeamAndPositionEnums>>;
+  getFilteredUsers(teamId: string, positionId: string, role: string): Promise<Array<IUserWithTeamAndPosition>>;
   getUsersByIds(usersIds: string): Promise<Array<IUserWithTeamAndPositionEnums>>;
   getTeams(): Promise<Array<ITeams>>;
   getPositions(): Promise<Array<IPositions>>;

@@ -32,7 +32,7 @@ class UserService implements IUserService {
     teamId?: string,
     positionId?: string,
     role?: string,
-  ): Promise<Array<IUserWithTeamAndPositionEnums>> => {
+  ): Promise<Array<IUserWithTeamAndPosition>> => {
     const team = teamId !== anyTeam ? `teamId=${teamId}` : "";
     const position = positionId !== anyPosition ? `positionId=${positionId}` : "";
     const roles = role !== anyRole ? `role=${role}` : "";

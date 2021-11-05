@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 import React, { Component } from "react";
 
 import Avatar from "@material-ui/core/Avatar";
@@ -12,8 +13,8 @@ import { resolve } from "inversify-react";
 import "./UsersList.css";
 import { RouteComponentProps } from "react-router";
 
-import { anyPosition, anyRole, anyTeam, usersListClass } from "common/constants";
-import { IPositions, ITeams, IUserWithTeamAndPositionEnums } from "common/interfaces";
+import { anyPosition, anyRole, anyTeam, noTeam, PositionsEnum, usersListClass } from "common/constants";
+import { IPositions, ITeams, IUserWithTeamAndPosition } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import SelectElements from "components/common/SelectElements/SelectElements";
 import { IUserService } from "inversify/interfaces";
@@ -24,7 +25,7 @@ interface UsersListProps extends RouteComponentProps {}
 interface UsersListState {
   error: string;
   loading: boolean;
-  users: Array<IUserWithTeamAndPositionEnums>;
+  users: Array<IUserWithTeamAndPosition>;
   selectedUsers: Array<string>;
   teams: Array<ITeams>;
   positions: Array<IPositions>;
@@ -174,12 +175,12 @@ class UsersList extends Component<UsersListProps, UsersListState> {
                   </Grid>
                   <Grid item xs={3}>
                     <Typography variant="h5" className="users-names">
-                      {el.position}
+                      {el.position ? el.position.position : PositionsEnum.noPosition}
                     </Typography>
                   </Grid>
                   <Grid item xs={3}>
                     <Typography variant="h5" className="users-names">
-                      {el.team}
+                      {el.team ? el.team.team : noTeam}
                     </Typography>
                   </Grid>
                   <Grid item xs={3}>

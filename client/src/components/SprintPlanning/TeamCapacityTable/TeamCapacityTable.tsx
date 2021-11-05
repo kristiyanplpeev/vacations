@@ -8,15 +8,56 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
-
 import "./TeamCapacityTable.css";
+import { resolve } from "inversify-react";
+import { connect } from "react-redux";
 
-interface TeamCapacityTableProps {}
+import { anyPosition, anyRole, PositionsEnum } from "common/constants";
+import { IUserWithTeamAndPosition } from "common/interfaces";
+import { IUserService } from "inversify/interfaces";
+import { TYPES } from "inversify/types";
+import { ApplicationState, IUserState } from "store/user/types";
 
-interface TeamCapacityTableState {}
+interface TeamCapacityTableProps {
+  userState: IUserState;
+  setError: (error: string) => void;
+  setLoading: (loading: boolean) => void;
+}
+
+interface TeamCapacityTableState {
+  teamMembers: Array<IUserWithTeamAndPosition>;
+}
 
 class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTableState> {
+  @resolve(TYPES.user) private usersService!: IUserService;
+
+  constructor(props: TeamCapacityTableProps) {
+    super(props);
+
+    this.state = {
+      teamMembers: [],
+    };
+  }
+
+  async componentDidMount(): Promise<void> {
+    try {
+      this.props.setLoading(true);
+      const teamMembers = await this.usersService.getFilteredUsers(
+        this.props.userState.userDetails.team.id,
+        anyPosition,
+        anyRole,
+      );
+      this.setState({
+        teamMembers,
+      });
+      this.props.setLoading(false);
+    } catch (error) {
+      this.props.setError(error.message);
+    }
+  }
+
   render(): JSX.Element {
+    console.log(this.sortTeamMembers());
     return (
       <div className="team-capacity-table-container">
         <Typography variant="h4" className="calculated-sprint-capacity">
@@ -69,18 +110,16 @@ class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTa
     );
   }
   renderTableBody(): Array<JSX.Element> {
-    const rows = [{ name: "ivan", calories: "ivanivanovivanov@atscale.com", fat: "very", carbs: 5, protein: "50g" }];
-
-    return rows.map((row) => (
-      <TableRow key={row.name} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+    return this.sortTeamMembers().map((member) => (
+      <TableRow key={member.id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
         <TableCell component="th" scope="row">
-          {row.name}
+          {member.position ? member.position.position : PositionsEnum.noPosition}
         </TableCell>
-        <TableCell align="left">{row.calories}</TableCell>
-        <TableCell align="left">{row.fat}</TableCell>
-        <TableCell align="left">{row.carbs}</TableCell>
-        <TableCell align="left">{row.protein}</TableCell>
-        <TableCell align="left">{row.protein}</TableCell>
+        <TableCell align="left">{member.email}</TableCell>
+        <TableCell align="left">not ready</TableCell>
+        <TableCell align="left">not ready</TableCell>
+        <TableCell align="left">{member.position ? member.position.coefficient : 0}</TableCell>
+        <TableCell align="left">not ready</TableCell>
       </TableRow>
     ));
   }
@@ -101,6 +140,34 @@ class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTa
       </TableRow>
     );
   }
-}
 
-export default TeamCapacityTable;
+  sortTeamMembers(): Array<IUserWithTeamAndPosition> {
+    return this.state.teamMembers
+      .map((teamMember) =>
+        teamMember.position
+          ? teamMember
+          : { ...teamMember, position: { id: "", position: PositionsEnum.noPosition, coefficient: 0, sortOrder: 15 } },
+      )
+      .sort((a, b) => {
+        console.log(1);
+        if (a.position.sortOrder > b.position.sortOrder) {
+          return 1;
+        } else if (a.position.sortOrder < b.position.sortOrder) {
+          return -1;
+        } else if (a.email < b.email) {
+          return 1;
+        } else if (a.email > b.email) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+  }
+}
+const mapStateToProps = ({ userInfoReducer }: ApplicationState) => {
+  return {
+    userState: userInfoReducer,
+  };
+};
+
+export default connect(mapStateToProps)(TeamCapacityTable);

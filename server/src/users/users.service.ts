@@ -76,7 +76,7 @@ export class UsersService {
     teamId: string,
     positionId: string,
     role: RolesEnum,
-  ): Promise<Array<UserWithTeamAndPositionAsStrings>> {
+  ): Promise<Array<User>> {
     const queryObj = {
       team: null,
       position: null,
@@ -109,7 +109,7 @@ export class UsersService {
 
     const users = usersdb.map((user) => user.toUser());
 
-    return this.setUsersTeamsAndPositions(users);
+    return users;
   }
 
   public async getUsersByIds(

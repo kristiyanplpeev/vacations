@@ -16,22 +16,7 @@ export const user = {
 
 export const errMessage = "Something went wrong.";
 
-export const emptyUser: IUserDetails = {
-  sub: "",
-  googleId: "",
-  email: "",
-  firstName: "",
-  lastName: "",
-  picture: "",
-  role: "",
-};
-
 export const applicationJSON = "application/json";
-
-export const noLoggedUser = {
-  isAuthenticated: false,
-  userDetails: emptyUser,
-};
 
 export enum TeamsEnum {
   orchestrator = "Orchestrator",
@@ -72,7 +57,7 @@ export enum AbsencesViewEnum {
   mine = "mine",
 }
 
-export const noDataError = "We do not have data before that period.";
+export const noDataError = "There is no data before that period.";
 
 export const firstSprintBeginning = new Date("2021-11-03");
 
@@ -87,6 +72,8 @@ export const leaveTypesWithURLs = {
   courtLeave: { leave: AbsencesEnum.courtLeave, url: "court" },
 };
 
+export const noTeam = "no team";
+
 export const anyTeam = "any team";
 
 export const anyPosition = "any position";
@@ -98,3 +85,28 @@ export const noChange = "no change";
 export const usersListClass = "users-list";
 
 export const bulkChangeUsersClass = "change-bulk";
+
+export const emptyUser: IUserDetails = {
+  sub: "",
+  googleId: "",
+  email: "",
+  firstName: "",
+  lastName: "",
+  picture: "",
+  position: {
+    id: "",
+    position: PositionsEnum.noPosition,
+    coefficient: 0,
+    sortOrder: 0,
+  },
+  team: {
+    id: "",
+    team: "",
+  },
+  role: "",
+};
+
+export const noLoggedUser = {
+  isAuthenticated: false,
+  userDetails: emptyUser,
+};

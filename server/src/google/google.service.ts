@@ -6,6 +6,7 @@ import { AuthenticationProvider } from './auth';
 import { User } from './utils/interfaces';
 import { JwtService } from '@nestjs/jwt';
 import { Token } from 'src/google/utils/interfaces';
+import { UserRelations } from '../common/constants';
 
 @Injectable()
 export class GoogleService implements AuthenticationProvider {
@@ -16,7 +17,10 @@ export class GoogleService implements AuthenticationProvider {
 
   public async validateUser(details: User): Promise<User> {
     const { email } = details;
-    const user = await this.userRepo.findOne({ email });
+    const user = await this.userRepo.findOne({
+      where: { email },
+      relations: [UserRelations.positions, UserRelations.teams],
+    });
     if (user) return user.toUser();
 
     return await this.createUser(details);
@@ -26,7 +30,12 @@ export class GoogleService implements AuthenticationProvider {
     return (await this.userRepo.save(user)).toUser();
   }
   async findUser(googleId: string): Promise<Userdb | undefined> {
-    return await this.userRepo.findOne({ googleId });
+    const user = await this.userRepo.findOne({
+      where: { googleId },
+      relations: [UserRelations.positions, UserRelations.teams],
+    });
+    delete user.team.is_deleted;
+    return user;
   }
 
   login(details: User): Token {
@@ -37,6 +46,8 @@ export class GoogleService implements AuthenticationProvider {
       lastName: details.lastName,
       email: details.email,
       picture: details.picture,
+      team: details.team,
+      position: details.position,
       role: details.role,
     };
 
