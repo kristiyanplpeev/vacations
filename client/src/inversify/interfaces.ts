@@ -13,6 +13,7 @@ import {
   IUserAbsenceWithWorkingDaysAndEmployee,
   IUserAbsenceWithEmployee,
   IUserWithTeamAndPosition,
+  SprintPeriod,
 } from "common/interfaces";
 import { AppActions, IUserDetails } from "store/user/types";
 
@@ -80,4 +81,12 @@ export interface IRestClient {
   delete<T>(url: string, input?: AxiosRequestConfig): Promise<T>;
   patch<T>(url: string, input?: AxiosRequestConfig): Promise<T>;
   put<T>(url: string, input?: AxiosRequestConfig): Promise<T>;
+}
+
+export interface ISprintPlanningService {
+  // getSprintPeriod(sprintIndex: number): SprintPeriod;
+  // calculateTotalCapacity(): number;
+  // calculateSingleUserCapacity(workdays: number, coefficient: number): number;
+  convertSprintPeriodDatesToStrings(sprintPeriod: SprintPeriod): IAbsencePeriod;
+  calculateTotalWorkdays(totalSprintDaysWithStatus: HolidayDays): number;
 }
