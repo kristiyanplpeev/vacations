@@ -137,9 +137,22 @@ export class AbsencesService {
           `${UserRelations.employee}.${UserRelations.teams}`,
         ],
       });
-      const absences = absencesDb
+
+      let absences = absencesDb
         .map((a) => a.toAbsence())
         .filter((a) => !a.isDeleted);
+
+      if (sprintStart && sprintEnd) {
+        absences = absences.map((absence) => {
+          if (sprintStart > absence.startingDate) {
+            absence.startingDate = sprintStart;
+          }
+          if (sprintEnd < absence.endingDate) {
+            absence.endingDate = sprintEnd;
+          }
+          return absence;
+        });
+      }
 
       return await this.calculateAbsenceWorkingDays(absences);
     });
