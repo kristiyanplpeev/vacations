@@ -72,6 +72,8 @@ export enum AbsencesViewEnum {
   mine = "mine",
 }
 
+export const noDataError = "We do not have data before that period.";
+
 export const firstSprintBeginning = new Date("2021-11-03");
 
 export const sprintLengthDays = 14;

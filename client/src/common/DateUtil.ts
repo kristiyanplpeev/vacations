@@ -1,6 +1,6 @@
 import { addDays, differenceInCalendarDays } from "date-fns";
 
-import { firstSprintBeginning, sprintLengthDays } from "common/constants";
+import { firstSprintBeginning, noDataError, sprintLengthDays } from "common/constants";
 import { IUserAbsenceWithWorkingDays, SprintPeriod } from "common/interfaces";
 
 export class DateUtil {
@@ -27,6 +27,13 @@ export class DateUtil {
     return date.toISOString().slice(0, 10);
   };
 
+  static formatDateDDMMYYYY = (date: Date): string => {
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  };
+
   // sprint index 0 means current sprint, 1 means next sprint and -1 means last sprint
   //we shall move this from here
   static getSprintPeriod(sprintIndex: number): SprintPeriod {
@@ -51,7 +58,7 @@ export class DateUtil {
     }
 
     if (requestedSprintPeriod.startingDate < firstSprintBeginning) {
-      throw new Error("We do not have data before that period");
+      throw new Error(noDataError);
     }
 
     return requestedSprintPeriod;

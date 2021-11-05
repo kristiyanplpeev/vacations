@@ -1,14 +1,21 @@
 import React, { Component } from "react";
 
+import DoubleArrowIcon from "@mui/icons-material/DoubleArrow";
 import { Button, CircularProgress, Grid } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
+import { compareAsc } from "date-fns/esm";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
+import { firstSprintBeginning, noDataError } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import { IUserAbsenceWithWorkingDaysAndEmployee } from "common/interfaces";
 import Error from "components/common/Error/Error";
 import { IAbsenceService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
+
+import "./SprintPlanning.css";
 
 interface SprintPlanningProps extends RouteComponentProps {}
 
@@ -17,6 +24,9 @@ interface SprintPlanningState {
   error: string;
   sprintIndex: number;
   absences: Array<IUserAbsenceWithWorkingDaysAndEmployee>;
+  sprintStartingDate: Date;
+  sprintEndingDate: Date;
+  disablePrevButton: boolean;
 }
 
 class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState> {
@@ -29,6 +39,9 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
       error: "",
       sprintIndex: 0,
       absences: [],
+      sprintStartingDate: new Date(),
+      sprintEndingDate: new Date(),
+      disablePrevButton: false,
     };
   }
 
@@ -57,24 +70,55 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
   }
 
   render(): JSX.Element {
-    const { error, loading } = this.state;
+    const { error } = this.state;
     if (error) {
       return <Error message={error} />;
     }
-    if (loading) {
-      return <CircularProgress />;
-    }
+
+    return <div className="sprint-planning-container">{this.renderHeader()}</div>;
+  }
+
+  // eslint-disable-next-line max-lines-per-function
+  renderHeader(): JSX.Element {
+    const sprintStartDDMMYYYY = DateUtil.formatDateDDMMYYYY(this.state.sprintStartingDate);
+    const sprintEndDDMMYYYY = DateUtil.formatDateDDMMYYYY(this.state.sprintEndingDate);
     return (
-      <>
-        Sprint Planning
-        <Grid container>
-          <Grid item>
-            <Button onClick={() => this.handleSprintIndexChange(false)}>Prev</Button>
-          </Grid>
-          <Button onClick={() => this.handleSprintIndexChange(true)}>Next</Button>
+      <Grid container spacing={3}>
+        <Grid item xs={2}></Grid>
+        <Grid item xs={2}>
+          <Tooltip
+            title={this.state.disablePrevButton ? <p className="prev-button-tooltip">{noDataError}</p> : ""}
+            placement="bottom"
+            style={{ padding: "1px" }}
+          >
+            <span>
+              <Button
+                variant="outlined"
+                disabled={this.state.disablePrevButton}
+                onClick={() => this.handleSprintIndexChange(false)}
+                startIcon={<DoubleArrowIcon className="double-arrow" />}
+              >
+                Prev
+              </Button>
+            </span>
+          </Tooltip>
         </Grid>
-        <div>{this.state.sprintIndex}</div>
-      </>
+        <Grid item xs={4}>
+          {this.state.loading ? (
+            <CircularProgress />
+          ) : (
+            <Typography variant="h5">
+              Sprint ({sprintStartDDMMYYYY} - {sprintEndDDMMYYYY})
+            </Typography>
+          )}
+        </Grid>
+        <Grid item xs={2}>
+          <Button variant="outlined" onClick={() => this.handleSprintIndexChange(true)} endIcon={<DoubleArrowIcon />}>
+            Next
+          </Button>
+        </Grid>
+        <Grid item xs={2}></Grid>
+      </Grid>
     );
   }
 
@@ -83,13 +127,23 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
   async loadAbsences(): Promise<void> {
     try {
       const period = DateUtil.getSprintPeriod(this.state.sprintIndex);
+
+      if (compareAsc(period.startingDate, firstSprintBeginning) === 0) {
+        this.setState({
+          disablePrevButton: true,
+        });
+      } else {
+        this.setState({
+          disablePrevButton: false,
+        });
+      }
       const startingDate = DateUtil.dateToString(period.startingDate);
       const endingDate = DateUtil.dateToString(period.endingDate);
       const absences = await this.absenceService.getAllUsersAbsences(startingDate, endingDate);
-      console.log(startingDate);
-      console.log(endingDate);
       this.setState({
         absences,
+        sprintStartingDate: period.startingDate,
+        sprintEndingDate: period.endingDate,
       });
     } catch (e) {
       this.setState({
