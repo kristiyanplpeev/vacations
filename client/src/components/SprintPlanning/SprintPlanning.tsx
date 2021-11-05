@@ -87,7 +87,8 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
         <Grid item xs={2}></Grid>
         <Grid item xs={2}>
           <Tooltip
-            title={this.state.disablePrevButton ? <p className="prev-button-tooltip">{noDataError}</p> : ""}
+            arrow
+            title={this.state.disablePrevButton ? noDataError : ""}
             placement="bottom"
             style={{ padding: "1px" }}
           >
