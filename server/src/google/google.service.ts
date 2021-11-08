@@ -34,7 +34,7 @@ export class GoogleService implements AuthenticationProvider {
       where: { googleId },
       relations: [UserRelations.positions, UserRelations.teams],
     });
-    delete user.team.is_deleted;
+
     return user;
   }
 
