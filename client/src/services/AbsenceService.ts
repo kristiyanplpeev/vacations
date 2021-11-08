@@ -1,3 +1,4 @@
+import { isWithinInterval, subDays } from "date-fns";
 import { injectable } from "inversify";
 
 import { AbsencesEnum } from "common/constants";
@@ -7,6 +8,7 @@ import {
   IUserAbsenceWithEmployee,
   IUserAbsenceWithWorkingDaysAndEmployee,
 } from "common/interfaces";
+import { IUserAbsenceWithDate } from "components/Absences/Absences";
 import { IAbsenceService, IRestClient } from "inversify/interfaces";
 import "reflect-metadata";
 // eslint-disable-next-line import/no-cycle
@@ -70,6 +72,20 @@ class AbsenceService implements IAbsenceService {
   deleteAbsence = async (absenceId: string): Promise<void> => {
     await this.restClient.delete(`absences/${absenceId}`);
   };
+
+  getAbsentEmployeesNames(
+    date: Date,
+    absences: Array<IUserAbsenceWithWorkingDaysAndEmployee | IUserAbsenceWithDate>,
+  ): Array<string> {
+    return absences
+      .filter((absence) => {
+        const start = subDays(new Date(absence.startingDate), 1);
+        const end = new Date(absence.endingDate);
+
+        return isWithinInterval(date, { start, end });
+      })
+      .map((a) => (a.employee ? a.employee.firstName : ""));
+  }
 }
 
 export default AbsenceService;

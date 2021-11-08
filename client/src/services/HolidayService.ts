@@ -14,6 +14,15 @@ class HolidayService implements IHolidayService {
   getDatesStatus = async ({ startingDate, endingDate }: IAbsencePeriod): Promise<HolidayDays> => {
     return await this.restClient.get(`absences/dates?from=${startingDate}&to=${endingDate}`);
   };
+
+  checkIfDayIsHoliday(date: Date, daysInterval: HolidayDays): boolean {
+    const holiday = daysInterval.find((day) => day.date === date.toLocaleDateString("en-CA"));
+    if (holiday) {
+      return holiday.status !== "workday";
+    }
+
+    return false;
+  }
 }
 
 export default HolidayService;

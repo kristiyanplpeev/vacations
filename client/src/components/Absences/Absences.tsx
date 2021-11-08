@@ -33,10 +33,11 @@ import { IUser, IUserAbsenceWithWorkingDays } from "common/interfaces";
 import { HolidayDays } from "common/interfaces";
 import DeleteAbsenceModal from "components/common/DeleteAbsenceModal/DeleteAbsenceModal";
 import Error from "components/common/Error/Error";
+// eslint-disable-next-line import/no-cycle
 import { IAbsenceService, IHolidayService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 
-const DateRangePickerDay = styled(MuiDateRangePickerDay, {
+export const DateRangePickerDay = styled(MuiDateRangePickerDay, {
   shouldForwardProp: (prop) => prop !== "isHighlighting" && prop !== "inlist",
 })(({ theme, isHighlighting, inlist, outsideCurrentMonth }) => {
   return {
@@ -330,7 +331,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
   ): JSX.Element {
     const { absences } = this.props;
     const dayIsBetween = periods.some((p) => isWithinInterval(date, { start: p.start, end: p.end }));
-    const dayIsHoliday = this.checkIfDayIsHoliday(date);
+    const dayIsHoliday = this.holidaysService.checkIfDayIsHoliday(date, this.state.holidays);
     const className = dayIsBetween && !dayIsHoliday ? "absence" : "non-absence";
     dateRangePickerDayProps.inlist = dayIsHoliday;
     dateRangePickerDayProps.isHighlighting = dayIsBetween;
@@ -342,7 +343,7 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
       !dateRangePickerDayProps.outsideCurrentMonth
     ) {
       const { userPastAbsences, userFutureAbsences } = this.state;
-      const names = this.getEmployeesNames(date, userFutureAbsences.concat(userPastAbsences));
+      const names = this.absenceService.getAbsentEmployeesNames(date, userFutureAbsences.concat(userPastAbsences));
 
       return (
         <Tooltip title={names.toString()} arrow>
@@ -575,26 +576,6 @@ class Absences extends Component<AbsencesProps, AbsencesState> {
       .filter(filterFunc)
       .sort(DateUtil.dateSorting)
       .map((a) => ({ ...a, startingDate: new Date(a.startingDate), endingDate: new Date(a.endingDate) }));
-  }
-
-  getEmployeesNames(date: Date, absences: Array<IUserAbsenceWithDate>): Array<string> {
-    return absences
-      .filter((absence) => {
-        const start = subDays(new Date(absence.startingDate), 1);
-        const end = new Date(absence.endingDate);
-
-        return isWithinInterval(date, { start, end });
-      })
-      .map((a) => (a.employee ? a.employee.firstName : ""));
-  }
-
-  checkIfDayIsHoliday(date: Date): boolean {
-    const holiday = this.state.holidays.find((holiday) => holiday.date === date.toLocaleDateString("en-CA"));
-    if (holiday) {
-      return holiday.status !== "workday";
-    }
-
-    return false;
   }
 }
 
