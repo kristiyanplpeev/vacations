@@ -14,7 +14,10 @@ import {
   IUserAbsenceWithEmployee,
   IUserWithTeamAndPosition,
   SprintPeriod,
+  IUser,
 } from "common/interfaces";
+// eslint-disable-next-line import/no-cycle
+import { IUserAbsenceWithDate } from "components/Absences/Absences";
 import { AppActions, IUserDetails } from "store/user/types";
 
 export interface IAuthService {
@@ -24,6 +27,7 @@ export interface IAuthService {
 
 export interface IHolidayService {
   getDatesStatus({ startingDate, endingDate }: IAbsencePeriod): Promise<HolidayDays>;
+  checkIfDayIsHoliday(date: Date, daysInterval: HolidayDays): boolean;
 }
 
 export interface IAuthenticationActionCreator {
@@ -58,6 +62,10 @@ export interface IAbsenceService {
     comment?: string,
   ): Promise<void>;
   deleteAbsence(absenceId: string): Promise<void>;
+  getAbsentEmployeesNames(
+    date: Date,
+    absences: Array<IUserAbsenceWithWorkingDaysAndEmployee | IUserAbsenceWithDate>,
+  ): Array<string>;
 }
 
 export interface IUserService {
@@ -85,8 +93,10 @@ export interface IRestClient {
 
 export interface ISprintPlanningService {
   // getSprintPeriod(sprintIndex: number): SprintPeriod;
-  // calculateTotalCapacity(): number;
-  // calculateSingleUserCapacity(workdays: number, coefficient: number): number;
+  getUsersAbsenceDaysCount(
+    users: Array<IUserWithTeamAndPosition>,
+    absences: Array<IUserAbsenceWithWorkingDaysAndEmployee>,
+  ): Map<string, number>;
   convertSprintPeriodDatesToStrings(sprintPeriod: SprintPeriod): IAbsencePeriod;
   calculateTotalWorkdays(totalSprintDaysWithStatus: HolidayDays): number;
 }
