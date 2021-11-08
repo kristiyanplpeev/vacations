@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 
+import CircularProgress from "@mui/material/CircularProgress";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -10,58 +11,53 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import "./TeamCapacityTable.css";
 import { resolve } from "inversify-react";
-import { connect } from "react-redux";
 
-import { anyPosition, anyRole, PositionsEnum } from "common/constants";
-import { IUserWithTeamAndPosition } from "common/interfaces";
-import { IUserService } from "inversify/interfaces";
+import { PositionsEnum } from "common/constants";
+import { IUserAbsenceWithWorkingDaysAndEmployee, IUserWithTeamAndPosition } from "common/interfaces";
+import { ISprintPlanningService, IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
-import { ApplicationState, IUserState } from "store/user/types";
+
+interface TeamCapacityTableDetails {
+  absences: number;
+  workdays: number;
+  coefficient: number;
+  capacity: number;
+}
 
 interface TeamCapacityTableProps {
-  userState: IUserState;
   setError: (error: string) => void;
-  setLoading: (loading: boolean) => void;
+  teamMembers: Array<IUserWithTeamAndPosition>;
+  absences: Array<IUserAbsenceWithWorkingDaysAndEmployee>;
+  absenceDays: Map<string, number>;
+  sprintTotalWorkdays: number;
 }
 
 interface TeamCapacityTableState {
-  teamMembers: Array<IUserWithTeamAndPosition>;
+  loading: boolean;
 }
 
 class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTableState> {
   @resolve(TYPES.user) private usersService!: IUserService;
+  @resolve(TYPES.SprintPlanning) private sprintPlanningService!: ISprintPlanningService;
 
   constructor(props: TeamCapacityTableProps) {
     super(props);
 
     this.state = {
-      teamMembers: [],
+      loading: false,
     };
   }
 
-  async componentDidMount(): Promise<void> {
-    try {
-      this.props.setLoading(true);
-      const teamMembers = await this.usersService.getFilteredUsers(
-        this.props.userState.userDetails.team.id,
-        anyPosition,
-        anyRole,
-      );
-      this.setState({
-        teamMembers,
-      });
-      this.props.setLoading(false);
-    } catch (error) {
-      this.props.setError(error.message);
-    }
-  }
-
   render(): JSX.Element {
-    console.log(this.sortTeamMembers());
+    if (this.state.loading) {
+      return <CircularProgress />;
+    }
+    const totalCapacity = this.calculateTotalCapacity();
+
     return (
       <div className="team-capacity-table-container">
-        <Typography variant="h4" className="calculated-sprint-capacity">
-          Capacity 15.25 story points
+        <Typography variant="h2" className="calculated-sprint-capacity">
+          Capacity {totalCapacity} story points
         </Typography>
         {this.renderTable()}
       </div>
@@ -110,21 +106,26 @@ class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTa
     );
   }
   renderTableBody(): Array<JSX.Element> {
-    return this.sortTeamMembers().map((member) => (
-      <TableRow key={member.id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-        <TableCell component="th" scope="row">
-          {member.position ? member.position.position : PositionsEnum.noPosition}
-        </TableCell>
-        <TableCell align="left">{member.email}</TableCell>
-        <TableCell align="left">not ready</TableCell>
-        <TableCell align="left">not ready</TableCell>
-        <TableCell align="left">{member.position ? member.position.coefficient : 0}</TableCell>
-        <TableCell align="left">not ready</TableCell>
-      </TableRow>
-    ));
+    return this.sortTeamMembers().map((member) => {
+      const { absences, workdays, coefficient, capacity } = this.getDetails(member);
+      return (
+        <TableRow key={member.id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+          <TableCell component="th" scope="row">
+            {member.position ? member.position.position : PositionsEnum.noPosition}
+          </TableCell>
+          <TableCell align="left">{member.email}</TableCell>
+          <TableCell align="left">{absences}</TableCell>
+          <TableCell align="left">{workdays}</TableCell>
+          <TableCell align="left">{coefficient}</TableCell>
+          <TableCell align="left">{capacity}</TableCell>
+        </TableRow>
+      );
+    });
   }
 
   renderTableFooter(): JSX.Element {
+    const totalCapacity = this.calculateTotalCapacity();
+
     return (
       <TableRow>
         <TableCell align="left"></TableCell>
@@ -135,21 +136,42 @@ class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTa
           <b>Total</b>
         </TableCell>
         <TableCell align="left">
-          <b>15.25</b>
+          <b>{totalCapacity}</b>
         </TableCell>
       </TableRow>
     );
   }
 
+  getDetails(teamMember: IUserWithTeamAndPosition): TeamCapacityTableDetails {
+    const absences = this.props.absenceDays.get(teamMember.id);
+
+    if (absences === undefined) {
+      throw new Error(`User with id ${teamMember.id} does not exist`);
+    }
+
+    const workdays = this.props.sprintTotalWorkdays - absences;
+    const coefficient = teamMember.position ? teamMember.position.coefficient : 0;
+    const capacity = +(workdays * coefficient).toFixed(2);
+
+    return { absences, workdays, coefficient, capacity };
+  }
+
+  calculateTotalCapacity(): number {
+    return this.props.teamMembers.reduce((totalCapacity, member) => {
+      const { capacity } = this.getDetails(member);
+
+      return (totalCapacity += capacity);
+    }, 0);
+  }
+
   sortTeamMembers(): Array<IUserWithTeamAndPosition> {
-    return this.state.teamMembers
+    return this.props.teamMembers
       .map((teamMember) =>
         teamMember.position
           ? teamMember
           : { ...teamMember, position: { id: "", position: PositionsEnum.noPosition, coefficient: 0, sortOrder: 15 } },
       )
       .sort((a, b) => {
-        console.log(1);
         if (a.position.sortOrder > b.position.sortOrder) {
           return 1;
         } else if (a.position.sortOrder < b.position.sortOrder) {
@@ -164,10 +186,5 @@ class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTa
       });
   }
 }
-const mapStateToProps = ({ userInfoReducer }: ApplicationState) => {
-  return {
-    userState: userInfoReducer,
-  };
-};
 
-export default connect(mapStateToProps)(TeamCapacityTable);
+export default TeamCapacityTable;
