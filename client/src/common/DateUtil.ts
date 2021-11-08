@@ -1,7 +1,4 @@
-import { addDays, differenceInCalendarDays } from "date-fns";
-
-import { firstSprintBeginning, noDataError, sprintLengthDays } from "common/constants";
-import { IUserAbsenceWithWorkingDays, SprintPeriod } from "common/interfaces";
+import { IUserAbsenceWithWorkingDays } from "common/interfaces";
 
 export class DateUtil {
   static dateSorting(a: IUserAbsenceWithWorkingDays, b: IUserAbsenceWithWorkingDays): number {
@@ -33,34 +30,4 @@ export class DateUtil {
     const year = date.getFullYear();
     return `${day}.${month}.${year}`;
   };
-
-  // sprint index 0 means current sprint, 1 means next sprint and -1 means last sprint
-  //we shall move this from here
-  static getSprintPeriod(sprintIndex: number): SprintPeriod {
-    const today = new Date();
-    const daysSinceFirstSprint = differenceInCalendarDays(today, firstSprintBeginning);
-
-    const defaultSprint = Math.ceil((daysSinceFirstSprint + 1) / sprintLengthDays);
-    const defaultSprintEndingDate = addDays(firstSprintBeginning, defaultSprint * sprintLengthDays - 1);
-
-    const requestedSprint = defaultSprint + sprintIndex;
-
-    const startingDate = addDays(firstSprintBeginning, (requestedSprint - 1) * sprintLengthDays);
-    const endingDate = addDays(firstSprintBeginning, requestedSprint * sprintLengthDays - 1);
-    const requestedSprintPeriod = {
-      startingDate: DateUtil.roundDate(startingDate),
-      endingDate: DateUtil.roundDate(endingDate),
-    };
-
-    if (differenceInCalendarDays(defaultSprintEndingDate, today) < 2) {
-      requestedSprintPeriod.startingDate = addDays(requestedSprintPeriod.startingDate, sprintLengthDays);
-      requestedSprintPeriod.endingDate = addDays(requestedSprintPeriod.endingDate, sprintLengthDays);
-    }
-
-    if (requestedSprintPeriod.startingDate < firstSprintBeginning) {
-      throw new Error(noDataError);
-    }
-
-    return requestedSprintPeriod;
-  }
 }

@@ -201,7 +201,7 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
 
   async loadAbsences(): Promise<void> {
     try {
-      const period = DateUtil.getSprintPeriod(this.state.sprintIndex);
+      const period = this.sprintPlanningService.getSprintPeriod(this.state.sprintIndex);
 
       if (compareAsc(period.startingDate, firstSprintBeginning) === 0) {
         this.setState({

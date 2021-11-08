@@ -14,7 +14,6 @@ import {
   IUserAbsenceWithEmployee,
   IUserWithTeamAndPosition,
   SprintPeriod,
-  IUser,
 } from "common/interfaces";
 // eslint-disable-next-line import/no-cycle
 import { IUserAbsenceWithDate } from "components/Absences/Absences";
@@ -92,7 +91,7 @@ export interface IRestClient {
 }
 
 export interface ISprintPlanningService {
-  // getSprintPeriod(sprintIndex: number): SprintPeriod;
+  getSprintPeriod(sprintIndex: number): SprintPeriod;
   getUsersAbsenceDaysCount(
     users: Array<IUserWithTeamAndPosition>,
     absences: Array<IUserAbsenceWithWorkingDaysAndEmployee>,

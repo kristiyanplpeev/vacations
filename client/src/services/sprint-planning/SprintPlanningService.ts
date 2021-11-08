@@ -1,5 +1,7 @@
+import { differenceInCalendarDays, addDays } from "date-fns";
 import { injectable } from "inversify";
 
+import { firstSprintBeginning, sprintLengthDays, noDataError } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import {
   HolidayDays,
@@ -13,7 +15,35 @@ import "reflect-metadata";
 
 @injectable()
 class SprintPlanningService implements ISprintPlanningService {
-  //   getSprintPeriod(sprintIndex: number): SprintPeriod {}
+  // sprint index 0 means current sprint, 1 means next sprint and -1 means last sprint
+  //we shall move this from here
+  getSprintPeriod(sprintIndex: number): SprintPeriod {
+    const today = new Date();
+    const daysSinceFirstSprint = differenceInCalendarDays(today, firstSprintBeginning);
+
+    const defaultSprint = Math.ceil((daysSinceFirstSprint + 1) / sprintLengthDays);
+    const defaultSprintEndingDate = addDays(firstSprintBeginning, defaultSprint * sprintLengthDays - 1);
+
+    const requestedSprint = defaultSprint + sprintIndex;
+
+    const startingDate = addDays(firstSprintBeginning, (requestedSprint - 1) * sprintLengthDays);
+    const endingDate = addDays(firstSprintBeginning, requestedSprint * sprintLengthDays - 1);
+    const requestedSprintPeriod = {
+      startingDate: DateUtil.roundDate(startingDate),
+      endingDate: DateUtil.roundDate(endingDate),
+    };
+
+    if (differenceInCalendarDays(defaultSprintEndingDate, today) < 2) {
+      requestedSprintPeriod.startingDate = addDays(requestedSprintPeriod.startingDate, sprintLengthDays);
+      requestedSprintPeriod.endingDate = addDays(requestedSprintPeriod.endingDate, sprintLengthDays);
+    }
+
+    if (requestedSprintPeriod.startingDate < firstSprintBeginning) {
+      throw new Error(noDataError);
+    }
+
+    return requestedSprintPeriod;
+  }
 
   getUsersAbsenceDaysCount(
     users: Array<IUserWithTeamAndPosition>,
