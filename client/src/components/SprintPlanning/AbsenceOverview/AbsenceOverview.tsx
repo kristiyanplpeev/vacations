@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 
+import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import { DateRangePickerDayProps } from "@mui/lab/DateRangePickerDay";
 import StaticDateRangePicker from "@mui/lab/StaticDateRangePicker";
 import Avatar from "@mui/material/Avatar";
@@ -20,6 +21,7 @@ import { HolidayDays } from "common/interfaces";
 import { DateRangePickerDay } from "components/Absences/Absences";
 import { IAbsenceService, IHolidayService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
+import "./AbsenceOverview.css";
 
 interface AbsenceOverviewProps {
   sprintPeriod: SprintPeriod;
@@ -38,7 +40,7 @@ class AbsenceOverview extends Component<AbsenceOverviewProps, AbsenceOverviewSta
   render(): JSX.Element {
     return (
       <>
-        <Typography style={{ marginTop: "80px", marginBottom: "50px" }} variant="h3">
+        <Typography className="absence-overview-header" variant="h3">
           Absence Overview
         </Typography>
         {this.renderUserAbsences()}
@@ -50,7 +52,6 @@ class AbsenceOverview extends Component<AbsenceOverviewProps, AbsenceOverviewSta
   renderUserAbsences(): JSX.Element {
     const { absenceDays, teamMembers } = this.props;
     return (
-      // alternatively this can be Stack component
       <Stack>
         {teamMembers.map((member) => {
           const absence = absenceDays.get(member.id);
@@ -63,7 +64,14 @@ class AbsenceOverview extends Component<AbsenceOverviewProps, AbsenceOverviewSta
               key={member.id}
               className="absence-card-chip"
               avatar={<Avatar className="absence-card-chip-avatar" alt={member.firstName[0]} src={member.picture} />}
-              label={`${member.email} ---> ${absence} days`}
+              // label={`${member.email} ---> ${absence} days`}
+              label={
+                <Grid container alignContent="center">
+                  {member.email}
+                  <ArrowRightAltIcon />
+                  {absence} days
+                </Grid>
+              }
               variant="outlined"
             />
           );

@@ -9,9 +9,9 @@ import { mockUser } from "components/UsersList/UsersList.spec";
 
 const adminPanelButtonUnitTest = "admin-panel-button";
 
-const getUserReducer = (user: any) => ({
+const getUserReducer = (userDetails: any) => ({
   isAuthenticated: true,
-  user,
+  userDetails,
 });
 
 const getSelector = (value: string) => `[data-unit-test="${value}"]`;

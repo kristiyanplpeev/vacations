@@ -1,5 +1,7 @@
 /* eslint-disable sonarjs/no-duplicate-string */
-import { PositionsEnum, UserRolesEnum } from "common/constants";
+import { addDays, differenceInCalendarDays } from "date-fns";
+
+import { firstSprintBeginning, PositionsEnum, UserRolesEnum } from "common/constants";
 import SprintPlanningService from "services/sprint-planning/SprintPlanningService";
 import "reflect-metadata";
 
@@ -201,6 +203,7 @@ const absences = [
   },
 ];
 
+// eslint-disable-next-line max-lines-per-function
 describe("SprintPlanningService", () => {
   describe("getUsersAbsenceDaysCount", () => {
     it("should return a Map with each user's id as key and the number/count of the user's absence days for the sprint as value", () => {});
@@ -229,6 +232,23 @@ describe("SprintPlanningService", () => {
       const sprintPeriodStringified = service.convertSprintPeriodDatesToStrings(sprintPeriod);
 
       expect(sprintPeriodStringified).toEqual(expected);
+    });
+  });
+
+  describe("getSprintPeriod", () => {
+    it("should return start and ending date of the first sprint.", () => {
+      const today = new Date();
+      const firstSprintIndex = -Math.floor(differenceInCalendarDays(today, firstSprintBeginning) / 14);
+
+      const result = service.getSprintPeriod(firstSprintIndex);
+
+      expect(result).toEqual({ startingDate: firstSprintBeginning, endingDate: addDays(firstSprintBeginning, 13) });
+    });
+    it("should throw if the user tries to access sprint that is before first sprint date.", () => {
+      const today = new Date();
+      const nonExistentSprintIndex = -Math.floor(differenceInCalendarDays(today, firstSprintBeginning) / 14) - 1;
+
+      expect(() => service.getSprintPeriod(nonExistentSprintIndex)).toThrow();
     });
   });
 });

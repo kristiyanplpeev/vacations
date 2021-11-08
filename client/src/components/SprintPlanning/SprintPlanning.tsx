@@ -115,7 +115,7 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
       return <Error message={error} />;
     }
     if (loading) {
-      return <CircularProgress style={{ position: "absolute", top: "50%", left: "50%" }} />;
+      return <CircularProgress className="sprint-planning-loader" />;
     }
     return (
       <div className="sprint-planning-container">
@@ -148,12 +148,7 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
       <Grid container spacing={3}>
         <Grid item xs={2}></Grid>
         <Grid item xs={2}>
-          <Tooltip
-            arrow
-            title={this.state.disablePrevButton ? noDataError : ""}
-            placement="bottom"
-            style={{ padding: "1px" }}
-          >
+          <Tooltip arrow title={this.state.disablePrevButton ? noDataError : ""} placement="bottom">
             <span>
               <Button
                 variant="outlined"

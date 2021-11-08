@@ -126,7 +126,7 @@ export const mockedUser = {
   picture:
     'https://lh3.googleusercontent.com/a-/AOh14Gi-slkOaKm_iev-o1xIbJGHLfsP65VslZm1JyJh=s96-c',
   role: RolesEnum.user,
-  team: { id: 'id', team: TeamsEnum.noTeam, user: [] },
+  team: { id: 'id', team: TeamsEnum.noTeam, isDeleted: false, user: [] },
   position: {
     id: 'id',
     position: PositionsEnum.senior,

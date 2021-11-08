@@ -28,7 +28,6 @@ export class AbsencesService {
     @InjectRepository(Absencedb) private absenceRepo: Repository<Absencedb>,
     @InjectRepository(Userdb) private userRepo: Repository<Userdb>,
     private readonly holidaysService: HolidaysService,
-    private readonly usersService: UsersService,
   ) {}
 
   private validateAbsenceAuthor(

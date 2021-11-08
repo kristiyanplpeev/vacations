@@ -16,7 +16,6 @@ import "reflect-metadata";
 @injectable()
 class SprintPlanningService implements ISprintPlanningService {
   // sprint index 0 means current sprint, 1 means next sprint and -1 means last sprint
-  //we shall move this from here
   getSprintPeriod(sprintIndex: number): SprintPeriod {
     const today = new Date();
     const daysSinceFirstSprint = differenceInCalendarDays(today, firstSprintBeginning);
