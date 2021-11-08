@@ -84,9 +84,14 @@
   color: #999;
 }
 
+.absence .css-jwafdq-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day.Mui-disabled {
+  color: white
+}
+
 .absence .css-qhrdzm-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day.Mui-disabled {
   color: white
 }
+
 
 .non-absence .css-qhrdzm-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day.Mui-disabled {
   color: black
