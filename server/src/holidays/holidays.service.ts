@@ -4,8 +4,9 @@ import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AbsencePeriod, AbsencePeriodEachDay, Holiday } from './interfaces';
 import DateUtil from '../utils/DateUtil';
-import { DayStatus } from '../common/constants';
+import { DayStatus, weekLength } from '../common/constants';
 import * as _ from 'lodash';
+import { isWeekend, subDays } from 'date-fns';
 
 @Injectable()
 export class HolidaysService {
@@ -71,7 +72,7 @@ export class HolidaysService {
     constantHolidays: Array<Holiday>,
   ): AbsencePeriodEachDay => {
     const datesWithWeekends = days.map((el) => {
-      if (el.date.getDay() == 6 || el.date.getDay() == 0) {
+      if (isWeekend(el.date)) {
         el.status = DayStatus.weekend;
       }
       return el;
@@ -88,16 +89,17 @@ export class HolidaysService {
     const datesWithAllHolidaysAndWeekends = constantHolidays.reduce(
       (dates, constantHoliday) => {
         for (let i = 0; i < dates.length; i++) {
-          if (
-            constantHoliday.date.getDate() === dates[i].date.getDate() &&
-            constantHoliday.date.getMonth() === dates[i].date.getMonth() &&
-            constantHoliday.date.getFullYear() === dates[i].date.getFullYear()
-          ) {
+          if (DateUtil.areDatesEqual(constantHoliday.date, dates[i].date)) {
             if (dates[i].status === DayStatus.workday) {
               dates[i].status = constantHoliday.comment;
             } else {
               for (let j = i; j < dates.length; j++) {
-                if (dates[j].status === DayStatus.workday) {
+                if (
+                  dates[j].status === DayStatus.workday &&
+                  !constantHolidays.find((el) =>
+                    DateUtil.areDatesEqual(el.date, dates[j].date),
+                  )
+                ) {
                   dates[j].status = `${constantHoliday.comment} (in lieu)`;
                   break;
                 }
@@ -117,17 +119,19 @@ export class HolidaysService {
     startingDate: Date,
     endingDate: Date,
   ): Promise<AbsencePeriodEachDay> {
-    const absenceStartAndEndDate = {
-      startingDate,
+    const absenceStartAndEndDateExtended = {
+      startingDate: subDays(startingDate, weekLength),
       endingDate,
     };
-    const datesBetween = DateUtil.getPeriodBetweenDates(absenceStartAndEndDate);
+    const datesBetween = DateUtil.getPeriodBetweenDates(
+      absenceStartAndEndDateExtended,
+    );
     const constantHolidays = await this.getConstantHolidaysByYear(
       startingDate.getFullYear(),
     );
 
     const movableHolidays = await this.getMovableHolidaysForTheSubmittedPeriod(
-      absenceStartAndEndDate,
+      absenceStartAndEndDateExtended,
     );
 
     const datesBetweenAsObj = datesBetween.map((el) => ({
@@ -135,12 +139,15 @@ export class HolidaysService {
       status: DayStatus.workday,
     }));
 
-    const datesWithAllHolidaysAndWeekends =
+    const datesWithAllHolidaysAndWeekendsExtended =
       this.getDatesWithAllHolidaysAndWeekends(
         datesBetweenAsObj,
         movableHolidays,
         constantHolidays,
       );
+
+    const datesWithAllHolidaysAndWeekends =
+      datesWithAllHolidaysAndWeekendsExtended.slice(weekLength);
     return datesWithAllHolidaysAndWeekends;
   }
 }

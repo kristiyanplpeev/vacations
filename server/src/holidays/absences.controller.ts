@@ -29,7 +29,6 @@ import {
 import { plainToClass } from 'class-transformer';
 import { AbsenceDetailsOptional } from './interfaces';
 import { AbsenceFactory } from './absenceTypes/absenceTypes';
-import { ApiExtraModels } from '@nestjs/swagger';
 
 const convertDatesInBody = (body: any): AbsenceDetailsOptional => {
   return {

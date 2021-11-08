@@ -10,6 +10,8 @@ export const nonWorkingDaysCount = 2;
 
 export const maxYearDifference = 1;
 
+export const weekLength = 7;
+
 export const invalidDateFormatMessage =
   'Date must be yyyy-mm-dd formatted string.';
 

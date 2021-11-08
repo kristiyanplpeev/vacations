@@ -18,6 +18,14 @@ class DateUtil {
     return date.toISOString().slice(0, 10);
   };
 
+  static areDatesEqual = (dateOne: Date, dateTwo: Date): boolean => {
+    return (
+      dateOne.getDate() === dateTwo.getDate() &&
+      dateOne.getMonth() === dateTwo.getMonth() &&
+      dateOne.getFullYear() === dateTwo.getFullYear()
+    );
+  };
+
   static getTomorrowDate = (date: Date): Date => {
     const newDate = new Date(date);
     return new Date(newDate.setDate(newDate.getDate() + 1));
