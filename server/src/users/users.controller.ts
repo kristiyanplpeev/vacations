@@ -8,6 +8,7 @@ import {
   Put,
   Delete,
   Param,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard, RolesGuard } from '../google/guards';
@@ -65,6 +66,15 @@ export class UsersController {
   ): Promise<Array<UserWithTeamAndPositionAsStringsResponseDto>> {
     const users = await this.usersService.getUsersByIds(usersIds);
     return plainToClass(UserWithTeamAndPositionAsStringsResponseDto, users);
+  }
+
+  @Get('myTeam')
+  @UseGuards(JwtAuthGuard)
+  public async getMyTeam(
+    @Req() req,
+  ): Promise<Teams> {
+    const myTeam = await this.usersService.getMyTeam(req.user);
+    return plainToClass(TeamsResponseDto, myTeam);
   }
 
   @Get('teams')

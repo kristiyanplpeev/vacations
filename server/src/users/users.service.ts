@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Userdb } from '../model/user.entity';
 import { In, Repository } from 'typeorm';
 import {
+  noTeamError,
   PositionsEnum,
   RolesEnum,
   TeamsEnum,
@@ -137,6 +138,18 @@ export class UsersService {
     return this.setUsersTeamsAndPositions(users);
   }
 
+  public async getMyTeam(userId: string): Promise<Teams> {
+    const userdb = await this.userRepo.findOne({ where: { id: userId } });
+
+    Guard.should(userdb.team !== null, noTeamError);
+
+    const teamdb = await this.teamsRepo.findOne({
+      where: { id: userdb.team.id },
+    });
+
+    return teamdb.toTeams();
+  }
+
   public async getTeams(): Promise<Array<Teams>> {
     const teamsdb = await this.teamsRepo.find();
     const nonDeletedTeams = teamsdb
@@ -253,7 +266,7 @@ export class UsersService {
     Guard.should(!teamdb.is_deleted, `Team has already been deleted!`);
     const isTeamEmpty =
       (await this.userRepo.find({ where: { team: teamId } })).length === 0;
-    
+
     Guard.should(isTeamEmpty, `Can't delete this team as it is not empty!`);
 
     teamdb.is_deleted = true;
