@@ -1,7 +1,7 @@
 /* eslint-disable sonarjs/no-duplicate-string */
-import { addDays, differenceInCalendarDays } from "date-fns";
+import { differenceInCalendarDays } from "date-fns";
 
-import { firstSprintBeginning, PositionsEnum, UserRolesEnum } from "common/constants";
+import { firstSprintBeginning, PositionsEnum, sprintLengthDays, UserRolesEnum } from "common/constants";
 import SprintPlanningService from "services/sprint-planning/SprintPlanningService";
 import "reflect-metadata";
 
@@ -236,17 +236,25 @@ describe("SprintPlanningService", () => {
   });
 
   describe("getSprintPeriod", () => {
-    it("should return start and ending date of the first sprint.", () => {
-      const today = new Date();
-      const firstSprintIndex = -Math.floor(differenceInCalendarDays(today, firstSprintBeginning) / 14);
+    it("should return starting date that is 14*n days after first sprint beginning.", () => {
+      const currentSprint = service.getSprintPeriod(0);
 
-      const result = service.getSprintPeriod(firstSprintIndex);
+      const isSprintBeginningAliquot =
+        differenceInCalendarDays(firstSprintBeginning, currentSprint.startingDate) % sprintLengthDays === 0;
 
-      expect(result).toEqual({ startingDate: firstSprintBeginning, endingDate: addDays(firstSprintBeginning, 13) });
+      expect(isSprintBeginningAliquot).toEqual(true);
+    });
+    it("should return sprint with correct sprint length.", () => {
+      const currentSprint = service.getSprintPeriod(0);
+
+      const isSprintLengthCorrect =
+        differenceInCalendarDays(currentSprint.endingDate, currentSprint.startingDate) === sprintLengthDays - 1;
+
+      expect(isSprintLengthCorrect).toEqual(true);
     });
     it("should throw if the user tries to access sprint that is before first sprint date.", () => {
       const today = new Date();
-      const nonExistentSprintIndex = -Math.floor(differenceInCalendarDays(today, firstSprintBeginning) / 14) - 1;
+      const nonExistentSprintIndex = -Math.floor(differenceInCalendarDays(today, firstSprintBeginning) / 14) - 10;
 
       expect(() => service.getSprintPeriod(nonExistentSprintIndex)).toThrow();
     });
