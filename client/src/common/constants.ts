@@ -16,22 +16,7 @@ export const user = {
 
 export const errMessage = "Something went wrong.";
 
-export const emptyUser: IUserDetails = {
-  sub: "",
-  googleId: "",
-  email: "",
-  firstName: "",
-  lastName: "",
-  picture: "",
-  role: "",
-};
-
 export const applicationJSON = "application/json";
-
-export const noLoggedUser = {
-  isAuthenticated: false,
-  userDetails: emptyUser,
-};
 
 export enum TeamsEnum {
   orchestrator = "Orchestrator",
@@ -72,6 +57,8 @@ export enum AbsencesViewEnum {
   mine = "mine",
 }
 
+export const noDataError = "There is no data before that period.";
+
 export const leaveTypesWithURLs = {
   paidLeave: { leave: AbsencesEnum.paidLeave, url: "paid" },
   unpaidLeave: { leave: AbsencesEnum.unpaidLeave, url: "unpaid" },
@@ -80,6 +67,8 @@ export const leaveTypesWithURLs = {
   bloodDonationLeave: { leave: AbsencesEnum.bloodDonationLeave, url: "blood-donation" },
   courtLeave: { leave: AbsencesEnum.courtLeave, url: "court" },
 };
+
+export const noTeam = "no team";
 
 export const anyTeam = "any team";
 
@@ -92,3 +81,20 @@ export const noChange = "no change";
 export const usersListClass = "users-list";
 
 export const bulkChangeUsersClass = "change-bulk";
+
+export const emptyUser: IUserDetails = {
+  sub: "",
+  googleId: "",
+  email: "",
+  firstName: "",
+  lastName: "",
+  picture: "",
+  role: "",
+};
+
+export const noLoggedUser = {
+  isAuthenticated: false,
+  userDetails: emptyUser,
+};
+
+export const sprintPlanningTableColumns = ["email", "absences", "workdays", "coefficient", "capacity"];

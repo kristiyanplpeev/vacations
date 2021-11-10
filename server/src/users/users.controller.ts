@@ -8,6 +8,7 @@ import {
   Put,
   Delete,
   Param,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard, RolesGuard } from '../google/guards';
@@ -25,8 +26,8 @@ import {
 } from './dto/users.dto';
 import { plainToClass } from 'class-transformer';
 import { UserResponseDto } from '../google/dto/google.dto';
-import { RolesEnum } from '../common/constants';
-import { Roles } from '../google//decorators/roles.decorator';
+import { RolesEnum } from 'src/common/constants';
+import { Roles } from 'src/google//decorators/roles.decorator';
 import { Teams } from 'src/users/interfaces';
 
 @Controller('users')
@@ -65,6 +66,15 @@ export class UsersController {
   ): Promise<Array<UserWithTeamAndPositionAsStringsResponseDto>> {
     const users = await this.usersService.getUsersByIds(usersIds);
     return plainToClass(UserWithTeamAndPositionAsStringsResponseDto, users);
+  }
+
+  @Get('myTeam')
+  @UseGuards(JwtAuthGuard)
+  public async getMyTeam(
+    @Req() req,
+  ): Promise<Teams> {
+    const myTeam = await this.usersService.getMyTeam(req.user.id);
+    return plainToClass(TeamsResponseDto, myTeam);
   }
 
   @Get('teams')

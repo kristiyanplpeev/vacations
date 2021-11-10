@@ -13,7 +13,10 @@ import {
   IUserAbsenceWithWorkingDaysAndEmployee,
   IUserAbsenceWithEmployee,
   IUserWithTeamAndPosition,
+  SprintPeriod,
 } from "common/interfaces";
+// eslint-disable-next-line import/no-cycle
+import { IUserAbsenceWithDate } from "components/Absences/Absences";
 import { AppActions, IUserDetails } from "store/user/types";
 
 export interface IAuthService {
@@ -23,6 +26,7 @@ export interface IAuthService {
 
 export interface IHolidayService {
   getDatesStatus({ startingDate, endingDate }: IAbsencePeriod): Promise<HolidayDays>;
+  checkIfDayIsHoliday(date: Date, daysInterval: HolidayDays): boolean;
 }
 
 export interface IAuthenticationActionCreator {
@@ -42,7 +46,10 @@ export interface IAbsenceService {
     comment?: string,
   ): Promise<void | { warning: string }>;
   getUserAbsences(): Promise<Array<IUserAbsenceWithWorkingDays>>;
-  getAllUsersAbsences(): Promise<Array<IUserAbsenceWithWorkingDaysAndEmployee>>;
+  getAllUsersAbsences(
+    startingDate?: string,
+    endingDate?: string,
+  ): Promise<Array<IUserAbsenceWithWorkingDaysAndEmployee>>;
   getAbsenceEndDate(type: AbsencesEnum, startingDate: string): Promise<{ endingDate: string }>;
   getAbsenceWithEachDay(absenceId: string): Promise<IUserAbsenceWithEachDayStatus>;
   getAbsence(absenceId: string): Promise<IUserAbsenceWithEmployee>;
@@ -54,12 +61,16 @@ export interface IAbsenceService {
     comment?: string,
   ): Promise<void>;
   deleteAbsence(absenceId: string): Promise<void>;
+  getAbsentEmployeesNames(
+    date: Date,
+    absences: Array<IUserAbsenceWithWorkingDaysAndEmployee | IUserAbsenceWithDate>,
+  ): Array<string>;
 }
 
 export interface IUserService {
   logInUser(): Promise<IUserDetails>;
   getAllUsers(): Promise<Array<IUserWithTeamAndPosition>>;
-  getFilteredUsers(teamId: string, positionId: string, role: string): Promise<Array<IUserWithTeamAndPositionEnums>>;
+  getFilteredUsers(teamId: string, positionId: string, role: string): Promise<Array<IUserWithTeamAndPosition>>;
   getUsersByIds(usersIds: string): Promise<Array<IUserWithTeamAndPositionEnums>>;
   getTeams(): Promise<Array<ITeams>>;
   getPositions(): Promise<Array<IPositions>>;
@@ -67,6 +78,7 @@ export interface IUserService {
   updateUsersTeam(users: Array<string>, newTeamId: string): Promise<void>;
   updateUsersPosition(users: Array<string>, newPositionId: string): Promise<void>;
   updateUsersRole(users: Array<string>, newRole: string): Promise<void>;
+  getUserTeam(): Promise<ITeams>;
   deleteTeam(teamId: string): Promise<void>;
   updatePositionCoefficient(positionId: string, newCoefficient: number): Promise<void>;
 }
@@ -77,4 +89,19 @@ export interface IRestClient {
   delete<T>(url: string, input?: AxiosRequestConfig): Promise<T>;
   patch<T>(url: string, input?: AxiosRequestConfig): Promise<T>;
   put<T>(url: string, input?: AxiosRequestConfig): Promise<T>;
+}
+
+export interface ISprintPlanningService {
+  getSprintPeriod(sprintIndex: number): SprintPeriod;
+  getUsersAbsenceDaysCount(
+    users: Array<IUserWithTeamAndPosition>,
+    absences: Array<IUserAbsenceWithWorkingDaysAndEmployee>,
+  ): Map<string, number>;
+  convertSprintPeriodDatesToStrings(sprintPeriod: SprintPeriod): IAbsencePeriod;
+  calculateTotalWorkdays(totalSprintDaysWithStatus: HolidayDays): number;
+}
+
+export interface IConfigService {
+  getFirstSprintBeginning(): Date;
+  getSprintLengthDays(): number;
 }

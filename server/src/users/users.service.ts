@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Userdb } from '../model/user.entity';
 import { In, Repository } from 'typeorm';
 import {
+  noTeamError,
   PositionsEnum,
   RolesEnum,
   TeamsEnum,
@@ -76,7 +77,7 @@ export class UsersService {
     teamId: string,
     positionId: string,
     role: RolesEnum,
-  ): Promise<Array<UserWithTeamAndPositionAsStrings>> {
+  ): Promise<Array<User>> {
     const queryObj = {
       team: null,
       position: null,
@@ -109,7 +110,7 @@ export class UsersService {
 
     const users = usersdb.map((user) => user.toUser());
 
-    return this.setUsersTeamsAndPositions(users);
+    return users;
   }
 
   public async getUsersByIds(
@@ -135,6 +136,26 @@ export class UsersService {
     const users = usersdb.map((user) => user.toUser());
 
     return this.setUsersTeamsAndPositions(users);
+  }
+
+  public async getMyTeam(userId: string): Promise<Teams> {
+    Guard.isValidUUID(userId, 'Invalid user id');
+    const userdb = (
+      await this.userRepo.findOne({
+        where: { id: userId },
+        relations: [UserRelations.teams, UserRelations.positions],
+      })
+    ).toUser();
+
+    Guard.exists(userdb.team, noTeamError);
+
+    const teamdb = await this.teamsRepo.findOne({
+      where: { id: userdb.team.id },
+    });
+
+    Guard.exists(teamdb, 'This team does not exist');
+
+    return teamdb.toTeams();
   }
 
   public async getTeams(): Promise<Array<Teams>> {
@@ -253,7 +274,7 @@ export class UsersService {
     Guard.should(!teamdb.is_deleted, `Team has already been deleted!`);
     const isTeamEmpty =
       (await this.userRepo.find({ where: { team: teamId } })).length === 0;
-    
+
     Guard.should(isTeamEmpty, `Can't delete this team as it is not empty!`);
 
     teamdb.is_deleted = true;

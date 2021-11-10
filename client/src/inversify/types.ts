@@ -5,6 +5,8 @@ const TYPES = {
   user: Symbol.for("user"),
   Rest: Symbol.for("Rest"),
   AuthAction: Symbol.for("AuthAction"),
+  SprintPlanning: Symbol.for("SprintPlanning"),
+  Config: Symbol.for("Config"),
 };
 
 export { TYPES };

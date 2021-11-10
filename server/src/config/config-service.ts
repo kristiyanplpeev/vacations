@@ -46,11 +46,11 @@ class ConfigService {
       password: this.getValue(postgresPass),
       database: this.getValue(postgresDB),
 
-      entities: ['**/*.entity{.ts,.js}'],
+      entities: ["dist/**/*.entity.js"],
 
       migrationsTableName: 'migration',
 
-      migrations: ['src/migration/*.ts'],
+      migrations: ['dist/migration/*.js'],
 
       cli: {
         migrationsDir: 'src/migration',

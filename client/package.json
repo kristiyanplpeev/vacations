@@ -77,6 +77,11 @@
       "last 1 safari version"
     ]
   },
+  "jest": {
+    "setupFiles": [
+      "<rootDir>/jest/setEnvVars.js"
+    ]
+  },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.12.1",
     "@types/jest": "^26.0.24",

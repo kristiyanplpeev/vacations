@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-cycle
+/* eslint-disable import/no-cycle */
 import { UserRolesEnum } from "common/constants";
 
 export interface IUserDetails {

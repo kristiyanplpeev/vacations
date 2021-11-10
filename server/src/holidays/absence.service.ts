@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Absencedb } from '../model/absence.entity';
 import { Userdb } from '../model/user.entity';
 import {
-  CustomRepositoryCannotInheritRepositoryError,
+  LessThan,
+  LessThanOrEqual,
+  MoreThan,
+  MoreThanOrEqual,
   Repository,
 } from 'typeorm';
 import { HolidaysService } from './holidays.service';
@@ -11,13 +14,13 @@ import {
   AbsenceDetailsWithTotalDays,
   AbsenceDetailsWithEachDay,
   Absence,
-  AbsenceDetailsOptional,
 } from './interfaces';
-import { DayStatus, UserRelations } from '../common/constants';
+import { DayStatus, noTeamError, UserRelations } from '../common/constants';
 import Guard from '../utils/Guard';
 import { User } from '../google/utils/interfaces';
 import DateUtil from '../utils/DateUtil';
 import { AbsenceTypes } from './absenceTypes/absenceTypes';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AbsencesService {
@@ -106,29 +109,53 @@ export class AbsencesService {
 
   public async getAllUsersAbsencesByTeam(
     userId: string,
+    sprintStart: Date,
+    sprintEnd: Date,
   ): Promise<Array<AbsenceDetailsWithTotalDays>> {
     Guard.isValidUUID(userId, `Invalid user id: ${userId}`);
+    if (sprintStart || sprintEnd) {
+      Guard.should(!!sprintStart, "Please pass a starting date");
+      Guard.should(!!sprintEnd, "Please pass an ending date");
+    }
 
     const { team } = await this.userRepo.findOne({
       where: { id: userId },
       relations: [UserRelations.teams],
     });
-    Guard.should(
-      team !== null,
-      "You don't have a team assigned. Please contact your admin!",
-    );
+    Guard.should(team !== null, noTeamError);
 
     const usersDb = await this.userRepo.find({ where: { team } });
     const users = usersDb.map((u) => u.toUser());
 
     const allUsersAbsences = users.map(async (user) => {
       const absencesDb = await this.absenceRepo.find({
-        where: { employee: user.id },
-        relations: [UserRelations.employee],
+        where: {
+          employee: user.id,
+          ...(sprintEnd && { from_date: LessThanOrEqual(sprintEnd) }),
+          ...(sprintStart && { to_date: MoreThanOrEqual(sprintStart) }),
+        },
+        relations: [
+          UserRelations.employee,
+          `${UserRelations.employee}.${UserRelations.positions}`,
+          `${UserRelations.employee}.${UserRelations.teams}`,
+        ],
       });
-      const absences = absencesDb
+
+      let absences = absencesDb
         .map((a) => a.toAbsence())
         .filter((a) => !a.isDeleted);
+
+      if (sprintStart && sprintEnd) {
+        absences = absences.map((absence) => {
+          if (sprintStart > absence.startingDate) {
+            absence.startingDate = sprintStart;
+          }
+          if (sprintEnd < absence.endingDate) {
+            absence.endingDate = sprintEnd;
+          }
+          return absence;
+        });
+      }
 
       return await this.calculateAbsenceWorkingDays(absences);
     });

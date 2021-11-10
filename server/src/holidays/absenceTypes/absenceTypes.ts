@@ -117,7 +117,8 @@ class AbsenceWithCalculableEndDate extends AbsenceTypes {
   }
 
   async getAbsenceEndDate(): Promise<Date> {
-    return (await this.getPeriodWithStatus()).pop().date;
+    const endDate = (await this.getPeriodWithStatus()).pop().date;
+    return DateUtil.roundDate(endDate);
   }
 
   protected async getPeriodWithStatus(

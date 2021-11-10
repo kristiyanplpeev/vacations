@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-cycle
 import { PositionsEnum, TeamsEnum, UserRolesEnum } from "common/constants";
 
 export interface IUser {
@@ -8,6 +9,11 @@ export interface IUser {
   lastName: string;
   picture: string;
   role: UserRolesEnum | "";
+}
+
+export interface SprintPeriod {
+  startingDate: Date;
+  endingDate: Date;
 }
 
 export interface IUserWithTeamAndPositionEnums extends IUser {

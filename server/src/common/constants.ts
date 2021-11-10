@@ -10,8 +10,13 @@ export const nonWorkingDaysCount = 2;
 
 export const maxYearDifference = 1;
 
+export const weekLength = 7;
+
 export const invalidDateFormatMessage =
   'Date must be yyyy-mm-dd formatted string.';
+
+export const noTeamError =
+  "You don't have a team assigned. Please contact your admin!";
 
 export enum DayStatus {
   weekend = 'weekend',
