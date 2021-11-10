@@ -113,6 +113,10 @@ export class AbsencesService {
     sprintEnd: Date,
   ): Promise<Array<AbsenceDetailsWithTotalDays>> {
     Guard.isValidUUID(userId, `Invalid user id: ${userId}`);
+    if (sprintStart || sprintEnd) {
+      Guard.should(!!sprintStart, "Please pass a starting date");
+      Guard.should(!!sprintEnd, "Please pass an ending date");
+    }
 
     const { team } = await this.userRepo.findOne({
       where: { id: userId },
