@@ -140,11 +140,13 @@ class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTa
   }
 
   calculateTotalCapacity(): number {
-    return this.props.teamMembers.reduce((totalCapacity, member) => {
-      const { capacity } = this.getDetails(member);
+    return +this.props.teamMembers
+      .reduce((totalCapacity, member) => {
+        const { capacity } = this.getDetails(member);
 
-      return (totalCapacity += capacity);
-    }, 0);
+        return (totalCapacity += capacity);
+      }, 0)
+      .toFixed(2);
   }
 
   sortTeamMembers(): Array<IUserWithTeamAndPosition> {
