@@ -19,7 +19,6 @@ export class GoogleService implements AuthenticationProvider {
     const { email } = details;
     const user = await this.userRepo.findOne({
       where: { email },
-      relations: [UserRelations.positions, UserRelations.teams],
     });
     if (user) return user.toUser();
 
@@ -32,7 +31,6 @@ export class GoogleService implements AuthenticationProvider {
   async findUser(googleId: string): Promise<Userdb | undefined> {
     const user = await this.userRepo.findOne({
       where: { googleId },
-      relations: [UserRelations.positions, UserRelations.teams],
     });
 
     return user;
@@ -46,8 +44,6 @@ export class GoogleService implements AuthenticationProvider {
       lastName: details.lastName,
       email: details.email,
       picture: details.picture,
-      team: details.team,
-      position: details.position,
       role: details.role,
     };
 

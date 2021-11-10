@@ -12,7 +12,7 @@ import Typography from "@mui/material/Typography";
 import "./TeamCapacityTable.css";
 import { resolve } from "inversify-react";
 
-import { PositionsEnum } from "common/constants";
+import { PositionsEnum, sprintPlanningTableColumns } from "common/constants";
 import { IUserAbsenceWithWorkingDaysAndEmployee, IUserWithTeamAndPosition } from "common/interfaces";
 import { ISprintPlanningService, IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
@@ -86,21 +86,11 @@ class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTa
           <TableCell>
             <b>Position</b>
           </TableCell>
-          <TableCell align="left">
-            <b>email</b>
-          </TableCell>
-          <TableCell align="left">
-            <b>absences</b>
-          </TableCell>
-          <TableCell align="left">
-            <b>workdays</b>
-          </TableCell>
-          <TableCell align="left">
-            <b>coefficient</b>
-          </TableCell>
-          <TableCell align="left">
-            <b>capacity</b>
-          </TableCell>
+          {sprintPlanningTableColumns.map((c, index) => (
+            <TableCell key={index} align="left">
+              <b>{c}</b>
+            </TableCell>
+          ))}
         </TableRow>
       </TableHead>
     );
@@ -171,19 +161,10 @@ class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTa
           ? teamMember
           : { ...teamMember, position: { id: "", position: PositionsEnum.noPosition, coefficient: 0, sortOrder: 15 } },
       )
-      .sort((a, b) => {
-        if (a.position.sortOrder > b.position.sortOrder) {
-          return 1;
-        } else if (a.position.sortOrder < b.position.sortOrder) {
-          return -1;
-        } else if (a.email < b.email) {
-          return 1;
-        } else if (a.email > b.email) {
-          return -1;
-        } else {
-          return 0;
-        }
-      });
+      .sort(
+        (a, b) =>
+          b.position.sortOrder - a.position.sortOrder || (a.email.toUpperCase() < b.email.toUpperCase() ? 1 : -1),
+      );
   }
 }
 

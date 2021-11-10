@@ -110,3 +110,5 @@ export const noLoggedUser = {
   isAuthenticated: false,
   userDetails: emptyUser,
 };
+
+export const sprintPlanningTableColumns = ["email", "absences", "workdays", "coefficient", "capacity"];
