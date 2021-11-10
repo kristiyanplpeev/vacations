@@ -26,8 +26,8 @@ import {
 } from './dto/users.dto';
 import { plainToClass } from 'class-transformer';
 import { UserResponseDto } from '../google/dto/google.dto';
-import { RolesEnum } from '../common/constants';
-import { Roles } from '../google//decorators/roles.decorator';
+import { RolesEnum } from 'src/common/constants';
+import { Roles } from 'src/google//decorators/roles.decorator';
 import { Teams } from 'src/users/interfaces';
 
 @Controller('users')

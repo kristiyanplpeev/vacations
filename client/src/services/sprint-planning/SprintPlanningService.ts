@@ -1,7 +1,7 @@
 import { differenceInCalendarDays, addDays } from "date-fns";
 import { injectable } from "inversify";
 
-import { firstSprintBeginning, sprintLengthDays, noDataError } from "common/constants";
+import { noDataError } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import {
   HolidayDays,
@@ -10,14 +10,21 @@ import {
   IUserWithTeamAndPosition,
   SprintPeriod,
 } from "common/interfaces";
-import { ISprintPlanningService } from "inversify/interfaces";
+import { IConfigService, ISprintPlanningService } from "inversify/interfaces";
 import "reflect-metadata";
+// eslint-disable-next-line import/no-cycle
+import { myContainer } from "inversify/inversify.config";
+import { TYPES } from "inversify/types";
 
 @injectable()
 class SprintPlanningService implements ISprintPlanningService {
+  private configService = myContainer.get<IConfigService>(TYPES.Config);
+
   // sprint index 0 means current sprint, 1 means next sprint and -1 means last sprint
   getSprintPeriod(sprintIndex: number): SprintPeriod {
     const today = new Date();
+    const firstSprintBeginning = this.configService.getFirstSprintBeginning();
+    const sprintLengthDays = this.configService.getSprintLengthDays();
     const daysSinceFirstSprint = differenceInCalendarDays(today, firstSprintBeginning);
 
     const defaultSprint = Math.ceil((daysSinceFirstSprint + 1) / sprintLengthDays);

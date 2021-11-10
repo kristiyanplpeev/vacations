@@ -100,3 +100,8 @@ export interface ISprintPlanningService {
   convertSprintPeriodDatesToStrings(sprintPeriod: SprintPeriod): IAbsencePeriod;
   calculateTotalWorkdays(totalSprintDaysWithStatus: HolidayDays): number;
 }
+
+export interface IConfigService {
+  getFirstSprintBeginning(): Date;
+  getSprintLengthDays(): number;
+}

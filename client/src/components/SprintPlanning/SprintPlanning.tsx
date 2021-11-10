@@ -8,7 +8,7 @@ import { compareAsc } from "date-fns/esm";
 import { resolve } from "inversify-react";
 import { RouteComponentProps } from "react-router";
 
-import { anyPosition, anyRole, firstSprintBeginning, noDataError } from "common/constants";
+import { anyPosition, anyRole, noDataError } from "common/constants";
 import { DateUtil } from "common/DateUtil";
 import {
   HolidayDays,
@@ -19,7 +19,13 @@ import {
 import Error from "components/common/Error/Error";
 import AbsenceOverview from "components/SprintPlanning/AbsenceOverview/AbsenceOverview";
 import TeamCapacityTable from "components/SprintPlanning/TeamCapacityTable/TeamCapacityTable";
-import { IAbsenceService, IHolidayService, ISprintPlanningService, IUserService } from "inversify/interfaces";
+import {
+  IAbsenceService,
+  IConfigService,
+  IHolidayService,
+  ISprintPlanningService,
+  IUserService,
+} from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 import "./SprintPlanning.css";
 
@@ -43,6 +49,7 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
   @resolve(TYPES.SprintPlanning) private sprintPlanningService!: ISprintPlanningService;
   @resolve(TYPES.Absence) private absenceService!: IAbsenceService;
   @resolve(TYPES.Holidays) private holidayService!: IHolidayService;
+  @resolve(TYPES.Config) private configService!: IConfigService;
 
   constructor(props: SprintPlanningProps) {
     super(props);
@@ -191,7 +198,7 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
     try {
       const period = this.sprintPlanningService.getSprintPeriod(this.state.sprintIndex);
 
-      if (compareAsc(period.startingDate, firstSprintBeginning) === 0) {
+      if (compareAsc(period.startingDate, this.configService.getFirstSprintBeginning()) === 0) {
         this.setState({
           disablePrevButton: true,
         });

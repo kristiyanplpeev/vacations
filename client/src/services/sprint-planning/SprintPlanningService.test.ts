@@ -1,11 +1,14 @@
 /* eslint-disable sonarjs/no-duplicate-string */
 import { differenceInCalendarDays } from "date-fns";
 
-import { firstSprintBeginning, PositionsEnum, sprintLengthDays, UserRolesEnum } from "common/constants";
-import SprintPlanningService from "services/sprint-planning/SprintPlanningService";
+import { PositionsEnum, UserRolesEnum } from "common/constants";
 import "reflect-metadata";
+import { ISprintPlanningService } from "inversify/interfaces";
+import { myContainer } from "inversify/inversify.config";
+import { TYPES } from "inversify/types";
 
-const service = new SprintPlanningService();
+const firstSprintBeginning = new Date("2021-11-03");
+const sprintLengthDays = 14;
 
 const sprintDaysWithStatus = [
   {
@@ -205,6 +208,8 @@ const absences = [
 
 // eslint-disable-next-line max-lines-per-function
 describe("SprintPlanningService", () => {
+  const service = myContainer.get<ISprintPlanningService>(TYPES.SprintPlanning);
+
   describe("getUsersAbsenceDaysCount", () => {
     it("should return a Map with each user's id as key and the number/count of the user's absence days for the sprint as value", () => {});
     const expected = new Map();
@@ -212,15 +217,12 @@ describe("SprintPlanningService", () => {
     expected.set("9fa11633-60c7-46f1-8ad3-2c2cc531b0c6", 0);
     expected.set("868e3fb8-908f-45a5-8cc3-f63f97401863", 8);
     expected.set("fec8eb16-3724-45b4-bc0a-205c57694ed5", 10);
-
     const allUsersAbsenceDays = service.getUsersAbsenceDaysCount(users, absences);
-
     expect(allUsersAbsenceDays).toEqual(expected);
   });
   describe("calculateTotalWorkdays", () => {
     it("should return the number of workdays for a given array of days with status", () => {
       const totalWorkdays = service.calculateTotalWorkdays(sprintDaysWithStatus);
-
       expect(totalWorkdays).toBe(3);
     });
   });
@@ -228,34 +230,26 @@ describe("SprintPlanningService", () => {
     it("should convert the starting- and endingDates props of a SprintPeriod object to strings", () => {
       const sprintPeriod = { startingDate: new Date("2021-11-17"), endingDate: new Date("2021-11-30") };
       const expected = { startingDate: "2021-11-17", endingDate: "2021-11-30" };
-
       const sprintPeriodStringified = service.convertSprintPeriodDatesToStrings(sprintPeriod);
-
       expect(sprintPeriodStringified).toEqual(expected);
     });
   });
-
   describe("getSprintPeriod", () => {
     it("should return starting date that is 14*n days after first sprint beginning.", () => {
       const currentSprint = service.getSprintPeriod(0);
-
       const isSprintBeginningAliquot =
         differenceInCalendarDays(firstSprintBeginning, currentSprint.startingDate) % sprintLengthDays === 0;
-
       expect(isSprintBeginningAliquot).toEqual(true);
     });
     it("should return sprint with correct sprint length.", () => {
       const currentSprint = service.getSprintPeriod(0);
-
       const isSprintLengthCorrect =
         differenceInCalendarDays(currentSprint.endingDate, currentSprint.startingDate) === sprintLengthDays - 1;
-
       expect(isSprintLengthCorrect).toEqual(true);
     });
     it("should throw if the user tries to access sprint that is before first sprint date.", () => {
       const today = new Date();
       const nonExistentSprintIndex = -Math.floor(differenceInCalendarDays(today, firstSprintBeginning) / 14) - 10;
-
       expect(() => service.getSprintPeriod(nonExistentSprintIndex)).toThrow();
     });
   });
