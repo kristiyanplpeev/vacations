@@ -73,7 +73,7 @@ export class UsersController {
   public async getMyTeam(
     @Req() req,
   ): Promise<Teams> {
-    const myTeam = await this.usersService.getMyTeam(req.user);
+    const myTeam = await this.usersService.getMyTeam(req.user.id);
     return plainToClass(TeamsResponseDto, myTeam);
   }
 

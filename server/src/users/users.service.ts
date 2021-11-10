@@ -139,13 +139,21 @@ export class UsersService {
   }
 
   public async getMyTeam(userId: string): Promise<Teams> {
-    const userdb = await this.userRepo.findOne({ where: { id: userId } });
+    Guard.isValidUUID(userId, 'Invalid user id');
+    const userdb = (
+      await this.userRepo.findOne({
+        where: { id: userId },
+        relations: [UserRelations.teams, UserRelations.positions],
+      })
+    ).toUser();
 
-    Guard.should(userdb.team !== null, noTeamError);
+    Guard.exists(userdb.team, noTeamError);
 
     const teamdb = await this.teamsRepo.findOne({
       where: { id: userdb.team.id },
     });
+
+    Guard.exists(teamdb, 'This team does not exist');
 
     return teamdb.toTeams();
   }
