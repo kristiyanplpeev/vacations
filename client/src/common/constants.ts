@@ -59,9 +59,9 @@ export enum AbsencesViewEnum {
 
 export const noDataError = "There is no data before that period.";
 
-export const firstSprintBeginning = new Date("2021-11-03");
+export const firstSprintBeginning = new Date(process.env.REACT_APP_FIRST_SPRINT_BEGINNING || "");
 
-export const sprintLengthDays = 14;
+export const sprintLengthDays = Number(process.env.REACT_APP_SPRINT_LENGTH);
 
 export const leaveTypesWithURLs = {
   paidLeave: { leave: AbsencesEnum.paidLeave, url: "paid" },
@@ -93,16 +93,6 @@ export const emptyUser: IUserDetails = {
   firstName: "",
   lastName: "",
   picture: "",
-  position: {
-    id: "",
-    position: PositionsEnum.noPosition,
-    coefficient: 0,
-    sortOrder: 0,
-  },
-  team: {
-    id: "",
-    team: "",
-  },
   role: "",
 };
 

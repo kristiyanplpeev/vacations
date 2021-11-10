@@ -78,6 +78,7 @@ export interface IUserService {
   updateUsersTeam(users: Array<string>, newTeamId: string): Promise<void>;
   updateUsersPosition(users: Array<string>, newPositionId: string): Promise<void>;
   updateUsersRole(users: Array<string>, newRole: string): Promise<void>;
+  getUserTeam(): Promise<ITeams>;
   deleteTeam(teamId: string): Promise<void>;
   updatePositionCoefficient(positionId: string, newCoefficient: number): Promise<void>;
 }

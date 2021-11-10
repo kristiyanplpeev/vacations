@@ -1,6 +1,5 @@
 /* eslint-disable import/no-cycle */
 import { UserRolesEnum } from "common/constants";
-import { IPositions, ITeams } from "common/interfaces";
 
 export interface IUserDetails {
   sub: string;
@@ -9,8 +8,6 @@ export interface IUserDetails {
   firstName: string;
   lastName: string;
   picture: string;
-  position: IPositions;
-  team: ITeams;
   role: UserRolesEnum | "";
 }
 

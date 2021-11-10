@@ -10,12 +10,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import "./TeamCapacityTable.css";
-import { resolve } from "inversify-react";
 
 import { PositionsEnum, sprintPlanningTableColumns } from "common/constants";
 import { IUserAbsenceWithWorkingDaysAndEmployee, IUserWithTeamAndPosition } from "common/interfaces";
-import { ISprintPlanningService, IUserService } from "inversify/interfaces";
-import { TYPES } from "inversify/types";
 
 interface TeamCapacityTableDetails {
   absences: number;
@@ -37,9 +34,6 @@ interface TeamCapacityTableState {
 }
 
 class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTableState> {
-  @resolve(TYPES.user) private usersService!: IUserService;
-  @resolve(TYPES.SprintPlanning) private sprintPlanningService!: ISprintPlanningService;
-
   constructor(props: TeamCapacityTableProps) {
     super(props);
 
@@ -64,7 +58,6 @@ class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTa
     );
   }
 
-  // eslint-disable-next-line max-lines-per-function
   renderTable(): JSX.Element {
     return (
       <TableContainer component={Paper}>
@@ -163,7 +156,7 @@ class TeamCapacityTable extends Component<TeamCapacityTableProps, TeamCapacityTa
       )
       .sort(
         (a, b) =>
-          b.position.sortOrder - a.position.sortOrder || (a.email.toUpperCase() < b.email.toUpperCase() ? 1 : -1),
+          a.position.sortOrder - b.position.sortOrder || (a.email.toUpperCase() < b.email.toUpperCase() ? -1 : 1),
       );
   }
 }

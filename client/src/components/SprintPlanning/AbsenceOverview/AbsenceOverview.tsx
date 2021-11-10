@@ -63,8 +63,7 @@ class AbsenceOverview extends Component<AbsenceOverviewProps, AbsenceOverviewSta
             <Chip
               key={member.id}
               className="absence-card-chip"
-              avatar={<Avatar className="absence-card-chip-avatar" alt={member.firstName[0]} src={member.picture} />}
-              // label={`${member.email} ---> ${absence} days`}
+              avatar={<Avatar className="absence-card-chip-avatar" alt={member.firstName} src={member.picture} />}
               label={
                 <Grid container alignContent="center">
                   {member.email}

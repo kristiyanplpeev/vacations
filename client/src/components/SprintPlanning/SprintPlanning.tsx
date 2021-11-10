@@ -6,7 +6,6 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { compareAsc } from "date-fns/esm";
 import { resolve } from "inversify-react";
-import { connect } from "react-redux";
 import { RouteComponentProps } from "react-router";
 
 import { anyPosition, anyRole, firstSprintBeginning, noDataError } from "common/constants";
@@ -23,11 +22,8 @@ import TeamCapacityTable from "components/SprintPlanning/TeamCapacityTable/TeamC
 import { IAbsenceService, IHolidayService, ISprintPlanningService, IUserService } from "inversify/interfaces";
 import { TYPES } from "inversify/types";
 import "./SprintPlanning.css";
-import { ApplicationState, IUserState } from "store/user/types";
 
-interface SprintPlanningProps extends RouteComponentProps {
-  userState: IUserState;
-}
+interface SprintPlanningProps extends RouteComponentProps {}
 
 interface SprintPlanningState {
   loading: boolean;
@@ -178,11 +174,8 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
 
   async loadUsers(): Promise<void> {
     try {
-      const teamMembers = await this.userService.getFilteredUsers(
-        this.props.userState.userDetails.team.id,
-        anyPosition,
-        anyRole,
-      );
+      const userTeam = await this.userService.getUserTeam();
+      const teamMembers = await this.userService.getFilteredUsers(userTeam.id, anyPosition, anyRole);
 
       this.setState({
         teamMembers,
@@ -279,10 +272,4 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
   };
 }
 
-const mapStateToProps = ({ userInfoReducer }: ApplicationState) => {
-  return {
-    userState: userInfoReducer,
-  };
-};
-
-export default connect(mapStateToProps)(SprintPlanning);
+export default SprintPlanning;

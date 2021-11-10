@@ -9,5 +9,6 @@ module.exports = {
   moduleNameMapper: {
     "^.+\\.(css|less|scss)$": "babel-jest",
   },
+  setupFiles: ["<rootDir>/.jest/setEnvVars.js"],
   setupFilesAfterEnv: ["<rootDir>/setup-enzyme.js"],
 };

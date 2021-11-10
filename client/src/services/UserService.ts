@@ -87,6 +87,10 @@ class UserService implements IUserService {
     await this.restClient.delete(`users/teams/${teamId}`);
   };
 
+  getUserTeam = async (): Promise<ITeams> => {
+    return await this.restClient.get(`users/myTeam`);
+  };
+
   updatePositionCoefficient = async (positionId: string, newCoefficient: number): Promise<void> => {
     const data = {
       newCoefficient,
