@@ -104,39 +104,15 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
   }
 
   render(): JSX.Element {
-    const {
-      loading,
-      error,
-      absences,
-      sprintTotalWorkdays,
-      sprintPeriod,
-      sprintEachDayWithStatus,
-      teamMembers,
-      absenceDays,
-    } = this.state;
+    const { error } = this.state;
     if (error) {
       return <Error message={error} />;
     }
-    if (loading) {
-      return <CircularProgress className="sprint-planning-loader" />;
-    }
+
     return (
       <div className="sprint-planning-container">
         {this.renderHeader()}
-        <TeamCapacityTable
-          teamMembers={teamMembers}
-          absenceDays={absenceDays}
-          sprintTotalWorkdays={sprintTotalWorkdays}
-          absences={absences}
-          setError={this.setError}
-        />
-        <AbsenceOverview
-          teamMembers={teamMembers}
-          absenceDays={absenceDays}
-          absences={absences}
-          sprintPeriod={sprintPeriod}
-          sprintEachDayWithStatus={sprintEachDayWithStatus}
-        />
+        {this.renderTableAndCalendar()}
       </div>
     );
   }
@@ -176,6 +152,32 @@ class SprintPlanning extends Component<SprintPlanningProps, SprintPlanningState>
         </Grid>
         <Grid item xs={2}></Grid>
       </Grid>
+    );
+  }
+
+  renderTableAndCalendar(): JSX.Element {
+    const { loading, absences, sprintTotalWorkdays, sprintPeriod, sprintEachDayWithStatus, teamMembers, absenceDays } =
+      this.state;
+    if (loading) {
+      return <CircularProgress className="sprint-planning-loader" />;
+    }
+    return (
+      <>
+        <TeamCapacityTable
+          teamMembers={teamMembers}
+          absenceDays={absenceDays}
+          sprintTotalWorkdays={sprintTotalWorkdays}
+          absences={absences}
+          setError={this.setError}
+        />
+        <AbsenceOverview
+          teamMembers={teamMembers}
+          absenceDays={absenceDays}
+          absences={absences}
+          sprintPeriod={sprintPeriod}
+          sprintEachDayWithStatus={sprintEachDayWithStatus}
+        />
+      </>
     );
   }
 
